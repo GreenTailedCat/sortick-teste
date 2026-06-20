@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sortick.com.br/sitemap.xml

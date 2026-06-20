@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sortick — Sorteios simples e transparentes</title>
+  <link rel="canonical" href="https://sortick.com.br/" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2517804276533396"
+     crossorigin="anonymous"></script>
+  <meta name="description" content="Crie sorteios simples, bonitos e transparentes para grupos, salas e comunidades." />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#6c4dff" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/css/style.css?v=110" />
+  <script src="/js/clean-url.js"></script>
+  <style id="mode-carousel-critical-css">
+    #modos .mode-carousel {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    #modos .mode-carousel-track.mode-grid {
+      display: flex !important;
+      grid-template-columns: none !important;
+      flex-wrap: nowrap !important;
+      gap: 18px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x proximity;
+      scroll-behavior: smooth;
+      padding: 4px 8px 18px;
+      scrollbar-width: thin;
+    }
+
+    #modos .mode-carousel-track .mode-card {
+      flex: 0 0 268px;
+      width: 268px;
+      min-width: 268px;
+      scroll-snap-align: start;
+    }
+
+    #modos .carousel-button {
+      position: absolute;
+      top: 50%;
+      z-index: 20;
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #17142f;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      transform: translateY(-50%);
+    }
+
+    #modos .carousel-button-prev {
+      left: -22px;
+    }
+
+    #modos .carousel-button-next {
+      right: -22px;
+    }
+
+    @media (max-width: 760px) {
+      #modos .mode-carousel-track.mode-grid {
+        padding-inline: 44px;
+      }
+
+      #modos .mode-carousel-track .mode-card {
+        flex-basis: min(268px, 78vw);
+        width: min(268px, 78vw);
+        min-width: min(268px, 78vw);
+      }
+
+      #modos .carousel-button {
+        width: 38px;
+        height: 38px;
+        font-size: 1.65rem;
+      }
+
+      #modos .carousel-button-prev {
+        left: 2px;
+      }
+
+      #modos .carousel-button-next {
+        right: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Sortick">
+      <img class="brand-icon" src="/assets/icon.svg" alt="" />
+      <span>Sortick</span>
+    </a>
+
+    <nav class="nav">
+      <a href="/#modos">Modos</a>
+      <a href="/sobre/">Sobre</a>
+      <a href="/#criar">Criar</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">Sorteios comunitários, simples e transparentes</p>
+        <h1>Sorteie nomes, números e roletas sem complicação.</h1>
+        <p class="hero-text">
+          Crie sorteios rápidos para grupos, turmas e decisões em comunidade. Adicione participantes, confirme quem entra e deixe o Sortick sortear.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#criar">Criar sorteio</a>
+          <a class="btn btn-ghost" href="#modos">Ver modos</a>
+        </div>
+
+        <div class="trust-box">
+          <strong>Nota:</strong>
+          O Sortick é uma ferramenta de organização. O organizador é responsável pelo uso e pelas regras aplicáveis.
+        </div>
+      </div>
+
+      <div class="hero-card" aria-hidden="true">
+        <div class="live-label">Modo simples</div>
+        <div class="winner-preview">
+          <span class="small">Vencedor</span>
+          <strong>Nº 27</strong>
+          <span class="ticket">Maria Silva</span>
+        </div>
+        <div class="mini-number-grid">
+          <span class="available">1</span>
+          <span class="taken">2</span>
+          <span class="available">3</span>
+          <span class="taken">4</span>
+          <span class="available">5</span>
+          <span class="available">6</span>
+          <span class="taken">7</span>
+          <span class="available">8</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="modos" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Modos disponíveis</p>
+        <h2>Comece pelo essencial.</h2>
+      <div class="mode-carousel" aria-label="Modos disponíveis">
+        <button class="carousel-button carousel-button-prev" type="button" aria-label="Ver modos anteriores">‹</button>
+
+        <div class="mode-grid mode-carousel-track">
+          <article class="mode-card">
+            <div class="icon">👥</div>
+            <h3>Sorteio por nomes</h3>
+            <p>Adicione participantes e sorteie um vencedor.</p>
+            <a class="mode-more-link" href="/sorteio-por-nomes/">Saiba mais</a>
+          </article>
+
+          <article class="mode-card">
+            <div class="icon">🎡</div>
+            <h3>Roleta</h3>
+            <p>Uma roleta circular que gira de forma visual e fluida.</p>
+            <a class="mode-more-link" href="/roleta/">Saiba mais</a>
+          </article>
+
+          <article class="mode-card">
+            <div class="icon">🔢</div>
+            <h3>Número da sorte</h3>
+            <p>Crie uma cartela, associe números e acompanhe disponíveis e ocupados.</p>
+            <a class="mode-more-link" href="/cartela-de-rifa/">Saiba mais</a>
+          </article>
+
+          <article class="mode-card">
+            <div class="icon">🎲</div>
+            <h3>Bingo</h3>
+            <p>Sorteie números para cartelas físicas, com histórico e opção de repetição.</p>
+            <a class="mode-more-link" href="/bingo/">Saiba mais</a>
+          </article>
+
+          <article class="mode-card">
+            <div class="icon">🏆</div>
+            <h3>Grupos / Times</h3>
+            <p>Adicione nomes e divida os participantes em grupos aleatórios.</p>
+            <a class="mode-more-link" href="/grupos/">Saiba mais</a>
+          </article>
+        </div>
+
+        <button class="carousel-button carousel-button-next" type="button" aria-label="Ver próximos modos">›</button>
+      </div>
+    </section>
+
+    <section id="criar" class="section create-section">
+      <div class="create-panel">
+        <div>
+          <p class="eyebrow">Criar agora</p>
+          <h2>Novo sorteio</h2>
+          <p class="subtle">Crie um sorteio em poucos cliques, sem complicação.</p>
+        </div>
+
+        <form id="createForm" class="form">
+          <label>
+            Nome do sorteio
+            <input id="drawTitle" type="text" placeholder="Ex: Rifa da cesta, sorteio da turma..." maxlength="80" required />
+          </label>
+
+          <label>
+            Tipo
+            <select id="drawType" required>
+              <option value="names">Sorteio por nomes</option>
+              <option value="roulette">Roleta</option>
+              <option value="numbers">Número da sorte / cartela</option>
+              <option value="bingo">Bingo</option>
+              <option value="groups">Grupos / Times</option>
+            </select>
+          </label>
+
+          <label id="numberQuantityField" class="hidden">
+            Quantidade de números da cartela
+            <input id="totalNumbers" type="number" min="2" max="500" value="50" />
+            <span class="field-hint">Exemplo: 50 cria uma cartela de 1 a 50.</span>
+          </label>
+
+          <label id="bingoQuantityField" class="hidden">
+            Números do bingo
+            <input id="bingoTotalNumbers" type="number" min="2" max="500" value="75" />
+            <span class="field-hint">Exemplo: 75 cria um bingo de 1 a 75.</span>
+          </label>
+
+          <label id="groupQuantityField" class="hidden">
+            Quantidade de grupos/times
+            <input id="groupCount" type="number" min="2" max="50" value="2" />
+            <span class="field-hint">Exemplo: 2 divide a lista em dois grupos.</span>
+          </label>
+
+          <label>
+            Modo
+            <select id="drawMode" required>
+              <option value="simple">Simples — dono adiciona e sorteia</option>
+              <option value="live" disabled>Ao vivo — em breve</option>
+            </select>
+          </label>
+
+          <button class="btn btn-primary full" type="submit">Criar sorteio</button>
+        </form>
+
+        <section class="saved-draws-card" aria-labelledby="savedDrawsTitle">
+          <div class="saved-draws-head">
+            <div>
+              <p class="eyebrow">Salvos neste navegador</p>
+              <h3 id="savedDrawsTitle">Continuar um sorteio</h3>
+              <p class="subtle">Os sorteios aparecem apenas neste dispositivo e navegador. Se os dados do navegador forem limpos, eles podem sumir.</p>
+            </div>
+          </div>
+
+          <div id="savedDrawsList" class="saved-draws-list" aria-live="polite">
+            <div class="saved-empty">
+              <strong>Nenhum sorteio salvo ainda</strong>
+              <p>Crie um sorteio para ele aparecer aqui automaticamente.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer site-footer">
+    <p>
+      Sortick é uma ferramenta de organização e transparência. Não vende bilhetes, não processa pagamentos e não administra premiações.
+    </p>
+    <div class="footer-links">
+      <a href="/sobre/">Sobre</a>
+      <a href="/privacidade/">Privacidade</a>
+      <a href="/termos/">Termos</a>
+      <a href="mailto:contato.sortick@gmail.com?subject=Erro%20no%20Sortick&body=Ol%C3%A1%2C%20encontrei%20um%20erro%20no%20Sortick.%0A%0ADescreva%20o%20erro%3A%0A%0A%0AModo%20usado%3A%0A%28%20%29%20Nomes%0A%28%20%29%20Roleta%0A%28%20%29%20N%C3%BAmero%20da%20sorte/cartela%0A%28%20%29%20Outro%0A%0AO%20que%20voc%C3%AA%20esperava%20que%20acontecesse%3A%0A%0A%0AO%20que%20aconteceu%3A%0A%0A%0ANavegador/dispositivo%3A%0A">Reportar erro</a>
+    </div>
+  </footer>
+
+  <script src="/js/utils.js?v=110"></script>
+  <script src="/js/index.js?v=110"></script>
+  <script src="/js/official-domain.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/pwa.js?v=110"></script>
+</body>
+</html>
