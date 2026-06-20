@@ -109,7 +109,7 @@ function renderSavedDraws() {
     savedDrawsList.innerHTML = `
       <div class="saved-empty">
         <strong>Nenhum sorteio salvo ainda</strong>
-        <p>Crie um sorteio para ele aparecer aqui automaticamente.</p>
+        <p>Quando você criar um sorteio, ele ficará salvo automaticamente neste navegador.</p>
       </div>`;
     return;
   }

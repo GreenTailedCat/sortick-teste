@@ -1,4 +1,4 @@
-# Sortick v1.10.1-corrigir-cabecalho
+# Sortick Teste v1.10.2-lote-interface
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -133,3 +133,17 @@ E confirme que o domínio está com HTTPS funcionando.
 
 - Corrigido o cabeçalho das páginas dos modos.
 - As páginas SEO agora usam a mesma logo e navegação da página inicial.
+
+
+## v1.10.2-lote-interface
+
+Atualizações de interface e textos, sem mudança na lógica dos sorteios:
+
+- Mantida a correção do cabeçalho das páginas dos modos.
+- “Reportar erro” passou a ser “Erro/sugestões?”.
+- E-mail de feedback ajustado para aceitar erros e sugestões.
+- “Novo sorteio nesta lista” passou a ser “Sortear novamente”.
+- O botão de sortear novamente deixou de usar estilo de perigo.
+- Adicionada explicação de que a ação mantém a lista.
+- “Novo sorteio” passou a ser “Criar um sorteio”.
+- Melhorado o texto do estado vazio dos sorteios salvos.

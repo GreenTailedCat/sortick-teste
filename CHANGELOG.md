@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.2-lote-interface
+- Ajustes de textos, feedback, botão de reinício e estados visuais.
+
 ## v1.10.1-corrigir-cabecalho
 - Corrigido o cabeçalho visual das páginas SEO dos modos.
 

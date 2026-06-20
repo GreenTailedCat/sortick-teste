@@ -1711,3 +1711,26 @@ body.drawing-locked #removeWinnerToggle:disabled {
     flex: 1;
   }
 }
+
+
+/* v1.10.2 - melhorias de interface e clareza */
+
+.stage-action-hint {
+  margin: 12px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.stage-actions + .stage-action-hint {
+  max-width: 680px;
+  margin-inline: auto;
+}
+
+@media (max-width: 720px) {
+  .stage-action-hint {
+    font-size: 0.86rem;
+    padding-inline: 8px;
+  }
+}

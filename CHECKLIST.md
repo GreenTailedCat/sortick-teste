@@ -59,3 +59,13 @@
 - [ ] Service worker registra.
 - [ ] Site abre pelo link do GitHub Pages.
 - [ ] App pode ser instalado/adicionado à tela inicial quando disponível.
+
+
+## Testes v1.10.2 — interface
+
+- [ ] Rodapé mostra “Erro/sugestões?”.
+- [ ] Link abre e-mail com opção de erro ou sugestão.
+- [ ] Tela de sorteio mostra “Sortear novamente”.
+- [ ] A explicação informa que a lista será mantida.
+- [ ] “Criar um sorteio” aparece na página inicial.
+- [ ] Estado vazio dos sorteios salvos está claro.
