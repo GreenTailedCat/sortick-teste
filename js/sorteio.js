@@ -4,6 +4,7 @@ const drawId = params.get("id");
 let draw = drawId ? Sortick.getDraw(drawId) : null;
 let isDrawing = false;
 let currentWheelRotation = 0;
+let isCartelaExpanded = false;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
 
@@ -553,10 +554,26 @@ function renderNumberBoard(highlightNumber = null) {
   }
 
   animationArea.innerHTML = `
-    <div class="number-board-wrap">
-      <div class="number-board-header"><span>Cartela de 1 a ${total}</span><small>${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados</small></div>
-      <div class="number-board">${cells}</div>
+    <div class="number-board-wrap ${isCartelaExpanded ? "cartela-expanded-wrap" : ""}">
+      <div class="number-board-header cartela-header">
+        <span>Cartela de 1 a ${total}</span>
+        <div class="cartela-header-actions">
+          <small>${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados</small>
+          <button id="toggleCartelaExpanded" class="cartela-expand-button" type="button" aria-expanded="${isCartelaExpanded}">
+            ${isCartelaExpanded ? "Fechar visualização expandida" : "Visualizar cartela expandida"}
+          </button>
+        </div>
+      </div>
+      <div class="number-board ${isCartelaExpanded ? "cartela-expanded" : ""}">${cells}</div>
     </div>`;
+
+  const toggleCartelaExpanded = animationArea.querySelector("#toggleCartelaExpanded");
+  if (toggleCartelaExpanded) {
+    toggleCartelaExpanded.addEventListener("click", () => {
+      isCartelaExpanded = !isCartelaExpanded;
+      renderNumberBoard();
+    });
+  }
 
   animationArea.querySelectorAll(".number-cell").forEach(button => {
     button.addEventListener("click", () => {

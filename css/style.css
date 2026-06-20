@@ -1795,3 +1795,81 @@ body.drawing-locked #removeWinnerToggle:disabled {
     font-size: 0.42rem;
   }
 }
+
+
+/* v1.10.4 - correção definitiva do carrossel e visualização expandida da cartela */
+
+/* As setas continuam sendo o controle visual do carrossel.
+   A barra nativa é ocultada em Chrome, Edge, Firefox e navegadores WebKit. */
+#modos .mode-carousel-track,
+#modos .mode-carousel-track.mode-grid {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+#modos .mode-carousel-track::-webkit-scrollbar,
+#modos .mode-carousel-track.mode-grid::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Botão que permite abrir a cartela fora da área de rolagem interna. */
+.cartela-header {
+  align-items: flex-start;
+}
+
+.cartela-header-actions {
+  display: inline-flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 8px;
+  text-align: right;
+}
+
+.cartela-expand-button {
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.2;
+  padding: 8px 10px;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.cartela-expand-button:hover {
+  background: rgba(255, 255, 255, 0.26);
+  transform: translateY(-1px);
+}
+
+/* Na visualização expandida, a cartela cresce na página.
+   A rolagem passa a ser apenas a rolagem normal do navegador. */
+.number-board-wrap.cartela-expanded-wrap {
+  width: 100%;
+}
+
+.number-board.cartela-expanded {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 720px) {
+  .cartela-header {
+    gap: 10px;
+  }
+
+  .cartela-header-actions {
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .cartela-expand-button {
+    max-width: 160px;
+    font-size: 0.72rem;
+    padding: 7px 9px;
+  }
+}

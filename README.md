@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.3-ajustes-visuais
+# Sortick Teste v1.10.4-carrossel-cartela
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -156,3 +156,11 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Ocultada a barra horizontal nativa do carrossel de modos.
 - Cartelas de até 100 números agora usam uma grade 10 x 10 sem rolagem interna.
 - Cartelas acima de 100 números continuam usando rolagem para preservar a legibilidade.
+
+
+## v1.10.4-carrossel-cartela
+
+- Correção reforçada para ocultar a barra horizontal nativa do carrossel de modos.
+- Atualizada a versão do CSS e dos scripts para impedir cache antigo.
+- Adicionada a opção “Visualizar cartela expandida”.
+- Na visualização expandida, a cartela cresce na página e não usa rolagem interna.

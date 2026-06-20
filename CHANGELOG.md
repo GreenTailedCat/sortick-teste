@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.4-carrossel-cartela
+- Ocultação reforçada da barra do carrossel e visualização expandida para cartelas.
+
 ## v1.10.3-ajustes-visuais
 - Removido controle redundante de novo sorteio, ocultada barra do carrossel e compactada a cartela até 100 números.
 

@@ -78,3 +78,13 @@
 - [ ] O carrossel não mostra barra horizontal, mas as setas funcionam.
 - [ ] Uma cartela de 1 a 100 aparece inteira, sem barra vertical interna.
 - [ ] Uma cartela com mais de 100 números continua legível e pode usar rolagem.
+
+
+## Testes v1.10.4 — carrossel e cartela
+
+- [ ] O carrossel de modos não mostra barra horizontal.
+- [ ] As setas do carrossel continuam funcionando.
+- [ ] A cartela mostra “Visualizar cartela expandida”.
+- [ ] Ao expandir, a barra vertical interna desaparece.
+- [ ] Ao fechar, a cartela volta ao tamanho normal.
+- [ ] Números ocupados, confirmados e disponíveis continuam funcionando.
