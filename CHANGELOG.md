@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.3-ajustes-visuais
+- Removido controle redundante de novo sorteio, ocultada barra do carrossel e compactada a cartela até 100 números.
+
 ## v1.10.2-lote-interface
 - Ajustes de textos, feedback, botão de reinício e estados visuais.
 

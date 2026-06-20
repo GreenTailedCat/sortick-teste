@@ -69,3 +69,12 @@
 - [ ] A explicação informa que a lista será mantida.
 - [ ] “Criar um sorteio” aparece na página inicial.
 - [ ] Estado vazio dos sorteios salvos está claro.
+
+
+## Testes v1.10.3 — ajustes visuais
+
+- [ ] Nos modos Nomes, Roleta, Cartela e Grupos, só existe o botão principal de sortear.
+- [ ] No Bingo, “Reiniciar bingo” aparece e limpa o histórico após confirmação.
+- [ ] O carrossel não mostra barra horizontal, mas as setas funcionam.
+- [ ] Uma cartela de 1 a 100 aparece inteira, sem barra vertical interna.
+- [ ] Uma cartela com mais de 100 números continua legível e pode usar rolagem.

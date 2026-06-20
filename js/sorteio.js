@@ -72,6 +72,12 @@ function setupDraw() {
   removeWinnerToggle.checked = Boolean(draw.options.removeWinnerAfterDraw);
   if (soundToggle) soundToggle.checked = Boolean(draw.options.soundEnabled);
 
+  // O botão principal já permite sortear novamente com a mesma lista.
+  // O reinício separado só é necessário no Bingo, pois ele limpa o histórico.
+  resetButton.classList.add("hidden");
+  const resetHint = document.querySelector("#resetHint");
+  if (resetHint) resetHint.classList.add("hidden");
+
   if (draw.type === "numbers") {
     participantNumber.classList.remove("hidden");
     numberLegend.classList.remove("hidden");
@@ -89,6 +95,8 @@ function setupDraw() {
     clearParticipantsButton.textContent = "Limpar histórico";
     drawButton.textContent = "Sortear número";
     resetButton.textContent = "Reiniciar bingo";
+    resetButton.classList.remove("hidden");
+    if (resetHint) resetHint.classList.remove("hidden");
     confirmedOnlyToggle.closest("label").classList.add("hidden");
     removeWinnerToggle.closest("label").classList.add("hidden");
     participantFilter.closest("label").classList.add("hidden");
@@ -369,7 +377,7 @@ function renderBingoBoard(highlightNumber = null) {
         ${latest ? `<small>Último número</small><strong>${Sortick.escapeHTML(latest)}</strong>` : `<small>Nenhum número sorteado</small><strong>--</strong>`}
       </div>
 
-      <div class="number-board">${cells}</div>
+      <div class="number-board cartela-board ${total <= 100 ? "cartela-board-compact" : "cartela-board-scroll"}">${cells}</div>
     </div>`;
 }
 

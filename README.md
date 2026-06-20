@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.2-lote-interface
+# Sortick Teste v1.10.3-ajustes-visuais
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -147,3 +147,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Adicionada explicação de que a ação mantém a lista.
 - “Novo sorteio” passou a ser “Criar um sorteio”.
 - Melhorado o texto do estado vazio dos sorteios salvos.
+
+
+## v1.10.3-ajustes-visuais
+
+- Removido o botão redundante “Sortear novamente” dos modos comuns.
+- “Reiniciar bingo” continua disponível apenas no Bingo.
+- Ocultada a barra horizontal nativa do carrossel de modos.
+- Cartelas de até 100 números agora usam uma grade 10 x 10 sem rolagem interna.
+- Cartelas acima de 100 números continuam usando rolagem para preservar a legibilidade.
