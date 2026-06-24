@@ -110,3 +110,15 @@
 - [ ] O resumo abre em janela escura e pode ser fechado por ×, Fechar, Esc ou clique fora.
 - [ ] Sortear número continua disponível sem a página ganhar uma área branca adicional.
 - [ ] Copiar resumo, Compartilhar e Baixar imagem continuam funcionando após o sorteio.
+
+
+## Testes v1.10.7 — sorteios salvos
+
+- [ ] “Duplicar” cria uma cópia e abre o novo sorteio.
+- [ ] A cópia mantém participantes e configurações do original.
+- [ ] A cópia não mantém o resultado anterior.
+- [ ] Uma cópia de Bingo começa com histórico vazio.
+- [ ] “Usar lista” aparece ativo em Nomes, Roleta e Grupos/Times com participantes.
+- [ ] O diálogo cria o modo escolhido com os mesmos participantes.
+- [ ] O sorteio original não muda após duplicar ou usar a lista.
+- [ ] Cartela e Bingo não oferecem “Usar lista”.

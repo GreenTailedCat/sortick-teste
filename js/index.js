@@ -31,6 +31,12 @@ const bingoTotalNumbersInput = document.querySelector("#bingoTotalNumbers");
 const groupQuantityField = document.querySelector("#groupQuantityField");
 const groupCountInput = document.querySelector("#groupCount");
 const savedDrawsList = document.querySelector("#savedDrawsList");
+const reuseListDialog = document.querySelector("#reuseListDialog");
+const reuseListDescription = document.querySelector("#reuseListDescription");
+const closeReuseListDialogButton = document.querySelector("#closeReuseListDialogButton");
+const cancelReuseListDialogButton = document.querySelector("#cancelReuseListDialogButton");
+const reuseListOptions = document.querySelectorAll(".reuse-list-option");
+let drawSelectedForReuse = null;
 
 function syncTypeSettings() {
   const type = typeInput.value;
@@ -61,6 +67,114 @@ function applyTypeFromURL() {
 
 applyTypeFromURL();
 
+function defaultOptionsForType(type, sourceDraw = null) {
+  const options = {
+    confirmedOnly: false,
+    removeWinnerAfterDraw: false,
+    soundEnabled: false
+  };
+
+  if (type === "groups") {
+    options.groupCount = Sortick.clampNumber(sourceDraw?.options?.groupCount || 2, 2, 50);
+  }
+
+  return options;
+}
+
+function makeDuplicateDraw(sourceDraw) {
+  const duplicateType = sourceDraw.type;
+  const duplicateOptions = JSON.parse(JSON.stringify(sourceDraw.options || {}));
+
+  // Resultado e histórico representam uma rodada anterior, então não acompanham a cópia.
+  if (duplicateType === "bingo") {
+    duplicateOptions.bingoDrawnNumbers = [];
+  }
+
+  const copiedParticipants = Array.isArray(sourceDraw.participants)
+    ? sourceDraw.participants.map(participant => ({
+        ...participant,
+        id: Sortick.createId("p")
+      }))
+    : [];
+
+  const now = new Date().toISOString();
+  const baseTitle = `Cópia de ${Sortick.normalizeText(sourceDraw.title) || "sorteio"}`;
+
+  return {
+    id: Sortick.createId("draw"),
+    title: baseTitle.slice(0, 80),
+    type: duplicateType,
+    mode: sourceDraw.mode || "simple",
+    options: duplicateOptions,
+    participants: copiedParticipants,
+    result: null,
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+function createDrawFromList(sourceDraw, targetType) {
+  const allowedTargetTypes = ["names", "roulette", "groups"];
+
+  if (!allowedTargetTypes.includes(targetType)) return null;
+
+  const participants = Array.isArray(sourceDraw.participants)
+    ? sourceDraw.participants
+        .map(participant => ({
+          id: Sortick.createId("p"),
+          name: Sortick.normalizeText(participant.name),
+          status: participant.status === "confirmed" ? "confirmed" : "pending"
+        }))
+        .filter(participant => participant.name)
+    : [];
+
+  if (!participants.length) return null;
+
+  const now = new Date().toISOString();
+  const targetLabel = Sortick.typeLabel(targetType);
+  const title = `${targetLabel} — ${Sortick.normalizeText(sourceDraw.title) || "nova lista"}`.slice(0, 80);
+
+  return {
+    id: Sortick.createId("draw"),
+    title,
+    type: targetType,
+    mode: "simple",
+    options: defaultOptionsForType(targetType, sourceDraw),
+    participants,
+    result: null,
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+function closeReuseListDialog() {
+  if (!reuseListDialog) return;
+
+  if (typeof reuseListDialog.close === "function" && reuseListDialog.open) {
+    reuseListDialog.close();
+  } else {
+    reuseListDialog.removeAttribute("open");
+  }
+
+  drawSelectedForReuse = null;
+}
+
+function openReuseListDialog(sourceDraw) {
+  if (!reuseListDialog) return;
+
+  drawSelectedForReuse = sourceDraw;
+  const participantCount = Array.isArray(sourceDraw.participants) ? sourceDraw.participants.length : 0;
+
+  if (reuseListDescription) {
+    reuseListDescription.textContent = `${participantCount} participante(s) serão copiados. O sorteio original continuará sem mudanças.`;
+  }
+
+  if (typeof reuseListDialog.showModal === "function") {
+    reuseListDialog.showModal();
+  } else {
+    reuseListDialog.setAttribute("open", "");
+  }
+}
 
 function getSavedDraws() {
   return Object.values(Sortick.readDraws())
@@ -142,6 +256,37 @@ function renderSavedDraws() {
     continueLink.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(savedDraw.id)}`;
     continueLink.textContent = "Continuar";
 
+    const duplicateButton = document.createElement("button");
+    duplicateButton.className = "saved-action-button";
+    duplicateButton.type = "button";
+    duplicateButton.textContent = "Duplicar";
+    duplicateButton.setAttribute("aria-label", `Duplicar sorteio ${savedDraw.title}`);
+
+    duplicateButton.addEventListener("click", () => {
+      const duplicate = makeDuplicateDraw(savedDraw);
+      Sortick.saveDraw(duplicate);
+      window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(duplicate.id)}`;
+    });
+
+    const canReuseList = ["names", "roulette", "groups"].includes(savedDraw.type)
+      && Array.isArray(savedDraw.participants)
+      && savedDraw.participants.length > 0;
+
+    const reuseListButton = document.createElement("button");
+    reuseListButton.className = "saved-action-button";
+    reuseListButton.type = "button";
+    reuseListButton.textContent = "Usar lista";
+    reuseListButton.setAttribute("aria-label", `Usar a lista do sorteio ${savedDraw.title} em outro modo`);
+    reuseListButton.disabled = !canReuseList;
+    reuseListButton.title = canReuseList
+      ? "Criar Nomes, Roleta ou Grupos com estes participantes"
+      : "Disponível para sorteios por nomes, roletas e grupos com participantes";
+
+    reuseListButton.addEventListener("click", () => {
+      if (!canReuseList) return;
+      openReuseListDialog(savedDraw);
+    });
+
     const deleteButton = document.createElement("button");
     deleteButton.className = "saved-delete";
     deleteButton.type = "button";
@@ -157,12 +302,50 @@ function renderSavedDraws() {
       renderSavedDraws();
     });
 
-    actions.append(continueLink, deleteButton);
+    actions.append(continueLink, duplicateButton, reuseListButton, deleteButton);
     item.append(info, actions);
     savedDrawsList.appendChild(item);
   });
 }
 
+
+if (closeReuseListDialogButton) {
+  closeReuseListDialogButton.addEventListener("click", closeReuseListDialog);
+}
+
+if (cancelReuseListDialogButton) {
+  cancelReuseListDialogButton.addEventListener("click", closeReuseListDialog);
+}
+
+if (reuseListDialog) {
+  reuseListDialog.addEventListener("click", event => {
+    if (event.target === reuseListDialog) {
+      closeReuseListDialog();
+    }
+  });
+
+  reuseListDialog.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeReuseListDialog();
+  });
+}
+
+reuseListOptions.forEach(option => {
+  option.addEventListener("click", () => {
+    if (!drawSelectedForReuse) return;
+
+    const targetType = option.dataset.targetType;
+    const newDraw = createDrawFromList(drawSelectedForReuse, targetType);
+
+    if (!newDraw) {
+      closeReuseListDialog();
+      return;
+    }
+
+    Sortick.saveDraw(newDraw);
+    window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(newDraw.id)}`;
+  });
+});
 
 renderSavedDraws();
 

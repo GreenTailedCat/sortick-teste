@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.6-bingo-resumo-opcional
+# Sortick Teste v1.10.7-sorteios-salvos
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -182,3 +182,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - O botão “Ver resumo” aparece após o primeiro número sorteado.
 - O resumo abre em uma janela escura opcional e não move a cartela nem os controles.
 - Copiar resumo, compartilhar e baixar imagem continuam disponíveis.
+
+
+## v1.10.7-sorteios-salvos
+
+- Adicionado “Duplicar” em sorteios salvos.
+- A cópia mantém participantes e configurações, mas começa sem resultado.
+- No Bingo, a cópia começa sem histórico de números sorteados.
+- Adicionado “Usar lista” para criar Nomes, Roleta ou Grupos/Times com participantes de um sorteio salvo.
+- O sorteio original nunca é alterado por essas ações.

@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1106" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1107" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -271,6 +271,40 @@
     </section>
   </main>
 
+  <dialog id="reuseListDialog" class="reuse-list-dialog" aria-labelledby="reuseListTitle">
+    <div class="reuse-list-dialog-card">
+      <div class="reuse-list-dialog-head">
+        <div>
+          <p class="eyebrow">Reutilizar participantes</p>
+          <h2 id="reuseListTitle">Usar esta lista em outro modo</h2>
+          <p id="reuseListDescription" class="subtle"></p>
+        </div>
+        <button id="closeReuseListDialogButton" class="dialog-close-button" type="button" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="reuse-list-options">
+        <button class="reuse-list-option" type="button" data-target-type="names">
+          <strong>Sorteio por nomes</strong>
+          <span>Cria um novo sorteio com os mesmos participantes.</span>
+        </button>
+
+        <button class="reuse-list-option" type="button" data-target-type="roulette">
+          <strong>Roleta</strong>
+          <span>Cria uma roleta usando a mesma lista.</span>
+        </button>
+
+        <button class="reuse-list-option" type="button" data-target-type="groups">
+          <strong>Grupos / Times</strong>
+          <span>Cria grupos com os mesmos participantes.</span>
+        </button>
+      </div>
+
+      <div class="reuse-list-dialog-actions">
+        <button id="cancelReuseListDialogButton" class="btn btn-secondary" type="button">Cancelar</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="footer site-footer">
     <p>
       Sortick é uma ferramenta de organização e transparência. Não vende bilhetes, não processa pagamentos e não administra premiações.
@@ -283,7 +317,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1106"></script>
-  <script src="/sortick-teste/js/index.js?v=1106"></script>
+  <script src="/sortick-teste/js/utils.js?v=1107"></script>
+  <script src="/sortick-teste/js/index.js?v=1107"></script>
 </body>
 </html>

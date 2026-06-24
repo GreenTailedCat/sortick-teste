@@ -1992,3 +1992,128 @@ body.drawing-locked #removeWinnerToggle:disabled {
     font-size: 3rem;
   }
 }
+
+
+/* v1.10.7 - ações para sorteios salvos */
+
+.saved-action-button {
+  border: 1px solid rgba(108, 77, 255, 0.24);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(108, 77, 255, 0.07);
+  color: var(--primary-dark);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.saved-action-button:hover:not(:disabled) {
+  background: rgba(108, 77, 255, 0.14);
+}
+
+.saved-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.reuse-list-dialog {
+  width: min(92vw, 650px);
+  border: 0;
+  border-radius: 26px;
+  padding: 0;
+  color: white;
+  background: transparent;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+}
+
+.reuse-list-dialog::backdrop {
+  background: rgba(8, 7, 29, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.reuse-list-dialog-card {
+  display: grid;
+  gap: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  padding: clamp(20px, 4vw, 30px);
+  background:
+    linear-gradient(145deg, rgba(80, 69, 178, 0.98), rgba(21, 18, 57, 0.99)),
+    #1b173d;
+}
+
+.reuse-list-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.reuse-list-dialog-head h2 {
+  margin: 10px 0 8px;
+  color: white;
+  font-size: clamp(1.6rem, 5vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.reuse-list-dialog-head .subtle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.reuse-list-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reuse-list-option {
+  display: grid;
+  gap: 8px;
+  min-height: 132px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.reuse-list-option:hover {
+  border-color: rgba(255, 255, 255, 0.44);
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.reuse-list-option strong {
+  font-size: 1rem;
+}
+
+.reuse-list-option span {
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.reuse-list-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .saved-draw-actions {
+    gap: 7px;
+  }
+
+  .reuse-list-options {
+    grid-template-columns: 1fr;
+  }
+
+  .reuse-list-option {
+    min-height: 0;
+  }
+}

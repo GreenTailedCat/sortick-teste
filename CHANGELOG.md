@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.7-sorteios-salvos
+- Duplicação e reutilização de listas a partir dos sorteios salvos.
+
 ## v1.10.6-bingo-resumo-opcional
 - Resultado do Bingo passou a usar resumo opcional em janela, sem comprovante fixo.
 
