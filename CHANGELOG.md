@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.5-listas-bingo
+- Melhorada a adição de listas e reduzida a contagem repetitiva do Bingo.
+
 ## v1.10.4-carrossel-cartela
 - Ocultação reforçada da barra do carrossel e visualização expandida para cartelas.
 

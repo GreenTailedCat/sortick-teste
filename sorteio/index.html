@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1104" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1105" />
   <script src="/sortick-teste/js/clean-url.js"></script>
 </head>
 <body class="draw-page">
@@ -91,11 +91,13 @@
 
         <div id="bulkAddPanel" class="bulk-panel hidden">
           <label class="compact-label">
-            Adicionar vários
-            <textarea id="bulkText" rows="6" placeholder="Um nome por linha&#10;Ex:&#10;Ana&#10;Bruno&#10;Carla"></textarea>
+            Adicionar vários participantes
+            <textarea id="bulkText" rows="6" placeholder="Um nome por linha, vírgula ou ponto e vírgula&#10;Ex:&#10;Ana&#10;Bruno, Carla; Diego"></textarea>
+            <span class="field-hint">Linhas vazias são ignoradas. Nomes repetidos não serão adicionados duas vezes.</span>
           </label>
+          <p id="bulkPreview" class="bulk-preview" aria-live="polite">Cole uma lista para ver a prévia.</p>
           <div class="bulk-actions">
-            <button id="confirmBulkButton" class="btn btn-secondary" type="button">Adicionar lista</button>
+            <button id="confirmBulkButton" class="btn btn-secondary" type="button">Adicionar participantes</button>
             <button id="cancelBulkButton" class="btn btn-ghost light" type="button">Cancelar</button>
           </div>
         </div>
@@ -167,7 +169,7 @@
     </aside>
   </main>
 
-  <script src="/sortick-teste/js/utils.js?v=1104"></script>
-  <script src="/sortick-teste/js/sorteio.js?v=1104"></script>
+  <script src="/sortick-teste/js/utils.js?v=1105"></script>
+  <script src="/sortick-teste/js/sorteio.js?v=1105"></script>
 </body>
 </html>

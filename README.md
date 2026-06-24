@@ -164,3 +164,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Atualizada a versão do CSS e dos scripts para impedir cache antigo.
 - Adicionada a opção “Visualizar cartela expandida”.
 - Na visualização expandida, a cartela cresce na página e não usa rolagem interna.
+
+
+## v1.10.5-listas-bingo
+
+- Adição em lote aceita nomes separados por linhas, vírgulas ou ponto e vírgula.
+- Prévia informa quantos participantes novos serão incluídos.
+- Nomes repetidos no texto ou já presentes na lista são ignorados com aviso.
+- Disponível em Sorteio por nomes, Roleta e Grupos/Times.
+- No Bingo, a contagem regressiva acontece apenas antes do primeiro número.

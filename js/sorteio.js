@@ -42,6 +42,7 @@ const bulkButton = document.querySelector("#bulkButton");
 const shuffleButton = document.querySelector("#shuffleButton");
 const bulkAddPanel = document.querySelector("#bulkAddPanel");
 const bulkText = document.querySelector("#bulkText");
+const bulkPreview = document.querySelector("#bulkPreview");
 const confirmBulkButton = document.querySelector("#confirmBulkButton");
 const cancelBulkButton = document.querySelector("#cancelBulkButton");
 
@@ -105,7 +106,7 @@ function setupDraw() {
     if (bingoRepeatOption) bingoRepeatOption.classList.remove("hidden");
     if (bingoRepeatToggle) bingoRepeatToggle.checked = Boolean(draw.options.bingoAllowRepeats);
 
-    participantHelp.textContent = "Sorteie números para cartelas físicas. Escolha se os números podem repetir durante o jogo.";
+    participantHelp.textContent = "Sorteie números para cartelas físicas. A contagem regressiva aparece apenas antes do primeiro número.";
   } else if (draw.type === "groups") {
     participantHelp.textContent = `Adicione nomes e gere ${draw.options.groupCount} grupo(s).`;
     drawButton.textContent = "Gerar grupos";
@@ -879,7 +880,12 @@ drawButton.addEventListener("click", async () => {
     });
   }
 
-  await runCountdown();
+  // No Bingo, a contagem serve para começar a rodada. Depois do primeiro
+  // número, os próximos resultados aparecem diretamente para manter o ritmo.
+  const shouldRunCountdown = draw.type !== "bingo" || draw.options.bingoDrawnNumbers.length === 0;
+  if (shouldRunCountdown) {
+    await runCountdown();
+  }
 
   if (draw.type === "bingo") {
     const number = getNextBingoNumber();
@@ -1264,38 +1270,141 @@ sampleButton.addEventListener("click", () => {
 });
 
 
+function parseBulkNames(value) {
+  return value
+    .split(/[\n,;]+/)
+    .map(Sortick.normalizeText)
+    .filter(Boolean);
+}
+
+function getBulkAnalysis(value = bulkText.value) {
+  const parsedNames = parseBulkNames(value);
+  const existingNames = new Set(
+    draw.participants.map(participant => Sortick.normalizeText(participant.name).toLocaleLowerCase("pt-BR"))
+  );
+  const namesToAdd = [];
+  const pastedNames = new Set();
+  let alreadyInList = 0;
+  let repeatedInPaste = 0;
+
+  parsedNames.forEach(name => {
+    const key = name.toLocaleLowerCase("pt-BR");
+
+    if (existingNames.has(key)) {
+      alreadyInList += 1;
+      return;
+    }
+
+    if (pastedNames.has(key)) {
+      repeatedInPaste += 1;
+      return;
+    }
+
+    pastedNames.add(key);
+    namesToAdd.push(name);
+  });
+
+  return {
+    namesToAdd,
+    typed: parsedNames.length,
+    alreadyInList,
+    repeatedInPaste
+  };
+}
+
+function updateBulkPreview() {
+  if (!bulkPreview || draw.type === "numbers" || draw.type === "bingo") return;
+
+  const analysis = getBulkAnalysis();
+
+  if (!analysis.typed) {
+    bulkPreview.textContent = "Cole uma lista para ver a prévia.";
+    confirmBulkButton.textContent = "Adicionar participantes";
+    return;
+  }
+
+  const ignored = analysis.alreadyInList + analysis.repeatedInPaste;
+  const parts = [`${analysis.namesToAdd.length} participante(s) serão adicionados.`];
+
+  if (analysis.alreadyInList) {
+    parts.push(`${analysis.alreadyInList} já estava(m) na lista.`);
+  }
+
+  if (analysis.repeatedInPaste) {
+    parts.push(`${analysis.repeatedInPaste} repetido(s) no texto.`);
+  }
+
+  if (!analysis.namesToAdd.length && ignored) {
+    parts[0] = "Nenhum participante novo foi encontrado.";
+  }
+
+  bulkPreview.textContent = parts.join(" ");
+  confirmBulkButton.textContent = analysis.namesToAdd.length
+    ? `Adicionar ${analysis.namesToAdd.length} participante(s)`
+    : "Nenhum novo participante";
+}
+
 bulkButton.addEventListener("click", () => {
   if (draw.type === "numbers" || draw.type === "bingo") {
     setValidation(draw.type === "bingo" ? "O Bingo não usa lista de participantes." : "Adicionar vários está disponível para nomes, roleta e grupos nesta versão.");
     return;
   }
+
+  const willOpen = bulkAddPanel.classList.contains("hidden");
   bulkAddPanel.classList.toggle("hidden");
-  bulkText.focus();
+
+  if (willOpen) {
+    updateBulkPreview();
+    bulkText.focus();
+  }
 });
+
+bulkText.addEventListener("input", updateBulkPreview);
 
 cancelBulkButton.addEventListener("click", () => {
   bulkAddPanel.classList.add("hidden");
   bulkText.value = "";
+  updateBulkPreview();
 });
 
 confirmBulkButton.addEventListener("click", () => {
   if (draw.type === "numbers" || draw.type === "bingo") return;
+
+  const analysis = getBulkAnalysis();
+
+  if (!analysis.typed) {
+    setValidation("Cole pelo menos um nome.");
+    bulkText.focus();
+    return;
+  }
+
+  if (!analysis.namesToAdd.length) {
+    setValidation("Nenhum nome novo para adicionar. Revise os nomes repetidos.");
+    return;
+  }
+
   const status = participantStatus.value === "confirmed" ? "confirmed" : "pending";
-  const names = bulkText.value.split(/\r?\n/).map(Sortick.normalizeText).filter(Boolean);
-  if (!names.length) { setValidation("Cole pelo menos um nome."); return; }
-  const existing = new Set(draw.participants.map(participant => participant.name.toLowerCase()));
-  let added = 0;
-  let ignored = 0;
-  names.forEach(name => {
-    if (existing.has(name.toLowerCase())) { ignored += 1; return; }
-    draw.participants.push({ id: Sortick.createId("p"), name, status });
-    existing.add(name.toLowerCase());
-    added += 1;
+
+  analysis.namesToAdd.forEach(name => {
+    draw.participants.push({
+      id: Sortick.createId("p"),
+      name,
+      status
+    });
   });
-  draw.result = null; persist();
+
+  draw.result = null;
+  persist();
+
+  const ignored = analysis.alreadyInList + analysis.repeatedInPaste;
   bulkText.value = "";
   bulkAddPanel.classList.add("hidden");
-  setValidation(`${added} nome(s) adicionado(s). ${ignored ? `${ignored} duplicado(s) ignorado(s).` : ""}`);
+  updateBulkPreview();
+  setValidation(
+    `${analysis.namesToAdd.length} participante(s) adicionado(s).${
+      ignored ? ` ${ignored} nome(s) repetido(s) foram ignorados.` : ""
+    }`
+  );
   render();
 });
 

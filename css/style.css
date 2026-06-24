@@ -1873,3 +1873,21 @@ body.drawing-locked #removeWinnerToggle:disabled {
     padding: 7px 9px;
   }
 }
+
+
+/* v1.10.5 - listas em lote e ritmo do Bingo */
+
+.bulk-preview {
+  margin: -2px 0 0;
+  border-left: 3px solid var(--primary);
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  padding: 8px 10px;
+  background: rgba(108, 77, 255, 0.06);
+}
+
+.bulk-panel .field-hint {
+  display: block;
+  margin-top: 7px;
+}

@@ -88,3 +88,15 @@
 - [ ] Ao expandir, a barra vertical interna desaparece.
 - [ ] Ao fechar, a cartela volta ao tamanho normal.
 - [ ] Números ocupados, confirmados e disponíveis continuam funcionando.
+
+
+## Testes v1.10.5 — listas e Bingo
+
+- [ ] Em Nomes, Roleta e Grupos, “Adicionar vários” abre o painel de lista.
+- [ ] A lista aceita quebra de linha, vírgula e ponto e vírgula.
+- [ ] A prévia mostra participantes novos e nomes repetidos.
+- [ ] Nomes repetidos não são adicionados duas vezes.
+- [ ] O status selecionado é aplicado aos novos nomes em Nomes e Roleta.
+- [ ] No Bingo, a primeira rodada mostra 3, 2, 1.
+- [ ] No Bingo, a segunda rodada sai sem nova contagem regressiva.
+- [ ] “Reiniciar bingo” faz a contagem voltar na rodada seguinte.
