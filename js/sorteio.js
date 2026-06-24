@@ -5,6 +5,7 @@ let draw = drawId ? Sortick.getDraw(drawId) : null;
 let isDrawing = false;
 let currentWheelRotation = 0;
 let isCartelaExpanded = false;
+let isNumberSummaryHidden = false;
 let pendingConfirmationAction = null;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
@@ -14,10 +15,12 @@ const drawKind = document.querySelector("#drawKind");
 const drawStatus = document.querySelector("#drawStatus");
 const animationArea = document.querySelector("#animationArea");
 const winnerCard = document.querySelector("#winnerCard");
+const resultKicker = winnerCard.querySelector(".result-kicker");
 const winnerName = document.querySelector("#winnerName");
 const winnerMeta = document.querySelector("#winnerMeta");
 const proofText = document.querySelector("#proofText");
 const bingoSummaryButton = document.querySelector("#bingoSummaryButton");
+const numberSummaryButton = document.querySelector("#numberSummaryButton");
 const bingoSummaryDialog = document.querySelector("#bingoSummaryDialog");
 const bingoSummaryTitle = document.querySelector("#bingoSummaryTitle");
 const bingoSummaryMeta = document.querySelector("#bingoSummaryMeta");
@@ -571,12 +574,18 @@ function renderNumberBoard(highlightNumber = null) {
       </button>`;
   }
 
+  const occupiedPercent = total ? Math.round((counts.total / total) * 100) : 0;
+
   animationArea.innerHTML = `
     <div class="number-board-wrap ${isCartelaExpanded ? "cartela-expanded-wrap" : ""}">
       <div class="number-board-header cartela-header">
         <span>Cartela de 1 a ${total}</span>
         <div class="cartela-header-actions">
           <small>${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados</small>
+          <div class="cartela-progress" role="progressbar" aria-label="Cartela preenchida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${occupiedPercent}">
+            <span style="width: ${occupiedPercent}%"></span>
+          </div>
+          <small class="cartela-progress-label">${occupiedPercent}% preenchida</small>
           <button id="toggleCartelaExpanded" class="cartela-expand-button" type="button" aria-expanded="${isCartelaExpanded}">
             ${isCartelaExpanded ? "Fechar visualização expandida" : "Visualizar cartela expandida"}
           </button>
@@ -681,13 +690,33 @@ function syncBingoSummary() {
   if (bingoSummaryProof) bingoSummaryProof.textContent = createProofText();
 }
 
+function syncNumberSummary() {
+  const hasNumberResult = draw.type === "numbers" && Boolean(draw.result);
+
+  if (!numberSummaryButton) return;
+
+  numberSummaryButton.classList.toggle("hidden", !hasNumberResult);
+  numberSummaryButton.disabled = !hasNumberResult;
+
+  if (!hasNumberResult) {
+    isNumberSummaryHidden = false;
+    numberSummaryButton.setAttribute("aria-expanded", "false");
+    return;
+  }
+
+  numberSummaryButton.textContent = isNumberSummaryHidden ? "Mostrar resumo" : "Ocultar resumo";
+  numberSummaryButton.setAttribute("aria-expanded", String(!isNumberSummaryHidden));
+}
+
 function renderResult() {
   if (!draw.result) {
     winnerCard.classList.add("hidden");
     winnerName.textContent = "";
     winnerMeta.textContent = "";
     proofText.textContent = "";
+    if (resultKicker) resultKicker.textContent = "Resultado do sorteio";
     syncBingoSummary();
+    syncNumberSummary();
     return;
   }
 
@@ -699,13 +728,22 @@ function renderResult() {
     winnerMeta.textContent = "";
     proofText.textContent = "";
     syncBingoSummary();
+    syncNumberSummary();
     return;
   }
 
   syncBingoSummary();
+  syncNumberSummary();
+
+  if (draw.type === "numbers" && isNumberSummaryHidden) {
+    winnerCard.classList.add("hidden");
+    return;
+  }
+
   winnerCard.classList.remove("hidden");
 
   if (draw.type === "groups") {
+    if (resultKicker) resultKicker.textContent = "Resultado do sorteio";
     winnerName.textContent = "Grupos gerados";
     winnerMeta.textContent = `${draw.result.groups.length} grupo(s) · ${draw.result.participantCount} participante(s)`;
     proofText.textContent = createProofText();
@@ -715,10 +753,19 @@ function renderResult() {
   const p = draw.result.participant;
   winnerName.textContent = getParticipantDisplay(p);
 
-  winnerMeta.textContent = draw.type === "numbers"
-    ? `Associado a: ${p.name} · ${Sortick.statusLabel(p.status)}`
-    : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(p.status)}`;
+  if (draw.type === "numbers") {
+    const counts = getStatusCounts();
+    const total = getTotalNumbers();
+    const occupiedPercent = total ? Math.round((counts.total / total) * 100) : 0;
 
+    if (resultKicker) resultKicker.textContent = "Resumo da cartela";
+    winnerMeta.textContent = `Associado a: ${p.name} · ${Sortick.statusLabel(p.status)}`;
+    proofText.textContent = `${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados · ${occupiedPercent}% preenchida`;
+    return;
+  }
+
+  if (resultKicker) resultKicker.textContent = "Resultado do sorteio";
+  winnerMeta.textContent = `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(p.status)}`;
   proofText.textContent = createProofText();
 }
 
@@ -991,6 +1038,14 @@ if (actionConfirmDialog) {
   });
 }
 
+if (numberSummaryButton) {
+  numberSummaryButton.addEventListener("click", () => {
+    if (draw.type !== "numbers" || !draw.result) return;
+    isNumberSummaryHidden = !isNumberSummaryHidden;
+    renderResult();
+  });
+}
+
 if (bingoSummaryButton) {
   bingoSummaryButton.addEventListener("click", () => {
     if (draw.type !== "bingo" || !draw.result || !bingoSummaryDialog) return;
@@ -1043,6 +1098,7 @@ drawButton.addEventListener("click", async () => {
   downloadButton.disabled = true;
   setRuleOptionsLocked(true);
   winnerCard.classList.add("hidden");
+  isNumberSummaryHidden = false;
   closeBingoSummaryDialog();
 
   if (typeof window.sortickTrack === "function") {

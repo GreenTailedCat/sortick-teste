@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.9-confirmacoes-proprias
+# Sortick Teste v1.10.10-cartela-resumo
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -206,3 +206,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Removidas todas as confirmações nativas do navegador no ambiente de testes.
 - Reiniciar Bingo, Limpar histórico e Limpar participantes usam um pop-up próprio do Sortick.
 - O pop-up fecha por ×, Cancelar, Esc ou clique fora, sem executar a ação.
+
+
+## v1.10.10-cartela-resumo
+
+- A cartela mostra uma barra de preenchimento e porcentagem no cabeçalho.
+- Após um sorteio de número, o cartão inferior passa a se chamar “Resumo da cartela”.
+- O resumo da cartela mostra disponibilidade, ocupação, confirmações e preenchimento.
+- Adicionado Ocultar resumo / Mostrar resumo sem mudar participantes, resultado ou cartela.
+- Ao fazer um novo sorteio, o resumo volta a aparecer automaticamente.

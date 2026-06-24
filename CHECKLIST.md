@@ -142,3 +142,14 @@
 - [ ] Limpar participantes de Nomes, Roleta, Cartela e Grupos abre pop-up próprio.
 - [ ] ×, Cancelar, Esc e clique fora não alteram o sorteio.
 - [ ] Apenas o botão de confirmação executa cada ação.
+
+
+## Testes v1.10.10 — cartela
+
+- [ ] O cabeçalho da cartela mostra porcentagem e barra de preenchimento.
+- [ ] A barra muda ao adicionar ou remover números ocupados.
+- [ ] Após sortear, aparece “Resumo da cartela”, não “Resultado do sorteio”.
+- [ ] O resumo mostra disponíveis, ocupados, confirmados e porcentagem.
+- [ ] Ocultar resumo esconde apenas o cartão inferior.
+- [ ] Mostrar resumo traz o cartão de volta sem alterar o resultado.
+- [ ] Um novo sorteio de número volta a mostrar o resumo automaticamente.

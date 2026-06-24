@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.10-cartela-resumo
+- Resumo recolhível e progresso de preenchimento na cartela.
+
 ## v1.10.9-confirmacoes-proprias
 - Confirmações de reinício e limpeza passaram a usar o pop-up próprio do Sortick.
 
