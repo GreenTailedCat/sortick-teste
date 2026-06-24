@@ -2243,3 +2243,73 @@ body.drawing-locked #removeWinnerToggle:disabled {
     flex: 1;
   }
 }
+
+
+/* v1.10.9 - confirmações próprias do Sortick */
+
+.action-confirm-dialog {
+  width: min(92vw, 560px);
+  border: 0;
+  border-radius: 26px;
+  padding: 0;
+  color: white;
+  background: transparent;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+}
+
+.action-confirm-dialog::backdrop {
+  background: rgba(8, 7, 29, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.action-confirm-dialog-card {
+  display: grid;
+  gap: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  padding: clamp(20px, 4vw, 30px);
+  background:
+    linear-gradient(145deg, rgba(80, 69, 178, 0.98), rgba(21, 18, 57, 0.99)),
+    #1b173d;
+}
+
+.action-confirm-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.action-confirm-dialog-head h2 {
+  margin: 10px 0 8px;
+  color: white;
+  font-size: clamp(1.6rem, 5vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.action-confirm-dialog-head .subtle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.45;
+}
+
+.action-confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
+  .action-confirm-dialog {
+    width: min(94vw, 560px);
+  }
+
+  .action-confirm-dialog-card {
+    border-radius: 22px;
+  }
+
+  .action-confirm-dialog-actions > * {
+    flex: 1;
+  }
+}

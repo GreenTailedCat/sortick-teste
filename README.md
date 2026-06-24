@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.8-renomear-excluir
+# Sortick Teste v1.10.9-confirmacoes-proprias
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -199,3 +199,10 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - O pop-up informa o nome do sorteio e separa claramente Cancelar de Excluir sorteio.
 - Adicionado Renomear nos sorteios salvos.
 - Renomear altera apenas o título e a data de atualização; participantes, configurações e resultados são preservados.
+
+
+## v1.10.9-confirmacoes-proprias
+
+- Removidas todas as confirmações nativas do navegador no ambiente de testes.
+- Reiniciar Bingo, Limpar histórico e Limpar participantes usam um pop-up próprio do Sortick.
+- O pop-up fecha por ×, Cancelar, Esc ou clique fora, sem executar a ação.

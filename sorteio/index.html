@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1108" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1109" />
   <script src="/sortick-teste/js/clean-url.js"></script>
 </head>
 <body class="draw-page">
@@ -57,6 +57,24 @@
 
         <div class="made-by">Feito no Sortick</div>
       </div>
+
+      <dialog id="actionConfirmDialog" class="action-confirm-dialog" aria-labelledby="actionConfirmTitle">
+        <div class="action-confirm-dialog-card">
+          <div class="action-confirm-dialog-head">
+            <div>
+              <p id="actionConfirmEyebrow" class="eyebrow danger-eyebrow">Confirmar ação</p>
+              <h2 id="actionConfirmTitle">Tem certeza?</h2>
+              <p id="actionConfirmDescription" class="subtle"></p>
+            </div>
+            <button id="closeActionConfirmDialogButton" class="dialog-close-button" type="button" aria-label="Fechar">×</button>
+          </div>
+
+          <div class="action-confirm-dialog-actions">
+            <button id="cancelActionConfirmButton" class="btn btn-secondary" type="button">Cancelar</button>
+            <button id="confirmActionConfirmButton" class="btn btn-danger" type="button">Confirmar</button>
+          </div>
+        </div>
+      </dialog>
 
       <dialog id="bingoSummaryDialog" class="bingo-summary-dialog" aria-labelledby="bingoSummaryTitle">
         <div class="bingo-summary-dialog-card">
@@ -189,7 +207,7 @@
     </aside>
   </main>
 
-  <script src="/sortick-teste/js/utils.js?v=1108"></script>
-  <script src="/sortick-teste/js/sorteio.js?v=1108"></script>
+  <script src="/sortick-teste/js/utils.js?v=1109"></script>
+  <script src="/sortick-teste/js/sorteio.js?v=1109"></script>
 </body>
 </html>

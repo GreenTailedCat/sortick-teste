@@ -5,6 +5,7 @@ let draw = drawId ? Sortick.getDraw(drawId) : null;
 let isDrawing = false;
 let currentWheelRotation = 0;
 let isCartelaExpanded = false;
+let pendingConfirmationAction = null;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
 
@@ -23,6 +24,15 @@ const bingoSummaryMeta = document.querySelector("#bingoSummaryMeta");
 const bingoSummaryProof = document.querySelector("#bingoSummaryProof");
 const closeBingoSummaryButton = document.querySelector("#closeBingoSummaryButton");
 const closeBingoSummaryFooterButton = document.querySelector("#closeBingoSummaryFooterButton");
+
+const actionConfirmDialog = document.querySelector("#actionConfirmDialog");
+const actionConfirmEyebrow = document.querySelector("#actionConfirmEyebrow");
+const actionConfirmTitle = document.querySelector("#actionConfirmTitle");
+const actionConfirmDescription = document.querySelector("#actionConfirmDescription");
+const closeActionConfirmDialogButton = document.querySelector("#closeActionConfirmDialogButton");
+const cancelActionConfirmButton = document.querySelector("#cancelActionConfirmButton");
+const confirmActionConfirmButton = document.querySelector("#confirmActionConfirmButton");
+
 const drawButton = document.querySelector("#drawButton");
 const copyButton = document.querySelector("#copyButton");
 const shareButton = document.querySelector("#shareButton");
@@ -597,6 +607,44 @@ function renderNumberBoard(highlightNumber = null) {
   });
 }
 
+function closeActionConfirmDialog() {
+  if (!actionConfirmDialog) return;
+
+  if (typeof actionConfirmDialog.close === "function" && actionConfirmDialog.open) {
+    actionConfirmDialog.close();
+  } else {
+    actionConfirmDialog.removeAttribute("open");
+  }
+
+  pendingConfirmationAction = null;
+}
+
+function openActionConfirmDialog({
+  eyebrow = "Confirmar ação",
+  title = "Tem certeza?",
+  description = "",
+  confirmLabel = "Confirmar",
+  action
+}) {
+  if (!actionConfirmDialog || typeof action !== "function") {
+    action?.();
+    return;
+  }
+
+  pendingConfirmationAction = action;
+
+  if (actionConfirmEyebrow) actionConfirmEyebrow.textContent = eyebrow;
+  if (actionConfirmTitle) actionConfirmTitle.textContent = title;
+  if (actionConfirmDescription) actionConfirmDescription.textContent = description;
+  if (confirmActionConfirmButton) confirmActionConfirmButton.textContent = confirmLabel;
+
+  if (typeof actionConfirmDialog.showModal === "function") {
+    actionConfirmDialog.showModal();
+  } else {
+    actionConfirmDialog.setAttribute("open", "");
+  }
+}
+
 function closeBingoSummaryDialog() {
   if (!bingoSummaryDialog) return;
 
@@ -913,6 +961,35 @@ participantForm.addEventListener("submit", event => {
   draw.participants.push(participant); draw.result = null; persist();
   participantName.value = ""; participantNumber.value = ""; participantName.focus(); render();
 });
+
+if (closeActionConfirmDialogButton) {
+  closeActionConfirmDialogButton.addEventListener("click", closeActionConfirmDialog);
+}
+
+if (cancelActionConfirmButton) {
+  cancelActionConfirmButton.addEventListener("click", closeActionConfirmDialog);
+}
+
+if (confirmActionConfirmButton) {
+  confirmActionConfirmButton.addEventListener("click", () => {
+    const action = pendingConfirmationAction;
+    closeActionConfirmDialog();
+    action?.();
+  });
+}
+
+if (actionConfirmDialog) {
+  actionConfirmDialog.addEventListener("click", event => {
+    if (event.target === actionConfirmDialog) {
+      closeActionConfirmDialog();
+    }
+  });
+
+  actionConfirmDialog.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeActionConfirmDialog();
+  });
+}
 
 if (bingoSummaryButton) {
   bingoSummaryButton.addEventListener("click", () => {
@@ -1312,35 +1389,60 @@ downloadButton.addEventListener("click", () => {
   }
 });
 
+function resetBingoHistory() {
+  draw.options.bingoDrawnNumbers = [];
+  draw.result = null;
+  persist();
+  render();
+}
+
+function clearAllParticipants() {
+  draw.participants = [];
+  draw.result = null;
+  persist();
+  render();
+}
+
 resetButton.addEventListener("click", () => {
   if (isDrawing) return;
 
   if (draw.type === "bingo") {
-    if (!confirm("Reiniciar o bingo e limpar o histórico de números?")) return;
-    draw.options.bingoDrawnNumbers = [];
+    openActionConfirmDialog({
+      eyebrow: "Reiniciar Bingo",
+      title: "Reiniciar este bingo?",
+      description: "Os números sorteados e o resultado atual serão removidos. A próxima rodada começará do zero.",
+      confirmLabel: "Reiniciar bingo",
+      action: resetBingoHistory
+    });
+    return;
   }
 
   draw.result = null;
   persist();
   render();
 });
+
 clearParticipantsButton.addEventListener("click", () => {
   if (isDrawing) return;
 
   if (draw.type === "bingo") {
-    if (!confirm("Limpar histórico de números sorteados?")) return;
-    draw.options.bingoDrawnNumbers = [];
-    draw.result = null;
-    persist();
-    render();
+    openActionConfirmDialog({
+      eyebrow: "Limpar histórico",
+      title: "Limpar números sorteados?",
+      description: "O histórico e o último número do Bingo serão removidos.",
+      confirmLabel: "Limpar histórico",
+      action: resetBingoHistory
+    });
     return;
   }
 
-  if (!confirm("Limpar todos os participantes deste sorteio?")) return;
-  draw.participants = [];
-  draw.result = null;
-  persist();
-  render();
+  openActionConfirmDialog({
+    eyebrow: "Limpar participantes",
+    title: "Limpar todos os participantes?",
+    description: "Os participantes deste sorteio serão removidos. Essa ação não pode ser desfeita.",
+    confirmLabel: "Limpar participantes",
+    action: clearAllParticipants
+  });
 });
 
 sampleButton.addEventListener("click", () => {

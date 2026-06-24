@@ -133,3 +133,12 @@
 - [ ] Excluir abre pop-up próprio, sem caixa nativa do navegador.
 - [ ] Cancelar, Esc, × e clique fora não excluem.
 - [ ] Apenas “Excluir sorteio” remove o item salvo.
+
+
+## Testes v1.10.9 — confirmações próprias
+
+- [ ] Reiniciar Bingo abre pop-up do Sortick, sem caixa nativa do navegador.
+- [ ] Limpar histórico do Bingo abre o mesmo tipo de pop-up.
+- [ ] Limpar participantes de Nomes, Roleta, Cartela e Grupos abre pop-up próprio.
+- [ ] ×, Cancelar, Esc e clique fora não alteram o sorteio.
+- [ ] Apenas o botão de confirmação executa cada ação.

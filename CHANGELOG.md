@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.9-confirmacoes-proprias
+- Confirmações de reinício e limpeza passaram a usar o pop-up próprio do Sortick.
+
 ## v1.10.8-renomear-excluir
 - Adicionados pop-ups próprios para renomear e confirmar exclusão de sorteios salvos.
 
