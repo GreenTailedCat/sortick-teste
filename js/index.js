@@ -36,7 +36,23 @@ const reuseListDescription = document.querySelector("#reuseListDescription");
 const closeReuseListDialogButton = document.querySelector("#closeReuseListDialogButton");
 const cancelReuseListDialogButton = document.querySelector("#cancelReuseListDialogButton");
 const reuseListOptions = document.querySelectorAll(".reuse-list-option");
+
+const renameDrawDialog = document.querySelector("#renameDrawDialog");
+const renameDrawForm = document.querySelector("#renameDrawForm");
+const renameDrawInput = document.querySelector("#renameDrawInput");
+const renameDrawError = document.querySelector("#renameDrawError");
+const closeRenameDrawDialogButton = document.querySelector("#closeRenameDrawDialogButton");
+const cancelRenameDrawButton = document.querySelector("#cancelRenameDrawButton");
+
+const deleteDrawDialog = document.querySelector("#deleteDrawDialog");
+const deleteDrawDescription = document.querySelector("#deleteDrawDescription");
+const closeDeleteDrawDialogButton = document.querySelector("#closeDeleteDrawDialogButton");
+const cancelDeleteDrawButton = document.querySelector("#cancelDeleteDrawButton");
+const confirmDeleteDrawButton = document.querySelector("#confirmDeleteDrawButton");
+
 let drawSelectedForReuse = null;
+let drawSelectedForRename = null;
+let drawSelectedForDeletion = null;
 
 function syncTypeSettings() {
   const type = typeInput.value;
@@ -176,6 +192,78 @@ function openReuseListDialog(sourceDraw) {
   }
 }
 
+function closeDialog(dialog) {
+  if (!dialog) return;
+
+  if (typeof dialog.close === "function" && dialog.open) {
+    dialog.close();
+  } else {
+    dialog.removeAttribute("open");
+  }
+}
+
+function resetRenameDialog() {
+  drawSelectedForRename = null;
+
+  if (renameDrawInput) {
+    renameDrawInput.value = "";
+  }
+
+  if (renameDrawError) {
+    renameDrawError.textContent = "";
+    renameDrawError.classList.add("hidden");
+  }
+}
+
+function openRenameDrawDialog(sourceDraw) {
+  if (!renameDrawDialog || !renameDrawInput) return;
+
+  drawSelectedForRename = sourceDraw;
+  renameDrawInput.value = sourceDraw.title || "";
+
+  if (renameDrawError) {
+    renameDrawError.textContent = "";
+    renameDrawError.classList.add("hidden");
+  }
+
+  if (typeof renameDrawDialog.showModal === "function") {
+    renameDrawDialog.showModal();
+  } else {
+    renameDrawDialog.setAttribute("open", "");
+  }
+
+  requestAnimationFrame(() => {
+    renameDrawInput.focus();
+    renameDrawInput.select();
+  });
+}
+
+function closeRenameDrawDialog() {
+  closeDialog(renameDrawDialog);
+  resetRenameDialog();
+}
+
+function openDeleteDrawDialog(sourceDraw) {
+  if (!deleteDrawDialog) return;
+
+  drawSelectedForDeletion = sourceDraw;
+
+  if (deleteDrawDescription) {
+    deleteDrawDescription.textContent = `Você está prestes a excluir “${sourceDraw.title}”.`;
+  }
+
+  if (typeof deleteDrawDialog.showModal === "function") {
+    deleteDrawDialog.showModal();
+  } else {
+    deleteDrawDialog.setAttribute("open", "");
+  }
+}
+
+function closeDeleteDrawDialog() {
+  closeDialog(deleteDrawDialog);
+  drawSelectedForDeletion = null;
+}
+
 function getSavedDraws() {
   return Object.values(Sortick.readDraws())
     .filter(item => item && item.id && item.title)
@@ -256,6 +344,16 @@ function renderSavedDraws() {
     continueLink.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(savedDraw.id)}`;
     continueLink.textContent = "Continuar";
 
+    const renameButton = document.createElement("button");
+    renameButton.className = "saved-action-button";
+    renameButton.type = "button";
+    renameButton.textContent = "Renomear";
+    renameButton.setAttribute("aria-label", `Renomear sorteio ${savedDraw.title}`);
+
+    renameButton.addEventListener("click", () => {
+      openRenameDrawDialog(savedDraw);
+    });
+
     const duplicateButton = document.createElement("button");
     duplicateButton.className = "saved-action-button";
     duplicateButton.type = "button";
@@ -294,15 +392,10 @@ function renderSavedDraws() {
     deleteButton.setAttribute("aria-label", `Excluir sorteio ${savedDraw.title}`);
 
     deleteButton.addEventListener("click", () => {
-      const shouldDelete = confirm(`Excluir o sorteio "${savedDraw.title}" deste navegador?`);
-
-      if (!shouldDelete) return;
-
-      Sortick.deleteDraw(savedDraw.id);
-      renderSavedDraws();
+      openDeleteDrawDialog(savedDraw);
     });
 
-    actions.append(continueLink, duplicateButton, reuseListButton, deleteButton);
+    actions.append(continueLink, renameButton, duplicateButton, reuseListButton, deleteButton);
     item.append(info, actions);
     savedDrawsList.appendChild(item);
   });
@@ -346,6 +439,94 @@ reuseListOptions.forEach(option => {
     window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(newDraw.id)}`;
   });
 });
+
+if (closeRenameDrawDialogButton) {
+  closeRenameDrawDialogButton.addEventListener("click", closeRenameDrawDialog);
+}
+
+if (cancelRenameDrawButton) {
+  cancelRenameDrawButton.addEventListener("click", closeRenameDrawDialog);
+}
+
+if (renameDrawDialog) {
+  renameDrawDialog.addEventListener("click", event => {
+    if (event.target === renameDrawDialog) {
+      closeRenameDrawDialog();
+    }
+  });
+
+  renameDrawDialog.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeRenameDrawDialog();
+  });
+}
+
+if (renameDrawForm) {
+  renameDrawForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    if (!drawSelectedForRename) {
+      closeRenameDrawDialog();
+      return;
+    }
+
+    const nextTitle = Sortick.normalizeText(renameDrawInput.value);
+
+    if (!nextTitle) {
+      if (renameDrawError) {
+        renameDrawError.textContent = "Digite um nome para o sorteio.";
+        renameDrawError.classList.remove("hidden");
+      }
+
+      renameDrawInput.focus();
+      return;
+    }
+
+    const updatedDraw = {
+      ...drawSelectedForRename,
+      title: nextTitle.slice(0, 80),
+      updatedAt: new Date().toISOString()
+    };
+
+    Sortick.saveDraw(updatedDraw);
+    closeRenameDrawDialog();
+    renderSavedDraws();
+  });
+}
+
+if (closeDeleteDrawDialogButton) {
+  closeDeleteDrawDialogButton.addEventListener("click", closeDeleteDrawDialog);
+}
+
+if (cancelDeleteDrawButton) {
+  cancelDeleteDrawButton.addEventListener("click", closeDeleteDrawDialog);
+}
+
+if (deleteDrawDialog) {
+  deleteDrawDialog.addEventListener("click", event => {
+    if (event.target === deleteDrawDialog) {
+      closeDeleteDrawDialog();
+    }
+  });
+
+  deleteDrawDialog.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeDeleteDrawDialog();
+  });
+}
+
+if (confirmDeleteDrawButton) {
+  confirmDeleteDrawButton.addEventListener("click", () => {
+    if (!drawSelectedForDeletion) {
+      closeDeleteDrawDialog();
+      return;
+    }
+
+    Sortick.deleteDraw(drawSelectedForDeletion.id);
+    closeDeleteDrawDialog();
+    renderSavedDraws();
+  });
+}
 
 renderSavedDraws();
 

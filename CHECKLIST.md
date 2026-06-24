@@ -122,3 +122,14 @@
 - [ ] O diálogo cria o modo escolhido com os mesmos participantes.
 - [ ] O sorteio original não muda após duplicar ou usar a lista.
 - [ ] Cartela e Bingo não oferecem “Usar lista”.
+
+
+## Testes v1.10.8 — renomear e excluir
+
+- [ ] Cada sorteio salvo tem o botão Renomear.
+- [ ] Renomear abre um pop-up com o título atual preenchido.
+- [ ] Salvar um nome novo mantém participantes, configurações e resultado.
+- [ ] Nome vazio mostra mensagem de validação e não altera o sorteio.
+- [ ] Excluir abre pop-up próprio, sem caixa nativa do navegador.
+- [ ] Cancelar, Esc, × e clique fora não excluem.
+- [ ] Apenas “Excluir sorteio” remove o item salvo.

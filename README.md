@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.7-sorteios-salvos
+# Sortick Teste v1.10.8-renomear-excluir
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -191,3 +191,11 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - No Bingo, a cópia começa sem histórico de números sorteados.
 - Adicionado “Usar lista” para criar Nomes, Roleta ou Grupos/Times com participantes de um sorteio salvo.
 - O sorteio original nunca é alterado por essas ações.
+
+
+## v1.10.8-renomear-excluir
+
+- A confirmação nativa do navegador para excluir foi substituída por um pop-up próprio.
+- O pop-up informa o nome do sorteio e separa claramente Cancelar de Excluir sorteio.
+- Adicionado Renomear nos sorteios salvos.
+- Renomear altera apenas o título e a data de atualização; participantes, configurações e resultados são preservados.

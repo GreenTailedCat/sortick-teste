@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.8-renomear-excluir
+- Adicionados pop-ups próprios para renomear e confirmar exclusão de sorteios salvos.
+
 ## v1.10.7-sorteios-salvos
 - Duplicação e reutilização de listas a partir dos sorteios salvos.
 

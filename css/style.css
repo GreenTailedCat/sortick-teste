@@ -2117,3 +2117,129 @@ body.drawing-locked #removeWinnerToggle:disabled {
     min-height: 0;
   }
 }
+
+
+/* v1.10.8 - renomear e excluir sorteios salvos */
+
+.saved-draw-dialog {
+  width: min(92vw, 590px);
+  border: 0;
+  border-radius: 26px;
+  padding: 0;
+  color: white;
+  background: transparent;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+}
+
+.saved-draw-dialog::backdrop {
+  background: rgba(8, 7, 29, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.saved-draw-dialog-card {
+  display: grid;
+  gap: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  padding: clamp(20px, 4vw, 30px);
+  background:
+    linear-gradient(145deg, rgba(80, 69, 178, 0.98), rgba(21, 18, 57, 0.99)),
+    #1b173d;
+}
+
+.saved-draw-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.saved-draw-dialog-head h2 {
+  margin: 10px 0 8px;
+  color: white;
+  font-size: clamp(1.6rem, 5vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.saved-draw-dialog-head .subtle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.saved-draw-dialog-label {
+  display: grid;
+  gap: 8px;
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.saved-draw-dialog-label input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 14px;
+  padding: 13px 14px;
+  color: #171331;
+  background: white;
+  font: inherit;
+}
+
+.saved-draw-dialog-label input:focus {
+  outline: 3px solid rgba(255, 202, 56, 0.5);
+  border-color: #ffca38;
+}
+
+.saved-draw-dialog-error {
+  margin: -8px 0 0;
+  color: #ffd2d8;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.saved-draw-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.danger-eyebrow {
+  color: #ffbdc8;
+}
+
+.delete-draw-warning {
+  margin: 0;
+  border-left: 3px solid #ff6f88;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 75, 110, 0.14);
+  line-height: 1.45;
+}
+
+.btn.btn-danger {
+  border: 0;
+  color: white;
+  background: linear-gradient(135deg, #ff5b77, #e73a5c);
+  box-shadow: 0 10px 22px rgba(231, 58, 92, 0.24);
+}
+
+.btn.btn-danger:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+  .saved-draw-dialog {
+    width: min(94vw, 590px);
+  }
+
+  .saved-draw-dialog-card {
+    border-radius: 22px;
+  }
+
+  .saved-draw-dialog-actions > * {
+    flex: 1;
+  }
+}
