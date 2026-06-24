@@ -5,7 +5,8 @@ let draw = drawId ? Sortick.getDraw(drawId) : null;
 let isDrawing = false;
 let currentWheelRotation = 0;
 let isCartelaExpanded = false;
-let isNumberSummaryHidden = false;
+// Preferência visual da cartela: permanece até a pessoa escolher mostrar novamente.
+let isNumberSummaryHidden = Boolean(draw?.options?.numberSummaryHidden);
 let pendingConfirmationAction = null;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
@@ -82,6 +83,8 @@ if (!draw) {
   draw.options.groupCount = Sortick.clampNumber(draw.options.groupCount || 2, 2, 50);
   draw.options.bingoAllowRepeats = Boolean(draw.options.bingoAllowRepeats);
   draw.options.bingoDrawnNumbers = Array.isArray(draw.options.bingoDrawnNumbers) ? draw.options.bingoDrawnNumbers : [];
+  draw.options.numberSummaryHidden = Boolean(draw.options.numberSummaryHidden);
+  isNumberSummaryHidden = draw.options.numberSummaryHidden;
   draw.participants = draw.participants.map(p => ({ ...p, status: p.status || "pending" }));
   setupDraw();
 }
@@ -1041,7 +1044,12 @@ if (actionConfirmDialog) {
 if (numberSummaryButton) {
   numberSummaryButton.addEventListener("click", () => {
     if (draw.type !== "numbers" || !draw.result) return;
+
     isNumberSummaryHidden = !isNumberSummaryHidden;
+    draw.options.numberSummaryHidden = isNumberSummaryHidden;
+
+    // Salva apenas a preferência visual sem mudar a data do sorteio.
+    Sortick.saveDraw(draw);
     renderResult();
   });
 }
@@ -1098,7 +1106,6 @@ drawButton.addEventListener("click", async () => {
   downloadButton.disabled = true;
   setRuleOptionsLocked(true);
   winnerCard.classList.add("hidden");
-  isNumberSummaryHidden = false;
   closeBingoSummaryDialog();
 
   if (typeof window.sortickTrack === "function") {

@@ -153,3 +153,11 @@
 - [ ] Ocultar resumo esconde apenas o cartão inferior.
 - [ ] Mostrar resumo traz o cartão de volta sem alterar o resultado.
 - [ ] Um novo sorteio de número volta a mostrar o resumo automaticamente.
+
+
+## Testes v1.10.11 — preferência do resumo
+
+- [ ] Ocultar resumo permanece ativo ao sortear outro número.
+- [ ] Mostrar resumo continua trazendo o cartão de volta.
+- [ ] Atualizar a página mantém a última escolha da cartela.
+- [ ] Outra cartela continua com o resumo visível por padrão.

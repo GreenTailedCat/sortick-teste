@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.11-preferencia-resumo-cartela
+- Corrigida a persistência de Ocultar resumo na cartela.
+
 ## v1.10.10-cartela-resumo
 - Resumo recolhível e progresso de preenchimento na cartela.
 

@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.10-cartela-resumo
+# Sortick Teste v1.10.11-preferencia-resumo-cartela
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -215,3 +215,10 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - O resumo da cartela mostra disponibilidade, ocupação, confirmações e preenchimento.
 - Adicionado Ocultar resumo / Mostrar resumo sem mudar participantes, resultado ou cartela.
 - Ao fazer um novo sorteio, o resumo volta a aparecer automaticamente.
+
+
+## v1.10.11-preferencia-resumo-cartela
+
+- Ocultar resumo deixa de ser redefinido a cada novo sorteio de número.
+- A escolha Ocultar/Mostrar resumo é salva somente na cartela atual.
+- A preferência continua depois de atualizar ou reabrir essa cartela.
