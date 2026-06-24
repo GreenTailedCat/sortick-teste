@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.6-bingo-resumo-opcional
+- Resultado do Bingo passou a usar resumo opcional em janela, sem comprovante fixo.
+
 ## v1.10.5-listas-bingo
 - Melhorada a adição de listas e reduzida a contagem repetitiva do Bingo.
 

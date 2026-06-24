@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.4-carrossel-cartela
+# Sortick Teste v1.10.6-bingo-resumo-opcional
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -173,3 +173,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Nomes repetidos no texto ou já presentes na lista são ignorados com aviso.
 - Disponível em Sorteio por nomes, Roleta e Grupos/Times.
 - No Bingo, a contagem regressiva acontece apenas antes do primeiro número.
+
+
+## v1.10.6-bingo-resumo-opcional
+
+- O comprovante branco não aparece mais automaticamente depois de cada número do Bingo.
+- A cartela e o último número continuam como foco da tela.
+- O botão “Ver resumo” aparece após o primeiro número sorteado.
+- O resumo abre em uma janela escura opcional e não move a cartela nem os controles.
+- Copiar resumo, compartilhar e baixar imagem continuam disponíveis.

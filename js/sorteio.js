@@ -16,6 +16,13 @@ const winnerCard = document.querySelector("#winnerCard");
 const winnerName = document.querySelector("#winnerName");
 const winnerMeta = document.querySelector("#winnerMeta");
 const proofText = document.querySelector("#proofText");
+const bingoSummaryButton = document.querySelector("#bingoSummaryButton");
+const bingoSummaryDialog = document.querySelector("#bingoSummaryDialog");
+const bingoSummaryTitle = document.querySelector("#bingoSummaryTitle");
+const bingoSummaryMeta = document.querySelector("#bingoSummaryMeta");
+const bingoSummaryProof = document.querySelector("#bingoSummaryProof");
+const closeBingoSummaryButton = document.querySelector("#closeBingoSummaryButton");
+const closeBingoSummaryFooterButton = document.querySelector("#closeBingoSummaryFooterButton");
 const drawButton = document.querySelector("#drawButton");
 const copyButton = document.querySelector("#copyButton");
 const shareButton = document.querySelector("#shareButton");
@@ -590,10 +597,64 @@ function renderNumberBoard(highlightNumber = null) {
   });
 }
 
+function closeBingoSummaryDialog() {
+  if (!bingoSummaryDialog) return;
+
+  if (typeof bingoSummaryDialog.close === "function" && bingoSummaryDialog.open) {
+    bingoSummaryDialog.close();
+  } else {
+    bingoSummaryDialog.removeAttribute("open");
+  }
+
+  if (bingoSummaryButton) {
+    bingoSummaryButton.setAttribute("aria-expanded", "false");
+  }
+}
+
+function syncBingoSummary() {
+  const hasBingoResult = draw.type === "bingo" && Boolean(draw.result);
+
+  if (bingoSummaryButton) {
+    bingoSummaryButton.classList.toggle("hidden", !hasBingoResult);
+    bingoSummaryButton.disabled = !hasBingoResult;
+    bingoSummaryButton.setAttribute("aria-expanded", "false");
+  }
+
+  if (!hasBingoResult) {
+    closeBingoSummaryDialog();
+    return;
+  }
+
+  const p = draw.result.participant;
+  const meta = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
+
+  if (bingoSummaryTitle) bingoSummaryTitle.textContent = getParticipantDisplay(p);
+  if (bingoSummaryMeta) bingoSummaryMeta.textContent = meta;
+  if (bingoSummaryProof) bingoSummaryProof.textContent = createProofText();
+}
+
 function renderResult() {
   if (!draw.result) {
-    winnerCard.classList.add("hidden"); winnerName.textContent = ""; winnerMeta.textContent = ""; proofText.textContent = ""; return;
+    winnerCard.classList.add("hidden");
+    winnerName.textContent = "";
+    winnerMeta.textContent = "";
+    proofText.textContent = "";
+    syncBingoSummary();
+    return;
   }
+
+  if (draw.type === "bingo") {
+    // O Bingo mantém a cartela como foco. O resumo fica disponível só sob pedido,
+    // em uma janela, sem empurrar o botão de sortear para baixo.
+    winnerCard.classList.add("hidden");
+    winnerName.textContent = "";
+    winnerMeta.textContent = "";
+    proofText.textContent = "";
+    syncBingoSummary();
+    return;
+  }
+
+  syncBingoSummary();
   winnerCard.classList.remove("hidden");
 
   if (draw.type === "groups") {
@@ -606,11 +667,9 @@ function renderResult() {
   const p = draw.result.participant;
   winnerName.textContent = getParticipantDisplay(p);
 
-  if (draw.type === "bingo") {
-    winnerMeta.textContent = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
-  } else {
-    winnerMeta.textContent = draw.type === "numbers" ? `Associado a: ${p.name} · ${Sortick.statusLabel(p.status)}` : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(p.status)}`;
-  }
+  winnerMeta.textContent = draw.type === "numbers"
+    ? `Associado a: ${p.name} · ${Sortick.statusLabel(p.status)}`
+    : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(p.status)}`;
 
   proofText.textContent = createProofText();
 }
@@ -855,6 +914,41 @@ participantForm.addEventListener("submit", event => {
   participantName.value = ""; participantNumber.value = ""; participantName.focus(); render();
 });
 
+if (bingoSummaryButton) {
+  bingoSummaryButton.addEventListener("click", () => {
+    if (draw.type !== "bingo" || !draw.result || !bingoSummaryDialog) return;
+
+    if (typeof bingoSummaryDialog.showModal === "function") {
+      bingoSummaryDialog.showModal();
+    } else {
+      bingoSummaryDialog.setAttribute("open", "");
+    }
+
+    bingoSummaryButton.setAttribute("aria-expanded", "true");
+  });
+}
+
+if (closeBingoSummaryButton) {
+  closeBingoSummaryButton.addEventListener("click", closeBingoSummaryDialog);
+}
+
+if (closeBingoSummaryFooterButton) {
+  closeBingoSummaryFooterButton.addEventListener("click", closeBingoSummaryDialog);
+}
+
+if (bingoSummaryDialog) {
+  bingoSummaryDialog.addEventListener("click", event => {
+    if (event.target === bingoSummaryDialog) {
+      closeBingoSummaryDialog();
+    }
+  });
+
+  bingoSummaryDialog.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeBingoSummaryDialog();
+  });
+}
+
 drawButton.addEventListener("click", async () => {
   const eligible = getEligibleParticipants();
   let canDraw = eligible.length >= getMinimumParticipants();
@@ -872,6 +966,7 @@ drawButton.addEventListener("click", async () => {
   downloadButton.disabled = true;
   setRuleOptionsLocked(true);
   winnerCard.classList.add("hidden");
+  closeBingoSummaryDialog();
 
   if (typeof window.sortickTrack === "function") {
     window.sortickTrack("start_draw", {

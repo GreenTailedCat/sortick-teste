@@ -100,3 +100,13 @@
 - [ ] No Bingo, a primeira rodada mostra 3, 2, 1.
 - [ ] No Bingo, a segunda rodada sai sem nova contagem regressiva.
 - [ ] “Reiniciar bingo” faz a contagem voltar na rodada seguinte.
+
+
+## Testes v1.10.6 — resultado do Bingo
+
+- [ ] Após sortear um número, o comprovante branco não aparece abaixo da cartela.
+- [ ] A cartela e o último número permanecem visíveis.
+- [ ] “Ver resumo” aparece após o primeiro número sorteado.
+- [ ] O resumo abre em janela escura e pode ser fechado por ×, Fechar, Esc ou clique fora.
+- [ ] Sortear número continua disponível sem a página ganhar uma área branca adicional.
+- [ ] Copiar resumo, Compartilhar e Baixar imagem continuam funcionando após o sorteio.

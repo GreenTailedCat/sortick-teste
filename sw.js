@@ -1,4 +1,4 @@
-const CACHE_NAME = "sortick-teste-v1-10-5-listas-bingo-cache";
+const CACHE_NAME = "sortick-teste-v1-10-6-bingo-resumo-cache";
 
 const APP_SHELL = [
   "/",
