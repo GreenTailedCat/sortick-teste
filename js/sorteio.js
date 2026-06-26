@@ -1217,23 +1217,37 @@ downloadButton.addEventListener("click", () => {
   }
 });
 
-resetButton.addEventListener("click", () => {
-  if (isDrawing) return;
+resetButton.addEventListener("click", async () => {
+  if (isDrawing || draw.type !== "bingo") return;
 
-  if (draw.type === "bingo") {
-    if (!confirm("Reiniciar o bingo e limpar o histórico de números?")) return;
-    draw.options.bingoDrawnNumbers = [];
-  }
+  const response = await Sortick.askForConfirmation({
+    title: "Reiniciar bingo?",
+    message: "O histórico de números sorteados será limpo e a próxima rodada começará do início.",
+    confirmText: "Reiniciar bingo",
+    tone: "danger"
+  });
 
+  if (!response.confirmed) return;
+
+  draw.options.bingoDrawnNumbers = [];
   draw.result = null;
   persist();
   render();
 });
-clearParticipantsButton.addEventListener("click", () => {
+
+clearParticipantsButton.addEventListener("click", async () => {
   if (isDrawing) return;
 
   if (draw.type === "bingo") {
-    if (!confirm("Limpar histórico de números sorteados?")) return;
+    const response = await Sortick.askForConfirmation({
+      title: "Limpar histórico do Bingo?",
+      message: "Todos os números sorteados nesta partida serão removidos.",
+      confirmText: "Limpar histórico",
+      tone: "danger"
+    });
+
+    if (!response.confirmed) return;
+
     draw.options.bingoDrawnNumbers = [];
     draw.result = null;
     persist();
@@ -1241,7 +1255,15 @@ clearParticipantsButton.addEventListener("click", () => {
     return;
   }
 
-  if (!confirm("Limpar todos os participantes deste sorteio?")) return;
+  const response = await Sortick.askForConfirmation({
+    title: "Limpar participantes?",
+    message: "Todos os participantes deste sorteio serão removidos. Essa ação não pode ser desfeita.",
+    confirmText: "Limpar participantes",
+    tone: "danger"
+  });
+
+  if (!response.confirmed) return;
+
   draw.participants = [];
   draw.result = null;
   persist();

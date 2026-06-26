@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.8-sorteios-salvos
+# Sortick Teste v1.10.9-consistencia
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -198,3 +198,14 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Adicionado “Renomear” aos sorteios salvos.
 - Adicionado “Usar lista” para criar e abrir uma cópia em outro modo entre Nomes, Roleta e Grupos/Times.
 - A confirmação de exclusão foi mantida e ficou mais explícita.
+
+
+## v1.10.9-consistencia
+
+Correção de consistência de controles já existentes:
+
+- Todos os avisos nativos do navegador foram removidos.
+- Excluir, renomear, limpar participantes, limpar histórico e reiniciar Bingo agora usam diálogos próprios do Sortick.
+- Duplicar e usar lista em outro sorteio foram mantidos como recursos existentes.
+- A cópia de sorteio consulta a versão mais recente salva antes de duplicar, preservando participantes e configurações.
+- Cópias começam sem resultado; cópias de Bingo começam sem histórico.

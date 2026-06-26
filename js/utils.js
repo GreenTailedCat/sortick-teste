@@ -122,6 +122,156 @@ const Sortick = (() => {
     return Math.min(Math.max(parsed, min), max);
   }
 
+
+
+  function createActionModal({
+    title,
+    message = "",
+    confirmText = "Confirmar",
+    cancelText = "Cancelar",
+    tone = "default",
+    input = null
+  }) {
+    return new Promise(resolve => {
+      const previousFocus = document.activeElement;
+      const overlay = document.createElement("div");
+      const panel = document.createElement("section");
+      const headingId = `sortick-dialog-${createId("title")}`;
+
+      overlay.className = "sortick-modal-backdrop";
+      overlay.setAttribute("role", "presentation");
+
+      panel.className = `sortick-modal sortick-modal-${tone}`;
+      panel.setAttribute("role", "dialog");
+      panel.setAttribute("aria-modal", "true");
+      panel.setAttribute("aria-labelledby", headingId);
+
+      const heading = document.createElement("h2");
+      heading.id = headingId;
+      heading.textContent = title;
+
+      const description = document.createElement("p");
+      description.className = "sortick-modal-description";
+      description.textContent = message;
+
+      const fieldWrap = document.createElement("label");
+      fieldWrap.className = "sortick-modal-field hidden";
+
+      const fieldLabel = document.createElement("span");
+      const field = document.createElement("input");
+      field.type = "text";
+      field.maxLength = input?.maxLength || 80;
+      field.autocomplete = "off";
+
+      if (input) {
+        fieldWrap.classList.remove("hidden");
+        fieldLabel.textContent = input.label || "Texto";
+        field.placeholder = input.placeholder || "";
+        field.value = input.value || "";
+        fieldWrap.append(fieldLabel, field);
+      }
+
+      const error = document.createElement("p");
+      error.className = "sortick-modal-error";
+      error.setAttribute("aria-live", "polite");
+
+      const actions = document.createElement("div");
+      actions.className = "sortick-modal-actions";
+
+      const cancelButton = document.createElement("button");
+      cancelButton.type = "button";
+      cancelButton.className = "btn btn-ghost sortick-modal-cancel";
+      cancelButton.textContent = cancelText;
+
+      const confirmButton = document.createElement("button");
+      confirmButton.type = "button";
+      confirmButton.className = tone === "danger"
+        ? "btn btn-danger sortick-modal-confirm"
+        : "btn btn-primary sortick-modal-confirm";
+      confirmButton.textContent = confirmText;
+
+      actions.append(cancelButton, confirmButton);
+      panel.append(heading, description, fieldWrap, error, actions);
+      overlay.appendChild(panel);
+      document.body.appendChild(overlay);
+      document.body.classList.add("sortick-modal-open");
+
+      let isClosed = false;
+
+      function close(result) {
+        if (isClosed) return;
+        isClosed = true;
+        document.removeEventListener("keydown", onKeyDown);
+        overlay.remove();
+        document.body.classList.remove("sortick-modal-open");
+
+        if (previousFocus && typeof previousFocus.focus === "function") {
+          previousFocus.focus();
+        }
+
+        resolve(result);
+      }
+
+      function onKeyDown(event) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          close({ confirmed: false, value: input ? field.value : "" });
+          return;
+        }
+
+        if (event.key === "Enter" && input && document.activeElement === field) {
+          event.preventDefault();
+          confirmButton.click();
+        }
+      }
+
+      cancelButton.addEventListener("click", () => {
+        close({ confirmed: false, value: input ? field.value : "" });
+      });
+
+      overlay.addEventListener("mousedown", event => {
+        if (event.target === overlay) {
+          close({ confirmed: false, value: input ? field.value : "" });
+        }
+      });
+
+      confirmButton.addEventListener("click", () => {
+        const value = input ? normalizeText(field.value).slice(0, field.maxLength) : "";
+
+        if (input && typeof input.validate === "function") {
+          const validationMessage = input.validate(value);
+
+          if (validationMessage) {
+            error.textContent = validationMessage;
+            field.focus();
+            return;
+          }
+        }
+
+        close({ confirmed: true, value });
+      });
+
+      document.addEventListener("keydown", onKeyDown);
+
+      requestAnimationFrame(() => {
+        if (input) {
+          field.focus();
+          field.select();
+        } else {
+          confirmButton.focus();
+        }
+      });
+    });
+  }
+
+  function askForConfirmation(options) {
+    return createActionModal(options);
+  }
+
+  function askForText(options) {
+    return createActionModal(options);
+  }
+
   return {
     createId,
     readDraws,
@@ -136,6 +286,8 @@ const Sortick = (() => {
     statusLabel,
     normalizeText,
     escapeHTML,
-    clampNumber
+    clampNumber,
+    askForConfirmation,
+    askForText
   };
 })();

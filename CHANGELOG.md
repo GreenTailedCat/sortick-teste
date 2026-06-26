@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.9-consistencia
+- Removidos avisos nativos e unificados diálogos de ações importantes.
+
 ## v1.10.8-sorteios-salvos
 - Adicionados controles para duplicar, renomear e reutilizar listas de sorteios salvos.
 

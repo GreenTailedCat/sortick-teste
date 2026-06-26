@@ -141,15 +141,16 @@ function buildCopyTitle(savedDraw, targetType) {
 }
 
 function createSavedCopy(savedDraw, targetType = savedDraw.type) {
-  const isTransfer = targetType !== savedDraw.type;
+  const sourceDraw = Sortick.getDraw(savedDraw.id) || savedDraw;
+  const isTransfer = targetType !== sourceDraw.type;
 
   const copy = {
     id: Sortick.createId("draw"),
-    title: buildCopyTitle(savedDraw, targetType),
+    title: buildCopyTitle(sourceDraw, targetType),
     type: targetType,
-    mode: isTransfer ? "simple" : (savedDraw.mode || "simple"),
-    options: getCopyOptions(targetType, isTransfer ? {} : (savedDraw.options || {})),
-    participants: cloneParticipants(savedDraw.participants),
+    mode: isTransfer ? "simple" : (sourceDraw.mode || "simple"),
+    options: getCopyOptions(targetType, isTransfer ? {} : (sourceDraw.options || {})),
+    participants: cloneParticipants(sourceDraw.participants),
     result: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -159,21 +160,24 @@ function createSavedCopy(savedDraw, targetType = savedDraw.type) {
   return copy;
 }
 
-function renameSavedDraw(savedDraw) {
-  const requestedTitle = prompt("Novo nome do sorteio:", savedDraw.title);
+async function renameSavedDraw(savedDraw) {
+  const response = await Sortick.askForText({
+    title: "Renomear sorteio",
+    message: "Escolha um nome claro para identificar este sorteio salvo.",
+    confirmText: "Salvar nome",
+    input: {
+      label: "Novo nome do sorteio",
+      value: savedDraw.title,
+      maxLength: 80,
+      validate: value => value ? "" : "Digite um nome para o sorteio."
+    }
+  });
 
-  if (requestedTitle === null) return;
-
-  const title = Sortick.normalizeText(requestedTitle).slice(0, 80);
-
-  if (!title) {
-    alert("Digite um nome para o sorteio.");
-    return;
-  }
+  if (!response.confirmed) return;
 
   Sortick.updateDraw(savedDraw.id, current => ({
     ...current,
-    title,
+    title: response.value,
     updatedAt: new Date().toISOString()
   }));
 
@@ -196,7 +200,7 @@ function createTransferControls(savedDraw, item) {
   menu.className = "saved-transfer-menu";
 
   const description = document.createElement("span");
-  description.textContent = "Criar uma nova cópia desta lista em:";
+  description.textContent = "Usar esta lista em outro sorteio:";
 
   const select = document.createElement("select");
   select.className = "saved-transfer-select";
@@ -296,7 +300,7 @@ function renderSavedDraws() {
       const transferButton = document.createElement("button");
       transferButton.className = "saved-action-button";
       transferButton.type = "button";
-      transferButton.textContent = "Usar lista";
+      transferButton.textContent = "Usar em outro sorteio";
       transferButton.setAttribute("aria-expanded", "false");
       transferButton.setAttribute("aria-label", `Usar a lista de ${savedDraw.title} em outro modo`);
 
@@ -315,12 +319,15 @@ function renderSavedDraws() {
     deleteButton.textContent = "Excluir";
     deleteButton.setAttribute("aria-label", `Excluir sorteio ${savedDraw.title}`);
 
-    deleteButton.addEventListener("click", () => {
-      const shouldDelete = confirm(
-        `Excluir o sorteio "${savedDraw.title}" deste navegador?\n\nEssa ação não pode ser desfeita.`
-      );
+    deleteButton.addEventListener("click", async () => {
+      const response = await Sortick.askForConfirmation({
+        title: "Excluir sorteio?",
+        message: `“${savedDraw.title}” será removido deste navegador. Essa ação não pode ser desfeita.`,
+        confirmText: "Excluir sorteio",
+        tone: "danger"
+      });
 
-      if (!shouldDelete) return;
+      if (!response.confirmed) return;
 
       Sortick.deleteDraw(savedDraw.id);
       renderSavedDraws();

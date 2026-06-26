@@ -128,3 +128,15 @@
 - [ ] A lista transferida mantém participantes e status, mas abre sem resultado.
 - [ ] Excluir ainda pede confirmação e remove apenas o sorteio selecionado.
 - [ ] Sorteios antigos continuam aparecendo normalmente.
+
+
+## Testes v1.10.9 — consistência de diálogos e sorteios salvos
+
+- [ ] Excluir um sorteio abre uma janela visual do Sortick, não um aviso do navegador.
+- [ ] Renomear abre uma janela visual com campo de texto.
+- [ ] Cancelar ou pressionar Esc fecha os diálogos sem alterar dados.
+- [ ] Duplicar leva participantes e configurações, mas não leva resultado anterior.
+- [ ] Usar lista em outro sorteio mantém participantes e abre uma cópia do modo escolhido.
+- [ ] Reiniciar Bingo e Limpar histórico usam janelas visuais do Sortick.
+- [ ] Limpar participantes usa uma janela visual do Sortick.
+- [ ] Nenhum aviso nativo do navegador aparece nessas ações.
