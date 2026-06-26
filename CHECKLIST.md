@@ -117,3 +117,14 @@
 - [ ] Sobre, Privacidade, Termos e Erro/sugestões? aparecem com espaçamento normal.
 - [ ] Os links “Saiba mais” de todos os cartões ficam alinhados na mesma altura.
 - [ ] Links dos rodapés continuam funcionando.
+
+
+## Testes v1.10.8 — sorteios salvos
+
+- [ ] Duplicar abre uma cópia com o mesmo tipo, participantes e configurações.
+- [ ] A cópia começa sem resultado; no Bingo, começa sem histórico.
+- [ ] Renomear atualiza apenas o título do sorteio escolhido.
+- [ ] Usar lista permite copiar Nomes, Roleta e Grupos/Times entre esses modos.
+- [ ] A lista transferida mantém participantes e status, mas abre sem resultado.
+- [ ] Excluir ainda pede confirmação e remove apenas o sorteio selecionado.
+- [ ] Sorteios antigos continuam aparecendo normalmente.

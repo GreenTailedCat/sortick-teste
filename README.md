@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.7-corrigir-rodape-cards
+# Sortick Teste v1.10.8-sorteios-salvos
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -189,3 +189,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Corrigido o rodapé das páginas abertas por “Saiba mais”.
 - Os links institucionais dessas páginas agora ficam separados e discretos.
 - Alinhados os links “Saiba mais” na base dos cartões de modos.
+
+
+## v1.10.8-sorteios-salvos
+
+- Adicionado “Duplicar” para criar um novo sorteio com a mesma lista e configurações.
+- A cópia começa sem resultado; no Bingo, o histórico de números também é reiniciado.
+- Adicionado “Renomear” aos sorteios salvos.
+- Adicionado “Usar lista” para criar e abrir uma cópia em outro modo entre Nomes, Roleta e Grupos/Times.
+- A confirmação de exclusão foi mantida e ficou mais explícita.

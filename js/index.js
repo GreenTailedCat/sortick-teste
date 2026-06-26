@@ -100,6 +100,136 @@ function formatSavedDrawDate(savedDraw) {
   }
 }
 
+function cloneParticipants(participants) {
+  return (Array.isArray(participants) ? participants : []).map(participant => ({
+    ...participant,
+    id: Sortick.createId("p")
+  }));
+}
+
+function getCopyOptions(type, sourceOptions = {}) {
+  const options = {
+    confirmedOnly: Boolean(sourceOptions.confirmedOnly),
+    removeWinnerAfterDraw: Boolean(sourceOptions.removeWinnerAfterDraw),
+    soundEnabled: Boolean(sourceOptions.soundEnabled)
+  };
+
+  if (type === "numbers") {
+    options.totalNumbers = Sortick.clampNumber(sourceOptions.totalNumbers || 50, 2, 500);
+  }
+
+  if (type === "bingo") {
+    options.totalNumbers = Sortick.clampNumber(sourceOptions.totalNumbers || 75, 2, 500);
+    options.bingoDrawnNumbers = [];
+    options.bingoAllowRepeats = Boolean(sourceOptions.bingoAllowRepeats);
+  }
+
+  if (type === "groups") {
+    options.groupCount = Sortick.clampNumber(sourceOptions.groupCount || 2, 2, 50);
+  }
+
+  return options;
+}
+
+function buildCopyTitle(savedDraw, targetType) {
+  const suffix = targetType === savedDraw.type
+    ? " (cópia)"
+    : ` — ${Sortick.typeLabel(targetType)}`;
+
+  const availableLength = Math.max(1, 80 - suffix.length);
+  return `${Sortick.normalizeText(savedDraw.title).slice(0, availableLength)}${suffix}`;
+}
+
+function createSavedCopy(savedDraw, targetType = savedDraw.type) {
+  const isTransfer = targetType !== savedDraw.type;
+
+  const copy = {
+    id: Sortick.createId("draw"),
+    title: buildCopyTitle(savedDraw, targetType),
+    type: targetType,
+    mode: isTransfer ? "simple" : (savedDraw.mode || "simple"),
+    options: getCopyOptions(targetType, isTransfer ? {} : (savedDraw.options || {})),
+    participants: cloneParticipants(savedDraw.participants),
+    result: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  Sortick.saveDraw(copy);
+  return copy;
+}
+
+function renameSavedDraw(savedDraw) {
+  const requestedTitle = prompt("Novo nome do sorteio:", savedDraw.title);
+
+  if (requestedTitle === null) return;
+
+  const title = Sortick.normalizeText(requestedTitle).slice(0, 80);
+
+  if (!title) {
+    alert("Digite um nome para o sorteio.");
+    return;
+  }
+
+  Sortick.updateDraw(savedDraw.id, current => ({
+    ...current,
+    title,
+    updatedAt: new Date().toISOString()
+  }));
+
+  renderSavedDraws();
+}
+
+function createTransferControls(savedDraw, item) {
+  const reusableTypes = ["names", "roulette", "groups"];
+  const targetTypes = reusableTypes.filter(type => type !== savedDraw.type);
+
+  if (!targetTypes.length) return;
+
+  const existingMenu = item.querySelector(".saved-transfer-menu");
+  if (existingMenu) {
+    existingMenu.remove();
+    return;
+  }
+
+  const menu = document.createElement("div");
+  menu.className = "saved-transfer-menu";
+
+  const description = document.createElement("span");
+  description.textContent = "Criar uma nova cópia desta lista em:";
+
+  const select = document.createElement("select");
+  select.className = "saved-transfer-select";
+  select.setAttribute("aria-label", "Escolher modo para usar esta lista");
+
+  targetTypes.forEach(type => {
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = Sortick.typeLabel(type);
+    select.appendChild(option);
+  });
+
+  const createButton = document.createElement("button");
+  createButton.className = "btn btn-secondary saved-transfer-create";
+  createButton.type = "button";
+  createButton.textContent = "Criar e abrir";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "saved-action-button";
+  cancelButton.type = "button";
+  cancelButton.textContent = "Cancelar";
+
+  createButton.addEventListener("click", () => {
+    const copiedDraw = createSavedCopy(savedDraw, select.value);
+    window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(copiedDraw.id)}`;
+  });
+
+  cancelButton.addEventListener("click", () => menu.remove());
+
+  menu.append(description, select, createButton, cancelButton);
+  item.appendChild(menu);
+}
+
 function renderSavedDraws() {
   if (!savedDrawsList) return;
 
@@ -142,6 +272,43 @@ function renderSavedDraws() {
     continueLink.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(savedDraw.id)}`;
     continueLink.textContent = "Continuar";
 
+    const duplicateButton = document.createElement("button");
+    duplicateButton.className = "saved-action-button";
+    duplicateButton.type = "button";
+    duplicateButton.textContent = "Duplicar";
+    duplicateButton.setAttribute("aria-label", `Duplicar o sorteio ${savedDraw.title}`);
+
+    duplicateButton.addEventListener("click", () => {
+      const copiedDraw = createSavedCopy(savedDraw);
+      window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(copiedDraw.id)}`;
+    });
+
+    const renameButton = document.createElement("button");
+    renameButton.className = "saved-action-button";
+    renameButton.type = "button";
+    renameButton.textContent = "Renomear";
+    renameButton.setAttribute("aria-label", `Renomear o sorteio ${savedDraw.title}`);
+    renameButton.addEventListener("click", () => renameSavedDraw(savedDraw));
+
+    actions.append(continueLink, duplicateButton, renameButton);
+
+    if (["names", "roulette", "groups"].includes(savedDraw.type) && savedDraw.participants.length) {
+      const transferButton = document.createElement("button");
+      transferButton.className = "saved-action-button";
+      transferButton.type = "button";
+      transferButton.textContent = "Usar lista";
+      transferButton.setAttribute("aria-expanded", "false");
+      transferButton.setAttribute("aria-label", `Usar a lista de ${savedDraw.title} em outro modo`);
+
+      transferButton.addEventListener("click", () => {
+        const willOpen = !item.querySelector(".saved-transfer-menu");
+        createTransferControls(savedDraw, item);
+        transferButton.setAttribute("aria-expanded", String(willOpen));
+      });
+
+      actions.appendChild(transferButton);
+    }
+
     const deleteButton = document.createElement("button");
     deleteButton.className = "saved-delete";
     deleteButton.type = "button";
@@ -149,7 +316,9 @@ function renderSavedDraws() {
     deleteButton.setAttribute("aria-label", `Excluir sorteio ${savedDraw.title}`);
 
     deleteButton.addEventListener("click", () => {
-      const shouldDelete = confirm(`Excluir o sorteio "${savedDraw.title}" deste navegador?`);
+      const shouldDelete = confirm(
+        `Excluir o sorteio "${savedDraw.title}" deste navegador?\n\nEssa ação não pode ser desfeita.`
+      );
 
       if (!shouldDelete) return;
 
@@ -157,12 +326,11 @@ function renderSavedDraws() {
       renderSavedDraws();
     });
 
-    actions.append(continueLink, deleteButton);
+    actions.append(deleteButton);
     item.append(info, actions);
     savedDrawsList.appendChild(item);
   });
 }
-
 
 renderSavedDraws();
 

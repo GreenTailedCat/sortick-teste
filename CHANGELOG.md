@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.8-sorteios-salvos
+- Adicionados controles para duplicar, renomear e reutilizar listas de sorteios salvos.
+
 ## v1.10.7-corrigir-rodape-cards
 - Corrigido o rodapé dos modos e alinhados os links dos cartões.
 
