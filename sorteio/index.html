@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1111" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1105" />
   <script src="/sortick-teste/js/clean-url.js"></script>
 </head>
 <body class="draw-page">
@@ -58,47 +58,8 @@
         <div class="made-by">Feito no Sortick</div>
       </div>
 
-      <dialog id="actionConfirmDialog" class="action-confirm-dialog" aria-labelledby="actionConfirmTitle">
-        <div class="action-confirm-dialog-card">
-          <div class="action-confirm-dialog-head">
-            <div>
-              <p id="actionConfirmEyebrow" class="eyebrow danger-eyebrow">Confirmar ação</p>
-              <h2 id="actionConfirmTitle">Tem certeza?</h2>
-              <p id="actionConfirmDescription" class="subtle"></p>
-            </div>
-            <button id="closeActionConfirmDialogButton" class="dialog-close-button" type="button" aria-label="Fechar">×</button>
-          </div>
-
-          <div class="action-confirm-dialog-actions">
-            <button id="cancelActionConfirmButton" class="btn btn-secondary" type="button">Cancelar</button>
-            <button id="confirmActionConfirmButton" class="btn btn-danger" type="button">Confirmar</button>
-          </div>
-        </div>
-      </dialog>
-
-      <dialog id="bingoSummaryDialog" class="bingo-summary-dialog" aria-labelledby="bingoSummaryTitle">
-        <div class="bingo-summary-dialog-card">
-          <div class="bingo-summary-dialog-head">
-            <div>
-              <p class="result-kicker">Resumo do bingo</p>
-              <h2 id="bingoSummaryTitle">Último número</h2>
-              <span id="bingoSummaryMeta"></span>
-            </div>
-            <button id="closeBingoSummaryButton" class="dialog-close-button" type="button" aria-label="Fechar resumo">×</button>
-          </div>
-
-          <div id="bingoSummaryProof" class="bingo-summary-proof"></div>
-
-          <div class="bingo-summary-dialog-actions">
-            <button id="closeBingoSummaryFooterButton" class="btn btn-secondary" type="button">Fechar</button>
-          </div>
-        </div>
-      </dialog>
-
       <div class="stage-actions">
         <button id="drawButton" class="btn btn-primary btn-xl" disabled>Sortear</button>
-        <button id="bingoSummaryButton" class="btn btn-ghost hidden" type="button" aria-haspopup="dialog" aria-expanded="false">Ver resumo</button>
-        <button id="numberSummaryButton" class="btn btn-ghost hidden" type="button" aria-expanded="true">Ocultar resumo</button>
         <button id="copyButton" class="btn btn-ghost" disabled>Copiar resumo</button>
         <button id="shareButton" class="btn btn-ghost" disabled>Compartilhar</button>
         <button id="downloadButton" class="btn btn-ghost" disabled>Baixar imagem</button>
@@ -130,13 +91,13 @@
 
         <div id="bulkAddPanel" class="bulk-panel hidden">
           <label class="compact-label">
-            Adicionar vários participantes
-            <textarea id="bulkText" rows="6" placeholder="Um nome por linha, vírgula ou ponto e vírgula&#10;Ex:&#10;Ana&#10;Bruno, Carla; Diego"></textarea>
-            <span class="field-hint">Linhas vazias são ignoradas. Nomes repetidos não serão adicionados duas vezes.</span>
+            Adicionar vários
+            <textarea id="bulkText" rows="6" placeholder="Um nome por linha ou separados por vírgula&#10;Ex:&#10;Ana&#10;Bruno, Carla&#10;Diego"></textarea>
           </label>
-          <p id="bulkPreview" class="bulk-preview" aria-live="polite">Cole uma lista para ver a prévia.</p>
+          <p id="bulkHint" class="bulk-hint">Use uma linha para cada nome ou separe nomes por vírgula.</p>
+          <p id="bulkPreview" class="bulk-preview" aria-live="polite">Nenhum nome informado.</p>
           <div class="bulk-actions">
-            <button id="confirmBulkButton" class="btn btn-secondary" type="button">Adicionar participantes</button>
+            <button id="confirmBulkButton" class="btn btn-secondary" type="button">Adicionar lista</button>
             <button id="cancelBulkButton" class="btn btn-ghost light" type="button">Cancelar</button>
           </div>
         </div>
@@ -208,7 +169,7 @@
     </aside>
   </main>
 
-  <script src="/sortick-teste/js/utils.js?v=1111"></script>
-  <script src="/sortick-teste/js/sorteio.js?v=1111"></script>
+  <script src="/sortick-teste/js/utils.js?v=1105"></script>
+  <script src="/sortick-teste/js/sorteio.js?v=1105"></script>
 </body>
 </html>

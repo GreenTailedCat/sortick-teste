@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.11-preferencia-resumo-cartela
+# Sortick Teste v1.10.5-bingo-listas
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -166,59 +166,10 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Na visualização expandida, a cartela cresce na página e não usa rolagem interna.
 
 
-## v1.10.5-listas-bingo
+## v1.10.5-bingo-listas
 
-- Adição em lote aceita nomes separados por linhas, vírgulas ou ponto e vírgula.
-- Prévia informa quantos participantes novos serão incluídos.
-- Nomes repetidos no texto ou já presentes na lista são ignorados com aviso.
-- Disponível em Sorteio por nomes, Roleta e Grupos/Times.
-- No Bingo, a contagem regressiva acontece apenas antes do primeiro número.
-
-
-## v1.10.6-bingo-resumo-opcional
-
-- O comprovante branco não aparece mais automaticamente depois de cada número do Bingo.
-- A cartela e o último número continuam como foco da tela.
-- O botão “Ver resumo” aparece após o primeiro número sorteado.
-- O resumo abre em uma janela escura opcional e não move a cartela nem os controles.
-- Copiar resumo, compartilhar e baixar imagem continuam disponíveis.
-
-
-## v1.10.7-sorteios-salvos
-
-- Adicionado “Duplicar” em sorteios salvos.
-- A cópia mantém participantes e configurações, mas começa sem resultado.
-- No Bingo, a cópia começa sem histórico de números sorteados.
-- Adicionado “Usar lista” para criar Nomes, Roleta ou Grupos/Times com participantes de um sorteio salvo.
-- O sorteio original nunca é alterado por essas ações.
-
-
-## v1.10.8-renomear-excluir
-
-- A confirmação nativa do navegador para excluir foi substituída por um pop-up próprio.
-- O pop-up informa o nome do sorteio e separa claramente Cancelar de Excluir sorteio.
-- Adicionado Renomear nos sorteios salvos.
-- Renomear altera apenas o título e a data de atualização; participantes, configurações e resultados são preservados.
-
-
-## v1.10.9-confirmacoes-proprias
-
-- Removidas todas as confirmações nativas do navegador no ambiente de testes.
-- Reiniciar Bingo, Limpar histórico e Limpar participantes usam um pop-up próprio do Sortick.
-- O pop-up fecha por ×, Cancelar, Esc ou clique fora, sem executar a ação.
-
-
-## v1.10.10-cartela-resumo
-
-- A cartela mostra uma barra de preenchimento e porcentagem no cabeçalho.
-- Após um sorteio de número, o cartão inferior passa a se chamar “Resumo da cartela”.
-- O resumo da cartela mostra disponibilidade, ocupação, confirmações e preenchimento.
-- Adicionado Ocultar resumo / Mostrar resumo sem mudar participantes, resultado ou cartela.
-- Ao fazer um novo sorteio, o resumo volta a aparecer automaticamente.
-
-
-## v1.10.11-preferencia-resumo-cartela
-
-- Ocultar resumo deixa de ser redefinido a cada novo sorteio de número.
-- A escolha Ocultar/Mostrar resumo é salva somente na cartela atual.
-- A preferência continua depois de atualizar ou reabrir essa cartela.
+- No Bingo, a contagem regressiva ocorre apenas antes do primeiro número de cada partida.
+- Os próximos números usam somente a animação curta do Bingo.
+- “Adicionar vários” aceita nomes por linha, vírgula ou ponto e vírgula.
+- A tela informa quantos nomes serão adicionados e quantos duplicados serão ignorados.
+- Aplicável a Sorteio por nomes, Roleta e Grupos / Times.

@@ -1,25 +1,7 @@
 # Changelog do Sortick
 
-## v1.10.11-preferencia-resumo-cartela
-- Corrigida a persistência de Ocultar resumo na cartela.
-
-## v1.10.10-cartela-resumo
-- Resumo recolhível e progresso de preenchimento na cartela.
-
-## v1.10.9-confirmacoes-proprias
-- Confirmações de reinício e limpeza passaram a usar o pop-up próprio do Sortick.
-
-## v1.10.8-renomear-excluir
-- Adicionados pop-ups próprios para renomear e confirmar exclusão de sorteios salvos.
-
-## v1.10.7-sorteios-salvos
-- Duplicação e reutilização de listas a partir dos sorteios salvos.
-
-## v1.10.6-bingo-resumo-opcional
-- Resultado do Bingo passou a usar resumo opcional em janela, sem comprovante fixo.
-
-## v1.10.5-listas-bingo
-- Melhorada a adição de listas e reduzida a contagem repetitiva do Bingo.
+## v1.10.5-bingo-listas
+- Ritmo do Bingo ajustado e adição em massa de participantes aprimorada.
 
 ## v1.10.4-carrossel-cartela
 - Ocultação reforçada da barra do carrossel e visualização expandida para cartelas.

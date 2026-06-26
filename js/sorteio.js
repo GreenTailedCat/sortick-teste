@@ -5,9 +5,6 @@ let draw = drawId ? Sortick.getDraw(drawId) : null;
 let isDrawing = false;
 let currentWheelRotation = 0;
 let isCartelaExpanded = false;
-// Preferência visual da cartela: permanece até a pessoa escolher mostrar novamente.
-let isNumberSummaryHidden = Boolean(draw?.options?.numberSummaryHidden);
-let pendingConfirmationAction = null;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
 
@@ -16,27 +13,9 @@ const drawKind = document.querySelector("#drawKind");
 const drawStatus = document.querySelector("#drawStatus");
 const animationArea = document.querySelector("#animationArea");
 const winnerCard = document.querySelector("#winnerCard");
-const resultKicker = winnerCard.querySelector(".result-kicker");
 const winnerName = document.querySelector("#winnerName");
 const winnerMeta = document.querySelector("#winnerMeta");
 const proofText = document.querySelector("#proofText");
-const bingoSummaryButton = document.querySelector("#bingoSummaryButton");
-const numberSummaryButton = document.querySelector("#numberSummaryButton");
-const bingoSummaryDialog = document.querySelector("#bingoSummaryDialog");
-const bingoSummaryTitle = document.querySelector("#bingoSummaryTitle");
-const bingoSummaryMeta = document.querySelector("#bingoSummaryMeta");
-const bingoSummaryProof = document.querySelector("#bingoSummaryProof");
-const closeBingoSummaryButton = document.querySelector("#closeBingoSummaryButton");
-const closeBingoSummaryFooterButton = document.querySelector("#closeBingoSummaryFooterButton");
-
-const actionConfirmDialog = document.querySelector("#actionConfirmDialog");
-const actionConfirmEyebrow = document.querySelector("#actionConfirmEyebrow");
-const actionConfirmTitle = document.querySelector("#actionConfirmTitle");
-const actionConfirmDescription = document.querySelector("#actionConfirmDescription");
-const closeActionConfirmDialogButton = document.querySelector("#closeActionConfirmDialogButton");
-const cancelActionConfirmButton = document.querySelector("#cancelActionConfirmButton");
-const confirmActionConfirmButton = document.querySelector("#confirmActionConfirmButton");
-
 const drawButton = document.querySelector("#drawButton");
 const copyButton = document.querySelector("#copyButton");
 const shareButton = document.querySelector("#shareButton");
@@ -63,9 +42,9 @@ const bulkButton = document.querySelector("#bulkButton");
 const shuffleButton = document.querySelector("#shuffleButton");
 const bulkAddPanel = document.querySelector("#bulkAddPanel");
 const bulkText = document.querySelector("#bulkText");
-const bulkPreview = document.querySelector("#bulkPreview");
 const confirmBulkButton = document.querySelector("#confirmBulkButton");
 const cancelBulkButton = document.querySelector("#cancelBulkButton");
+const bulkPreview = document.querySelector("#bulkPreview");
 
 if (!draw) {
   document.body.innerHTML = `
@@ -83,8 +62,6 @@ if (!draw) {
   draw.options.groupCount = Sortick.clampNumber(draw.options.groupCount || 2, 2, 50);
   draw.options.bingoAllowRepeats = Boolean(draw.options.bingoAllowRepeats);
   draw.options.bingoDrawnNumbers = Array.isArray(draw.options.bingoDrawnNumbers) ? draw.options.bingoDrawnNumbers : [];
-  draw.options.numberSummaryHidden = Boolean(draw.options.numberSummaryHidden);
-  isNumberSummaryHidden = draw.options.numberSummaryHidden;
   draw.participants = draw.participants.map(p => ({ ...p, status: p.status || "pending" }));
   setupDraw();
 }
@@ -129,7 +106,7 @@ function setupDraw() {
     if (bingoRepeatOption) bingoRepeatOption.classList.remove("hidden");
     if (bingoRepeatToggle) bingoRepeatToggle.checked = Boolean(draw.options.bingoAllowRepeats);
 
-    participantHelp.textContent = "Sorteie números para cartelas físicas. A contagem regressiva aparece apenas antes do primeiro número.";
+    participantHelp.textContent = "Sorteie números para cartelas físicas. Escolha se os números podem repetir durante o jogo.";
   } else if (draw.type === "groups") {
     participantHelp.textContent = `Adicione nomes e gere ${draw.options.groupCount} grupo(s).`;
     drawButton.textContent = "Gerar grupos";
@@ -577,18 +554,12 @@ function renderNumberBoard(highlightNumber = null) {
       </button>`;
   }
 
-  const occupiedPercent = total ? Math.round((counts.total / total) * 100) : 0;
-
   animationArea.innerHTML = `
     <div class="number-board-wrap ${isCartelaExpanded ? "cartela-expanded-wrap" : ""}">
       <div class="number-board-header cartela-header">
         <span>Cartela de 1 a ${total}</span>
         <div class="cartela-header-actions">
           <small>${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados</small>
-          <div class="cartela-progress" role="progressbar" aria-label="Cartela preenchida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${occupiedPercent}">
-            <span style="width: ${occupiedPercent}%"></span>
-          </div>
-          <small class="cartela-progress-label">${occupiedPercent}% preenchida</small>
           <button id="toggleCartelaExpanded" class="cartela-expand-button" type="button" aria-expanded="${isCartelaExpanded}">
             ${isCartelaExpanded ? "Fechar visualização expandida" : "Visualizar cartela expandida"}
           </button>
@@ -619,134 +590,13 @@ function renderNumberBoard(highlightNumber = null) {
   });
 }
 
-function closeActionConfirmDialog() {
-  if (!actionConfirmDialog) return;
-
-  if (typeof actionConfirmDialog.close === "function" && actionConfirmDialog.open) {
-    actionConfirmDialog.close();
-  } else {
-    actionConfirmDialog.removeAttribute("open");
-  }
-
-  pendingConfirmationAction = null;
-}
-
-function openActionConfirmDialog({
-  eyebrow = "Confirmar ação",
-  title = "Tem certeza?",
-  description = "",
-  confirmLabel = "Confirmar",
-  action
-}) {
-  if (!actionConfirmDialog || typeof action !== "function") {
-    action?.();
-    return;
-  }
-
-  pendingConfirmationAction = action;
-
-  if (actionConfirmEyebrow) actionConfirmEyebrow.textContent = eyebrow;
-  if (actionConfirmTitle) actionConfirmTitle.textContent = title;
-  if (actionConfirmDescription) actionConfirmDescription.textContent = description;
-  if (confirmActionConfirmButton) confirmActionConfirmButton.textContent = confirmLabel;
-
-  if (typeof actionConfirmDialog.showModal === "function") {
-    actionConfirmDialog.showModal();
-  } else {
-    actionConfirmDialog.setAttribute("open", "");
-  }
-}
-
-function closeBingoSummaryDialog() {
-  if (!bingoSummaryDialog) return;
-
-  if (typeof bingoSummaryDialog.close === "function" && bingoSummaryDialog.open) {
-    bingoSummaryDialog.close();
-  } else {
-    bingoSummaryDialog.removeAttribute("open");
-  }
-
-  if (bingoSummaryButton) {
-    bingoSummaryButton.setAttribute("aria-expanded", "false");
-  }
-}
-
-function syncBingoSummary() {
-  const hasBingoResult = draw.type === "bingo" && Boolean(draw.result);
-
-  if (bingoSummaryButton) {
-    bingoSummaryButton.classList.toggle("hidden", !hasBingoResult);
-    bingoSummaryButton.disabled = !hasBingoResult;
-    bingoSummaryButton.setAttribute("aria-expanded", "false");
-  }
-
-  if (!hasBingoResult) {
-    closeBingoSummaryDialog();
-    return;
-  }
-
-  const p = draw.result.participant;
-  const meta = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
-
-  if (bingoSummaryTitle) bingoSummaryTitle.textContent = getParticipantDisplay(p);
-  if (bingoSummaryMeta) bingoSummaryMeta.textContent = meta;
-  if (bingoSummaryProof) bingoSummaryProof.textContent = createProofText();
-}
-
-function syncNumberSummary() {
-  const hasNumberResult = draw.type === "numbers" && Boolean(draw.result);
-
-  if (!numberSummaryButton) return;
-
-  numberSummaryButton.classList.toggle("hidden", !hasNumberResult);
-  numberSummaryButton.disabled = !hasNumberResult;
-
-  if (!hasNumberResult) {
-    isNumberSummaryHidden = false;
-    numberSummaryButton.setAttribute("aria-expanded", "false");
-    return;
-  }
-
-  numberSummaryButton.textContent = isNumberSummaryHidden ? "Mostrar resumo" : "Ocultar resumo";
-  numberSummaryButton.setAttribute("aria-expanded", String(!isNumberSummaryHidden));
-}
-
 function renderResult() {
   if (!draw.result) {
-    winnerCard.classList.add("hidden");
-    winnerName.textContent = "";
-    winnerMeta.textContent = "";
-    proofText.textContent = "";
-    if (resultKicker) resultKicker.textContent = "Resultado do sorteio";
-    syncBingoSummary();
-    syncNumberSummary();
-    return;
+    winnerCard.classList.add("hidden"); winnerName.textContent = ""; winnerMeta.textContent = ""; proofText.textContent = ""; return;
   }
-
-  if (draw.type === "bingo") {
-    // O Bingo mantém a cartela como foco. O resumo fica disponível só sob pedido,
-    // em uma janela, sem empurrar o botão de sortear para baixo.
-    winnerCard.classList.add("hidden");
-    winnerName.textContent = "";
-    winnerMeta.textContent = "";
-    proofText.textContent = "";
-    syncBingoSummary();
-    syncNumberSummary();
-    return;
-  }
-
-  syncBingoSummary();
-  syncNumberSummary();
-
-  if (draw.type === "numbers" && isNumberSummaryHidden) {
-    winnerCard.classList.add("hidden");
-    return;
-  }
-
   winnerCard.classList.remove("hidden");
 
   if (draw.type === "groups") {
-    if (resultKicker) resultKicker.textContent = "Resultado do sorteio";
     winnerName.textContent = "Grupos gerados";
     winnerMeta.textContent = `${draw.result.groups.length} grupo(s) · ${draw.result.participantCount} participante(s)`;
     proofText.textContent = createProofText();
@@ -756,19 +606,12 @@ function renderResult() {
   const p = draw.result.participant;
   winnerName.textContent = getParticipantDisplay(p);
 
-  if (draw.type === "numbers") {
-    const counts = getStatusCounts();
-    const total = getTotalNumbers();
-    const occupiedPercent = total ? Math.round((counts.total / total) * 100) : 0;
-
-    if (resultKicker) resultKicker.textContent = "Resumo da cartela";
-    winnerMeta.textContent = `Associado a: ${p.name} · ${Sortick.statusLabel(p.status)}`;
-    proofText.textContent = `${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados · ${occupiedPercent}% preenchida`;
-    return;
+  if (draw.type === "bingo") {
+    winnerMeta.textContent = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
+  } else {
+    winnerMeta.textContent = draw.type === "numbers" ? `Associado a: ${p.name} · ${Sortick.statusLabel(p.status)}` : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(p.status)}`;
   }
 
-  if (resultKicker) resultKicker.textContent = "Resultado do sorteio";
-  winnerMeta.textContent = `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(p.status)}`;
   proofText.textContent = createProofText();
 }
 
@@ -1012,83 +855,6 @@ participantForm.addEventListener("submit", event => {
   participantName.value = ""; participantNumber.value = ""; participantName.focus(); render();
 });
 
-if (closeActionConfirmDialogButton) {
-  closeActionConfirmDialogButton.addEventListener("click", closeActionConfirmDialog);
-}
-
-if (cancelActionConfirmButton) {
-  cancelActionConfirmButton.addEventListener("click", closeActionConfirmDialog);
-}
-
-if (confirmActionConfirmButton) {
-  confirmActionConfirmButton.addEventListener("click", () => {
-    const action = pendingConfirmationAction;
-    closeActionConfirmDialog();
-    action?.();
-  });
-}
-
-if (actionConfirmDialog) {
-  actionConfirmDialog.addEventListener("click", event => {
-    if (event.target === actionConfirmDialog) {
-      closeActionConfirmDialog();
-    }
-  });
-
-  actionConfirmDialog.addEventListener("cancel", event => {
-    event.preventDefault();
-    closeActionConfirmDialog();
-  });
-}
-
-if (numberSummaryButton) {
-  numberSummaryButton.addEventListener("click", () => {
-    if (draw.type !== "numbers" || !draw.result) return;
-
-    isNumberSummaryHidden = !isNumberSummaryHidden;
-    draw.options.numberSummaryHidden = isNumberSummaryHidden;
-
-    // Salva apenas a preferência visual sem mudar a data do sorteio.
-    Sortick.saveDraw(draw);
-    renderResult();
-  });
-}
-
-if (bingoSummaryButton) {
-  bingoSummaryButton.addEventListener("click", () => {
-    if (draw.type !== "bingo" || !draw.result || !bingoSummaryDialog) return;
-
-    if (typeof bingoSummaryDialog.showModal === "function") {
-      bingoSummaryDialog.showModal();
-    } else {
-      bingoSummaryDialog.setAttribute("open", "");
-    }
-
-    bingoSummaryButton.setAttribute("aria-expanded", "true");
-  });
-}
-
-if (closeBingoSummaryButton) {
-  closeBingoSummaryButton.addEventListener("click", closeBingoSummaryDialog);
-}
-
-if (closeBingoSummaryFooterButton) {
-  closeBingoSummaryFooterButton.addEventListener("click", closeBingoSummaryDialog);
-}
-
-if (bingoSummaryDialog) {
-  bingoSummaryDialog.addEventListener("click", event => {
-    if (event.target === bingoSummaryDialog) {
-      closeBingoSummaryDialog();
-    }
-  });
-
-  bingoSummaryDialog.addEventListener("cancel", event => {
-    event.preventDefault();
-    closeBingoSummaryDialog();
-  });
-}
-
 drawButton.addEventListener("click", async () => {
   const eligible = getEligibleParticipants();
   let canDraw = eligible.length >= getMinimumParticipants();
@@ -1106,7 +872,6 @@ drawButton.addEventListener("click", async () => {
   downloadButton.disabled = true;
   setRuleOptionsLocked(true);
   winnerCard.classList.add("hidden");
-  closeBingoSummaryDialog();
 
   if (typeof window.sortickTrack === "function") {
     window.sortickTrack("start_draw", {
@@ -1115,8 +880,8 @@ drawButton.addEventListener("click", async () => {
     });
   }
 
-  // No Bingo, a contagem serve para começar a rodada. Depois do primeiro
-  // número, os próximos resultados aparecem diretamente para manter o ritmo.
+  // No Bingo, a contagem prepara apenas o começo de cada partida.
+  // Depois do primeiro número, a animação curta já mantém o ritmo do jogo.
   const shouldRunCountdown = draw.type !== "bingo" || draw.options.bingoDrawnNumbers.length === 0;
   if (shouldRunCountdown) {
     await runCountdown();
@@ -1452,60 +1217,35 @@ downloadButton.addEventListener("click", () => {
   }
 });
 
-function resetBingoHistory() {
-  draw.options.bingoDrawnNumbers = [];
-  draw.result = null;
-  persist();
-  render();
-}
-
-function clearAllParticipants() {
-  draw.participants = [];
-  draw.result = null;
-  persist();
-  render();
-}
-
 resetButton.addEventListener("click", () => {
   if (isDrawing) return;
 
   if (draw.type === "bingo") {
-    openActionConfirmDialog({
-      eyebrow: "Reiniciar Bingo",
-      title: "Reiniciar este bingo?",
-      description: "Os números sorteados e o resultado atual serão removidos. A próxima rodada começará do zero.",
-      confirmLabel: "Reiniciar bingo",
-      action: resetBingoHistory
-    });
-    return;
+    if (!confirm("Reiniciar o bingo e limpar o histórico de números?")) return;
+    draw.options.bingoDrawnNumbers = [];
   }
 
   draw.result = null;
   persist();
   render();
 });
-
 clearParticipantsButton.addEventListener("click", () => {
   if (isDrawing) return;
 
   if (draw.type === "bingo") {
-    openActionConfirmDialog({
-      eyebrow: "Limpar histórico",
-      title: "Limpar números sorteados?",
-      description: "O histórico e o último número do Bingo serão removidos.",
-      confirmLabel: "Limpar histórico",
-      action: resetBingoHistory
-    });
+    if (!confirm("Limpar histórico de números sorteados?")) return;
+    draw.options.bingoDrawnNumbers = [];
+    draw.result = null;
+    persist();
+    render();
     return;
   }
 
-  openActionConfirmDialog({
-    eyebrow: "Limpar participantes",
-    title: "Limpar todos os participantes?",
-    description: "Os participantes deste sorteio serão removidos. Essa ação não pode ser desfeita.",
-    confirmLabel: "Limpar participantes",
-    action: clearAllParticipants
-  });
+  if (!confirm("Limpar todos os participantes deste sorteio?")) return;
+  draw.participants = [];
+  draw.result = null;
+  persist();
+  render();
 });
 
 sampleButton.addEventListener("click", () => {
@@ -1530,78 +1270,40 @@ sampleButton.addEventListener("click", () => {
 });
 
 
-function parseBulkNames(value) {
-  return value
+function getBulkNames() {
+  return bulkText.value
     .split(/[\n,;]+/)
     .map(Sortick.normalizeText)
     .filter(Boolean);
 }
 
-function getBulkAnalysis(value = bulkText.value) {
-  const parsedNames = parseBulkNames(value);
-  const existingNames = new Set(
-    draw.participants.map(participant => Sortick.normalizeText(participant.name).toLocaleLowerCase("pt-BR"))
-  );
-  const namesToAdd = [];
-  const pastedNames = new Set();
-  let alreadyInList = 0;
-  let repeatedInPaste = 0;
-
-  parsedNames.forEach(name => {
-    const key = name.toLocaleLowerCase("pt-BR");
-
-    if (existingNames.has(key)) {
-      alreadyInList += 1;
-      return;
-    }
-
-    if (pastedNames.has(key)) {
-      repeatedInPaste += 1;
-      return;
-    }
-
-    pastedNames.add(key);
-    namesToAdd.push(name);
-  });
-
-  return {
-    namesToAdd,
-    typed: parsedNames.length,
-    alreadyInList,
-    repeatedInPaste
-  };
-}
-
 function updateBulkPreview() {
-  if (!bulkPreview || draw.type === "numbers" || draw.type === "bingo") return;
+  if (!bulkPreview) return;
 
-  const analysis = getBulkAnalysis();
-
-  if (!analysis.typed) {
-    bulkPreview.textContent = "Cole uma lista para ver a prévia.";
-    confirmBulkButton.textContent = "Adicionar participantes";
+  const names = getBulkNames();
+  if (!names.length) {
+    bulkPreview.textContent = "Nenhum nome informado.";
     return;
   }
 
-  const ignored = analysis.alreadyInList + analysis.repeatedInPaste;
-  const parts = [`${analysis.namesToAdd.length} participante(s) serão adicionados.`];
+  const existing = new Set(draw.participants.map(participant => participant.name.toLocaleLowerCase("pt-BR")));
+  const seen = new Set();
+  let ready = 0;
+  let ignored = 0;
 
-  if (analysis.alreadyInList) {
-    parts.push(`${analysis.alreadyInList} já estava(m) na lista.`);
-  }
+  names.forEach(name => {
+    const normalized = name.toLocaleLowerCase("pt-BR");
+    if (existing.has(normalized) || seen.has(normalized)) {
+      ignored += 1;
+      return;
+    }
+    seen.add(normalized);
+    ready += 1;
+  });
 
-  if (analysis.repeatedInPaste) {
-    parts.push(`${analysis.repeatedInPaste} repetido(s) no texto.`);
-  }
-
-  if (!analysis.namesToAdd.length && ignored) {
-    parts[0] = "Nenhum participante novo foi encontrado.";
-  }
-
-  bulkPreview.textContent = parts.join(" ");
-  confirmBulkButton.textContent = analysis.namesToAdd.length
-    ? `Adicionar ${analysis.namesToAdd.length} participante(s)`
-    : "Nenhum novo participante";
+  bulkPreview.textContent = ignored
+    ? `${ready} nome(s) pronto(s) para adicionar · ${ignored} duplicado(s) será(ão) ignorado(s).`
+    : `${ready} nome(s) pronto(s) para adicionar.`;
 }
 
 bulkButton.addEventListener("click", () => {
@@ -1630,40 +1332,42 @@ cancelBulkButton.addEventListener("click", () => {
 confirmBulkButton.addEventListener("click", () => {
   if (draw.type === "numbers" || draw.type === "bingo") return;
 
-  const analysis = getBulkAnalysis();
+  const status = participantStatus.value === "confirmed" ? "confirmed" : "pending";
+  const names = getBulkNames();
 
-  if (!analysis.typed) {
+  if (!names.length) {
     setValidation("Cole pelo menos um nome.");
     bulkText.focus();
     return;
   }
 
-  if (!analysis.namesToAdd.length) {
-    setValidation("Nenhum nome novo para adicionar. Revise os nomes repetidos.");
-    return;
-  }
+  const existing = new Set(draw.participants.map(participant => participant.name.toLocaleLowerCase("pt-BR")));
+  let added = 0;
+  let ignored = 0;
 
-  const status = participantStatus.value === "confirmed" ? "confirmed" : "pending";
+  names.forEach(name => {
+    const normalized = name.toLocaleLowerCase("pt-BR");
+    if (existing.has(normalized)) {
+      ignored += 1;
+      return;
+    }
 
-  analysis.namesToAdd.forEach(name => {
-    draw.participants.push({
-      id: Sortick.createId("p"),
-      name,
-      status
-    });
+    draw.participants.push({ id: Sortick.createId("p"), name, status });
+    existing.add(normalized);
+    added += 1;
   });
 
   draw.result = null;
   persist();
 
-  const ignored = analysis.alreadyInList + analysis.repeatedInPaste;
   bulkText.value = "";
   bulkAddPanel.classList.add("hidden");
   updateBulkPreview();
+
   setValidation(
-    `${analysis.namesToAdd.length} participante(s) adicionado(s).${
-      ignored ? ` ${ignored} nome(s) repetido(s) foram ignorados.` : ""
-    }`
+    added
+      ? `${added} nome(s) adicionado(s).${ignored ? ` ${ignored} duplicado(s) ignorado(s).` : ""}`
+      : "Nenhum nome novo foi adicionado; todos já estavam na lista."
   );
   render();
 });

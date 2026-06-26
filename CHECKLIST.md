@@ -90,74 +90,12 @@
 - [ ] Números ocupados, confirmados e disponíveis continuam funcionando.
 
 
-## Testes v1.10.5 — listas e Bingo
+## Testes v1.10.5 — Bingo e listas
 
-- [ ] Em Nomes, Roleta e Grupos, “Adicionar vários” abre o painel de lista.
-- [ ] A lista aceita quebra de linha, vírgula e ponto e vírgula.
-- [ ] A prévia mostra participantes novos e nomes repetidos.
-- [ ] Nomes repetidos não são adicionados duas vezes.
-- [ ] O status selecionado é aplicado aos novos nomes em Nomes e Roleta.
-- [ ] No Bingo, a primeira rodada mostra 3, 2, 1.
-- [ ] No Bingo, a segunda rodada sai sem nova contagem regressiva.
-- [ ] “Reiniciar bingo” faz a contagem voltar na rodada seguinte.
-
-
-## Testes v1.10.6 — resultado do Bingo
-
-- [ ] Após sortear um número, o comprovante branco não aparece abaixo da cartela.
-- [ ] A cartela e o último número permanecem visíveis.
-- [ ] “Ver resumo” aparece após o primeiro número sorteado.
-- [ ] O resumo abre em janela escura e pode ser fechado por ×, Fechar, Esc ou clique fora.
-- [ ] Sortear número continua disponível sem a página ganhar uma área branca adicional.
-- [ ] Copiar resumo, Compartilhar e Baixar imagem continuam funcionando após o sorteio.
-
-
-## Testes v1.10.7 — sorteios salvos
-
-- [ ] “Duplicar” cria uma cópia e abre o novo sorteio.
-- [ ] A cópia mantém participantes e configurações do original.
-- [ ] A cópia não mantém o resultado anterior.
-- [ ] Uma cópia de Bingo começa com histórico vazio.
-- [ ] “Usar lista” aparece ativo em Nomes, Roleta e Grupos/Times com participantes.
-- [ ] O diálogo cria o modo escolhido com os mesmos participantes.
-- [ ] O sorteio original não muda após duplicar ou usar a lista.
-- [ ] Cartela e Bingo não oferecem “Usar lista”.
-
-
-## Testes v1.10.8 — renomear e excluir
-
-- [ ] Cada sorteio salvo tem o botão Renomear.
-- [ ] Renomear abre um pop-up com o título atual preenchido.
-- [ ] Salvar um nome novo mantém participantes, configurações e resultado.
-- [ ] Nome vazio mostra mensagem de validação e não altera o sorteio.
-- [ ] Excluir abre pop-up próprio, sem caixa nativa do navegador.
-- [ ] Cancelar, Esc, × e clique fora não excluem.
-- [ ] Apenas “Excluir sorteio” remove o item salvo.
-
-
-## Testes v1.10.9 — confirmações próprias
-
-- [ ] Reiniciar Bingo abre pop-up do Sortick, sem caixa nativa do navegador.
-- [ ] Limpar histórico do Bingo abre o mesmo tipo de pop-up.
-- [ ] Limpar participantes de Nomes, Roleta, Cartela e Grupos abre pop-up próprio.
-- [ ] ×, Cancelar, Esc e clique fora não alteram o sorteio.
-- [ ] Apenas o botão de confirmação executa cada ação.
-
-
-## Testes v1.10.10 — cartela
-
-- [ ] O cabeçalho da cartela mostra porcentagem e barra de preenchimento.
-- [ ] A barra muda ao adicionar ou remover números ocupados.
-- [ ] Após sortear, aparece “Resumo da cartela”, não “Resultado do sorteio”.
-- [ ] O resumo mostra disponíveis, ocupados, confirmados e porcentagem.
-- [ ] Ocultar resumo esconde apenas o cartão inferior.
-- [ ] Mostrar resumo traz o cartão de volta sem alterar o resultado.
-- [ ] Um novo sorteio de número volta a mostrar o resumo automaticamente.
-
-
-## Testes v1.10.11 — preferência do resumo
-
-- [ ] Ocultar resumo permanece ativo ao sortear outro número.
-- [ ] Mostrar resumo continua trazendo o cartão de volta.
-- [ ] Atualizar a página mantém a última escolha da cartela.
-- [ ] Outra cartela continua com o resumo visível por padrão.
+- [ ] O primeiro número de um Bingo mostra 3, 2, 1.
+- [ ] O segundo número e os seguintes não repetem a contagem regressiva.
+- [ ] Após “Reiniciar bingo”, a contagem volta antes do primeiro número.
+- [ ] “Adicionar vários” aceita uma pessoa por linha.
+- [ ] “Adicionar vários” aceita nomes separados por vírgula ou ponto e vírgula.
+- [ ] Duplicados na lista ou já existentes são avisados e ignorados.
+- [ ] Nomes, Roleta e Grupos continuam adicionando participantes normalmente.
