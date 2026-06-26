@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.7-corrigir-rodape-cards
+- Corrigido o rodapé dos modos e alinhados os links dos cartões.
+
 ## v1.10.6-paginas-publicas
 - Rodapé corrigido e páginas Sobre, Privacidade e Termos simplificadas.
 

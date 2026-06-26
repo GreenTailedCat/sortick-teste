@@ -1947,3 +1947,48 @@ body.drawing-locked #removeWinnerToggle:disabled {
     margin: 0 7px;
   }
 }
+
+
+/* v1.10.7 - correção do rodapé dos modos e alinhamento dos cartões */
+
+/* Os cartões do carrossel têm textos com alturas diferentes.
+   O link "Saiba mais" passa a ocupar sempre a mesma linha de base. */
+#modos .mode-carousel-track .mode-card {
+  display: flex;
+  flex-direction: column;
+}
+
+#modos .mode-carousel-track .mode-more-link {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+/* Rodapé usado nas páginas abertas pelos links "Saiba mais". */
+.mode-page-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding-top: 24px;
+  padding-bottom: 34px;
+}
+
+.mode-footer-brand {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.mode-page-footer .footer-links {
+  gap: 0 !important;
+}
+
+@media (max-width: 520px) {
+  .mode-page-footer {
+    gap: 9px 14px;
+  }
+
+  .mode-footer-brand {
+    font-size: 0.82rem;
+  }
+}

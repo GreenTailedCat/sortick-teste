@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.6-paginas-publicas
+# Sortick Teste v1.10.7-corrigir-rodape-cards
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -182,3 +182,10 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - Removidas referências a planos, fases de testes e recursos futuros das páginas públicas.
 - Política de Privacidade simplificada, mantendo informações essenciais ao usuário.
 - Termos de Uso simplificados e atualizados.
+
+
+## v1.10.7-corrigir-rodape-cards
+
+- Corrigido o rodapé das páginas abertas por “Saiba mais”.
+- Os links institucionais dessas páginas agora ficam separados e discretos.
+- Alinhados os links “Saiba mais” na base dos cartões de modos.

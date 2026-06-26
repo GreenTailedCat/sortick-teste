@@ -109,3 +109,11 @@
 - [ ] Privacidade está clara sem explicar detalhes técnicos de implementação.
 - [ ] Termos não mencionam fases de testes ou planos futuros.
 - [ ] Links do rodapé funcionam nas três páginas.
+
+
+## Testes v1.10.7 — rodapé dos modos e cartões
+
+- [ ] Em cada página aberta por “Saiba mais”, o rodapé mostra Sortick e links separados.
+- [ ] Sobre, Privacidade, Termos e Erro/sugestões? aparecem com espaçamento normal.
+- [ ] Os links “Saiba mais” de todos os cartões ficam alinhados na mesma altura.
+- [ ] Links dos rodapés continuam funcionando.
