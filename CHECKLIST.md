@@ -99,3 +99,13 @@
 - [ ] “Adicionar vários” aceita nomes separados por vírgula ou ponto e vírgula.
 - [ ] Duplicados na lista ou já existentes são avisados e ignorados.
 - [ ] Nomes, Roleta e Grupos continuam adicionando participantes normalmente.
+
+
+## Testes v1.10.6 — páginas públicas
+
+- [ ] Rodapé mostra links separados por pontos, sem palavras coladas.
+- [ ] Sobre mostra os cinco modos atuais.
+- [ ] Sobre não menciona recursos futuros.
+- [ ] Privacidade está clara sem explicar detalhes técnicos de implementação.
+- [ ] Termos não mencionam fases de testes ou planos futuros.
+- [ ] Links do rodapé funcionam nas três páginas.

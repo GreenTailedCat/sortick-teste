@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.5-bingo-listas
+# Sortick Teste v1.10.6-paginas-publicas
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -173,3 +173,12 @@ Atualizações de interface e textos, sem mudança na lógica dos sorteios:
 - “Adicionar vários” aceita nomes por linha, vírgula ou ponto e vírgula.
 - A tela informa quantos nomes serão adicionados e quantos duplicados serão ignorados.
 - Aplicável a Sorteio por nomes, Roleta e Grupos / Times.
+
+
+## v1.10.6-paginas-publicas
+
+- Rodapé institucional com links separados e discretos.
+- Página Sobre atualizada com os cinco modos disponíveis.
+- Removidas referências a planos, fases de testes e recursos futuros das páginas públicas.
+- Política de Privacidade simplificada, mantendo informações essenciais ao usuário.
+- Termos de Uso simplificados e atualizados.

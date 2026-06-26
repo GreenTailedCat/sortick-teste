@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.6-paginas-publicas
+- Rodapé corrigido e páginas Sobre, Privacidade e Termos simplificadas.
+
 ## v1.10.5-bingo-listas
 - Ritmo do Bingo ajustado e adição em massa de participantes aprimorada.
 

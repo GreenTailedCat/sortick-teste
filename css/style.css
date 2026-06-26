@@ -1892,3 +1892,58 @@ body.drawing-locked #removeWinnerToggle:disabled {
   color: var(--primary);
   font-weight: 850;
 }
+
+
+/* v1.10.6 - páginas públicas e links institucionais */
+
+.site-footer {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+.site-footer > p {
+  margin: 0;
+  max-width: 760px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.footer-links {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 !important;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.footer-links a + a::before {
+  content: "·";
+  display: inline-block;
+  margin: 0 9px;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  color: white;
+  outline: none;
+}
+
+@media (max-width: 520px) {
+  .footer-links a {
+    font-size: 0.78rem;
+  }
+
+  .footer-links a + a::before {
+    margin: 0 7px;
+  }
+}
