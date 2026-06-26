@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.9-consistencia
+# Sortick Teste v1.10.10-corrigir-excluir
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -209,3 +209,10 @@ Correção de consistência de controles já existentes:
 - Duplicar e usar lista em outro sorteio foram mantidos como recursos existentes.
 - A cópia de sorteio consulta a versão mais recente salva antes de duplicar, preservando participantes e configurações.
 - Cópias começam sem resultado; cópias de Bingo começam sem histórico.
+
+
+## v1.10.10-corrigir-excluir
+
+- Corrigido o botão “Excluir sorteio” no modal de confirmação.
+- O botão agora tem fundo vermelho sólido e texto branco no modal claro.
+- Nenhuma lógica dos sorteios salvos foi alterada.

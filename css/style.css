@@ -2207,3 +2207,24 @@ body.sortick-modal-open {
 .saved-draw-actions .saved-action-button {
   white-space: nowrap;
 }
+
+
+/* v1.10.10 - botão destrutivo legível no modal claro */
+
+.sortick-modal-danger .sortick-modal-confirm {
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+  border: 1px solid transparent;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(215, 45, 79, 0.22);
+}
+
+.sortick-modal-danger .sortick-modal-confirm:hover:not(:disabled),
+.sortick-modal-danger .sortick-modal-confirm:focus-visible {
+  background: linear-gradient(135deg, #ff5d7d, #c72445);
+  color: #ffffff;
+  outline: none;
+}
+
+.sortick-modal-danger .sortick-modal-confirm:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 75, 110, 0.22), 0 10px 22px rgba(215, 45, 79, 0.22);
+}

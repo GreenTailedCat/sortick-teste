@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.10.10-corrigir-excluir
+- Ajustado contraste do botão destrutivo no modal de exclusão.
+
 ## v1.10.9-consistencia
 - Removidos avisos nativos e unificados diálogos de ações importantes.
 

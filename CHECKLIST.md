@@ -140,3 +140,11 @@
 - [ ] Reiniciar Bingo e Limpar histórico usam janelas visuais do Sortick.
 - [ ] Limpar participantes usa uma janela visual do Sortick.
 - [ ] Nenhum aviso nativo do navegador aparece nessas ações.
+
+
+## Teste v1.10.10 — exclusão
+
+- [ ] O modal “Excluir sorteio?” mantém o visual próprio do Sortick.
+- [ ] O botão “Excluir sorteio” tem fundo vermelho e texto branco legível.
+- [ ] Cancelar continua sem alterar o sorteio.
+- [ ] Confirmar exclui apenas o sorteio selecionado.
