@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1110" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1111" />
   <script src="/sortick-teste/js/clean-url.js"></script>
 </head>
 <body class="draw-page">
@@ -62,7 +62,9 @@
         <button id="drawButton" class="btn btn-primary btn-xl" disabled>Sortear</button>
         <button id="copyButton" class="btn btn-ghost" disabled>Copiar resumo</button>
         <button id="shareButton" class="btn btn-ghost" disabled>Compartilhar</button>
+        <button id="whatsappButton" class="btn btn-ghost" disabled>WhatsApp</button>
         <button id="downloadButton" class="btn btn-ghost" disabled>Baixar imagem</button>
+        <button id="focusButton" class="btn btn-ghost" type="button">Tela cheia</button>
         <button id="resetButton" class="btn btn-secondary hidden" type="button">Reiniciar bingo</button>
       </div>
       <p id="resetHint" class="stage-action-hint hidden">Reinicia o histórico de números do bingo.</p>
@@ -160,6 +162,73 @@
         <ol id="participantList" class="participant-list"></ol>
       </div>
 
+      <div id="cartelaInfoCard" class="panel-card cartela-info-card hidden">
+        <div class="cartela-info-heading">
+          <div>
+            <p class="eyebrow">Cartela</p>
+            <h2>Detalhes opcionais</h2>
+          </div>
+          <span class="cartela-optional-label">Opcional</span>
+        </div>
+        <p class="subtle">Essas informações aparecem na cartela e podem ser incluídas na imagem exportada.</p>
+
+        <form id="cartelaInfoForm" class="cartela-info-form">
+          <label>
+            Título da cartela
+            <input id="cartelaTitleInput" type="text" maxlength="80" placeholder="Ex: Rifa da cesta" />
+          </label>
+
+          <label>
+            Prêmio
+            <input id="cartelaPrizeInput" type="text" maxlength="100" placeholder="Ex: Cesta de chocolates" />
+          </label>
+
+          <div class="cartela-info-row">
+            <label>
+              Valor por número
+              <input id="cartelaValueInput" type="text" maxlength="30" placeholder="Ex: R$ 5,00" />
+            </label>
+
+            <label>
+              Data do sorteio
+              <input id="cartelaDateInput" type="date" />
+            </label>
+          </div>
+
+          <label>
+            Condição ou observação
+            <textarea id="cartelaNoteInput" rows="3" maxlength="180" placeholder="Ex: Sorteio quando todos os números forem ocupados."></textarea>
+          </label>
+
+          <label class="compact-label">
+            Marcadores da cartela
+            <select id="cartelaMarkerStyle">
+              <option value="default">Padrão — cores e pontos</option>
+              <option value="emoji">Com marcadores — 🍀 e ✅</option>
+            </select>
+          </label>
+
+          <button class="btn btn-secondary" type="submit">Salvar detalhes</button>
+        </form>
+
+        <div class="cartela-export-section">
+          <div>
+            <h3>Imagem da cartela</h3>
+            <p class="subtle">Gere uma imagem completa, sem depender de print ou rolagem.</p>
+          </div>
+
+          <label class="inline-option cartela-export-option">
+            <input id="cartelaShowNamesToggle" type="checkbox" />
+            Mostrar nomes
+          </label>
+
+          <div class="cartela-export-actions">
+            <button id="previewCartelaButton" class="btn btn-ghost light" type="button">Visualizar cartela</button>
+            <button id="exportCartelaButton" class="btn btn-primary" type="button">Exportar imagem</button>
+          </div>
+        </div>
+      </div>
+
       <div class="panel-card small-card">
         <h3>Transparência</h3>
         <p>
@@ -169,7 +238,7 @@
     </aside>
   </main>
 
-  <script src="/sortick-teste/js/utils.js?v=1110"></script>
-  <script src="/sortick-teste/js/sorteio.js?v=1110"></script>
+  <script src="/sortick-teste/js/utils.js?v=1111"></script>
+  <script src="/sortick-teste/js/sorteio.js?v=1111"></script>
 </body>
 </html>

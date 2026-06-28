@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.11-cartela-compartilhamento
+- Adicionados detalhes, marcadores, visualização ampla e imagem exportável para cartelas; reforçado compartilhamento de resultados.
+
 ## v1.10.10-corrigir-excluir
 - Ajustado contraste do botão destrutivo no modal de exclusão.
 

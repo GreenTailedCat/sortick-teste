@@ -20,6 +20,8 @@ const drawButton = document.querySelector("#drawButton");
 const copyButton = document.querySelector("#copyButton");
 const shareButton = document.querySelector("#shareButton");
 const downloadButton = document.querySelector("#downloadButton");
+const whatsappButton = document.querySelector("#whatsappButton");
+const focusButton = document.querySelector("#focusButton");
 const resetButton = document.querySelector("#resetButton");
 const participantForm = document.querySelector("#participantForm");
 const participantName = document.querySelector("#participantName");
@@ -45,6 +47,17 @@ const bulkText = document.querySelector("#bulkText");
 const confirmBulkButton = document.querySelector("#confirmBulkButton");
 const cancelBulkButton = document.querySelector("#cancelBulkButton");
 const bulkPreview = document.querySelector("#bulkPreview");
+const cartelaInfoCard = document.querySelector("#cartelaInfoCard");
+const cartelaInfoForm = document.querySelector("#cartelaInfoForm");
+const cartelaTitleInput = document.querySelector("#cartelaTitleInput");
+const cartelaPrizeInput = document.querySelector("#cartelaPrizeInput");
+const cartelaValueInput = document.querySelector("#cartelaValueInput");
+const cartelaDateInput = document.querySelector("#cartelaDateInput");
+const cartelaNoteInput = document.querySelector("#cartelaNoteInput");
+const cartelaMarkerStyle = document.querySelector("#cartelaMarkerStyle");
+const cartelaShowNamesToggle = document.querySelector("#cartelaShowNamesToggle");
+const previewCartelaButton = document.querySelector("#previewCartelaButton");
+const exportCartelaButton = document.querySelector("#exportCartelaButton");
 
 if (!draw) {
   document.body.innerHTML = `
@@ -62,6 +75,15 @@ if (!draw) {
   draw.options.groupCount = Sortick.clampNumber(draw.options.groupCount || 2, 2, 50);
   draw.options.bingoAllowRepeats = Boolean(draw.options.bingoAllowRepeats);
   draw.options.bingoDrawnNumbers = Array.isArray(draw.options.bingoDrawnNumbers) ? draw.options.bingoDrawnNumbers : [];
+  draw.options.cartelaInfo = {
+    prize: "",
+    value: "",
+    drawDate: "",
+    note: "",
+    markerStyle: "default",
+    exportShowNames: false,
+    ...(draw.options.cartelaInfo || {})
+  };
   draw.participants = draw.participants.map(p => ({ ...p, status: p.status || "pending" }));
   setupDraw();
 }
@@ -84,6 +106,8 @@ function setupDraw() {
     participantNumber.classList.remove("hidden");
     numberLegend.classList.remove("hidden");
     bulkButton.classList.add("hidden");
+    if (cartelaInfoCard) cartelaInfoCard.classList.remove("hidden");
+    syncCartelaInfoForm();
     participantNumber.placeholder = `Número de 1 a ${getTotalNumbers()}`;
     participantNumber.max = getTotalNumbers();
     participantHelp.textContent = "Toque em um número verde para selecionar. Toque em um número ocupado para alternar Confirmado/Pendente.";
@@ -122,6 +146,80 @@ function setupDraw() {
 }
 
 function getTotalNumbers() { return Sortick.clampNumber(draw.options.totalNumbers || 50, 2, 500); }
+function getCartelaInfo() {
+  draw.options.cartelaInfo = {
+    prize: "",
+    value: "",
+    drawDate: "",
+    note: "",
+    markerStyle: "default",
+    exportShowNames: false,
+    ...(draw.options.cartelaInfo || {})
+  };
+
+  return draw.options.cartelaInfo;
+}
+
+function formatCartelaDate(dateValue) {
+  if (!dateValue) return "";
+
+  const date = new Date(`${dateValue}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(date);
+}
+
+function getCartelaStats() {
+  const total = getTotalNumbers();
+  const counts = getStatusCounts();
+  const available = Math.max(0, total - counts.total);
+  const progress = total ? Math.round((counts.total / total) * 100) : 0;
+
+  return {
+    total,
+    available,
+    occupied: counts.total,
+    confirmed: counts.confirmed,
+    pending: counts.pending,
+    progress
+  };
+}
+
+function getCartelaMarker(participant, isWinner = false) {
+  const info = getCartelaInfo();
+
+  if (info.markerStyle !== "emoji" || !participant) return "";
+
+  if (isWinner) return "🏆";
+  return participant.status === "confirmed" ? "✅" : "🍀";
+}
+
+function getCartelaDetailParts() {
+  const info = getCartelaInfo();
+  const details = [];
+
+  if (info.prize) details.push(`Prêmio: ${info.prize}`);
+  if (info.value) details.push(`${info.value} por número`);
+  if (info.drawDate) details.push(`Sorteio: ${formatCartelaDate(info.drawDate)}`);
+
+  return details;
+}
+
+function syncCartelaInfoForm() {
+  if (!cartelaInfoCard || draw.type !== "numbers") return;
+
+  const info = getCartelaInfo();
+
+  cartelaTitleInput.value = draw.title || "";
+  cartelaPrizeInput.value = info.prize || "";
+  cartelaValueInput.value = info.value || "";
+  cartelaDateInput.value = info.drawDate || "";
+  cartelaNoteInput.value = info.note || "";
+  cartelaMarkerStyle.value = info.markerStyle === "emoji" ? "emoji" : "default";
+  cartelaShowNamesToggle.checked = Boolean(info.exportShowNames);
+}
+
+
 function persist() { draw.updatedAt = new Date().toISOString(); Sortick.saveDraw(draw); }
 function setValidation(message = "") { validationMessage.textContent = message; }
 
@@ -151,6 +249,7 @@ function render() {
   drawButton.disabled = !canDraw || isDrawing;
   copyButton.disabled = !draw.result;
   shareButton.disabled = !draw.result;
+  if (whatsappButton) whatsappButton.disabled = !draw.result;
   downloadButton.disabled = !draw.result;
   setRuleOptionsLocked(isDrawing);
 }
@@ -537,51 +636,97 @@ function getLabelFontSize(count) { return count <= 6 ? 34 : count <= 10 ? 28 : c
 function degreesToRadians(degrees) { return degrees * Math.PI / 180; }
 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-function renderNumberBoard(highlightNumber = null) {
+function buildCartelaCellMarkup(number, participant, isWinner, { interactive = true, showNames = true } = {}) {
+  const info = getCartelaInfo();
+  const dot = participant && info.markerStyle !== "emoji"
+    ? `<i class="status-dot ${participant.status === "confirmed" ? "confirmed-dot" : "pending-dot"}"></i>`
+    : "";
+  const marker = getCartelaMarker(participant, isWinner);
+  const name = participant && showNames
+    ? `<small>${Sortick.escapeHTML(participant.name)}</small>`
+    : "";
+  const tag = interactive ? "button" : "div";
+  const interactionAttributes = interactive
+    ? `type="button" data-number="${number}"`
+    : `role="listitem"`;
+  const label = participant ? participant.name : "Disponível";
+
+  return `
+    <${tag} class="number-cell ${participant ? "taken" : "available"} ${isWinner ? "winner" : ""}" ${interactionAttributes} title="${Sortick.escapeHTML(label)}">
+      ${dot}${marker ? `<span class="cartela-marker" aria-hidden="true">${marker}</span>` : ""}
+      <span>${number}</span>${name}
+    </${tag}>`;
+}
+
+function buildCartelaGrid({ interactive = true, showNames = true, extraClass = "" } = {}) {
   const total = getTotalNumbers();
-  const takenByNumber = new Map(draw.participants.map(p => [String(p.number), p]));
-  const winnerNumber = highlightNumber || (draw.result ? String(draw.result.participant.number) : null);
-  const counts = getStatusCounts();
+  const takenByNumber = new Map(draw.participants.map(participant => [String(participant.number), participant]));
+  const winnerNumber = draw.result && draw.result.participant ? String(draw.result.participant.number) : null;
+  const cellClass = total <= 100 ? "cartela-board-compact" : "cartela-board-scroll";
   let cells = "";
 
   for (let number = 1; number <= total; number += 1) {
     const participant = takenByNumber.get(String(number));
     const isWinner = String(number) === String(winnerNumber);
-    const dot = participant ? `<i class="status-dot ${participant.status === "confirmed" ? "confirmed-dot" : "pending-dot"}"></i>` : "";
-    cells += `
-      <button class="number-cell ${participant ? "taken" : "available"} ${isWinner ? "winner" : ""}" type="button" data-number="${number}" title="${Sortick.escapeHTML(participant ? participant.name : "Disponível")}">
-        ${dot}<span>${number}</span>${participant ? `<small>${Sortick.escapeHTML(participant.name)}</small>` : ""}
-      </button>`;
+    cells += buildCartelaCellMarkup(number, participant, isWinner, { interactive, showNames });
+  }
+
+  return `<div class="number-board ${cellClass} ${extraClass}">${cells}</div>`;
+}
+
+function renderNumberBoard(highlightNumber = null) {
+  const info = getCartelaInfo();
+  const stats = getCartelaStats();
+  const details = getCartelaDetailParts();
+  const takenByNumber = new Map(draw.participants.map(participant => [String(participant.number), participant]));
+  const highlight = highlightNumber ? String(highlightNumber) : null;
+  const winnerNumber = highlight || (draw.result ? String(draw.result.participant.number) : null);
+  let cells = "";
+
+  for (let number = 1; number <= stats.total; number += 1) {
+    const participant = takenByNumber.get(String(number));
+    const isWinner = String(number) === String(winnerNumber);
+    cells += buildCartelaCellMarkup(number, participant, isWinner, { interactive: true, showNames: true });
   }
 
   animationArea.innerHTML = `
-    <div class="number-board-wrap ${isCartelaExpanded ? "cartela-expanded-wrap" : ""}">
+    <div class="number-board-wrap">
       <div class="number-board-header cartela-header">
-        <span>Cartela de 1 a ${total}</span>
+        <div class="cartela-title-block">
+          <span>${Sortick.escapeHTML(draw.title)}</span>
+          ${details.length ? `<small>${Sortick.escapeHTML(details.join(" · "))}</small>` : ""}
+          ${info.note ? `<small class="cartela-note">${Sortick.escapeHTML(info.note)}</small>` : ""}
+        </div>
+
         <div class="cartela-header-actions">
-          <small>${total - counts.total} disponíveis · ${counts.total} ocupados · ${counts.confirmed} confirmados</small>
-          <button id="toggleCartelaExpanded" class="cartela-expand-button" type="button" aria-expanded="${isCartelaExpanded}">
-            ${isCartelaExpanded ? "Fechar visualização expandida" : "Visualizar cartela expandida"}
-          </button>
+          <small>${stats.available} disponíveis · ${stats.occupied} ocupados · ${stats.confirmed} confirmados</small>
+          <button id="previewCartelaStageButton" class="cartela-expand-button" type="button">Visualizar cartela</button>
         </div>
       </div>
-      <div class="number-board ${isCartelaExpanded ? "cartela-expanded" : ""}">${cells}</div>
+
+      <div class="cartela-progress-block" aria-label="${stats.progress}% da cartela ocupada">
+        <div class="cartela-progress-track"><span style="width: ${stats.progress}%"></span></div>
+        <small>${stats.progress}% preenchida</small>
+      </div>
+
+      <div class="number-board ${stats.total <= 100 ? "cartela-board-compact" : "cartela-board-scroll"}">${cells}</div>
     </div>`;
 
-  const toggleCartelaExpanded = animationArea.querySelector("#toggleCartelaExpanded");
-  if (toggleCartelaExpanded) {
-    toggleCartelaExpanded.addEventListener("click", () => {
-      isCartelaExpanded = !isCartelaExpanded;
-      renderNumberBoard();
-    });
-  }
+  const previewStageButton = animationArea.querySelector("#previewCartelaStageButton");
+  if (previewStageButton) previewStageButton.addEventListener("click", openCartelaPreview);
 
-  animationArea.querySelectorAll(".number-cell").forEach(button => {
+  animationArea.querySelectorAll(".number-cell[data-number]").forEach(button => {
     button.addEventListener("click", () => {
       if (isDrawing) return;
+
       const number = button.dataset.number;
       const participant = takenByNumber.get(String(number));
-      if (participant) return toggleParticipantStatus(participant.id);
+
+      if (participant) {
+        toggleParticipantStatus(participant.id);
+        return;
+      }
+
       participantNumber.value = number;
       playSelectSound();
       participantName.focus();
@@ -589,6 +734,78 @@ function renderNumberBoard(highlightNumber = null) {
     });
   });
 }
+
+function openCartelaPreview() {
+  if (draw.type !== "numbers") return;
+
+  const previousFocus = document.activeElement;
+  const info = getCartelaInfo();
+  const stats = getCartelaStats();
+  const details = getCartelaDetailParts();
+  const overlay = document.createElement("div");
+  const panel = document.createElement("section");
+  const headingId = `cartela-preview-${Sortick.createId("title")}`;
+
+  overlay.className = "cartela-preview-backdrop";
+  overlay.setAttribute("role", "presentation");
+
+  panel.className = "cartela-preview-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  panel.setAttribute("aria-labelledby", headingId);
+
+  panel.innerHTML = `
+    <header class="cartela-preview-header">
+      <div>
+        <p class="eyebrow">Visualização da cartela</p>
+        <h2 id="${headingId}">${Sortick.escapeHTML(draw.title)}</h2>
+        ${details.length ? `<p>${Sortick.escapeHTML(details.join(" · "))}</p>` : ""}
+        ${info.note ? `<p>${Sortick.escapeHTML(info.note)}</p>` : ""}
+      </div>
+      <button class="cartela-preview-close" type="button" aria-label="Fechar visualização">×</button>
+    </header>
+
+    <div class="cartela-preview-summary">
+      <span>${stats.available} disponíveis</span>
+      <span>${stats.occupied} ocupados</span>
+      <span>${stats.confirmed} confirmados</span>
+      <span>${stats.progress}% preenchida</span>
+    </div>
+
+    <div class="cartela-preview-grid-wrap">
+      ${buildCartelaGrid({ interactive: false, showNames: true, extraClass: "cartela-preview-grid" })}
+    </div>`;
+
+  function closePreview() {
+    document.removeEventListener("keydown", onKeyDown);
+    overlay.remove();
+    document.body.classList.remove("sortick-modal-open");
+
+    if (previousFocus && typeof previousFocus.focus === "function") {
+      previousFocus.focus();
+    }
+  }
+
+  function onKeyDown(event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closePreview();
+    }
+  }
+
+  panel.querySelector(".cartela-preview-close").addEventListener("click", closePreview);
+  overlay.addEventListener("mousedown", event => {
+    if (event.target === overlay) closePreview();
+  });
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  document.body.classList.add("sortick-modal-open");
+  document.addEventListener("keydown", onKeyDown);
+
+  requestAnimationFrame(() => panel.querySelector(".cartela-preview-close").focus());
+}
+
 
 function renderResult() {
   if (!draw.result) {
@@ -684,7 +901,10 @@ function createShareText() {
   ];
 
   if (draw.type === "numbers") {
+    const info = getCartelaInfo();
     lines.push(`Associado a: ${p.name}`);
+    if (info.prize) lines.push(`Prêmio: ${info.prize}`);
+    if (info.value) lines.push(`Valor por número: ${info.value}`);
   }
 
   lines.push(`Status: ${Sortick.statusLabel(p.status)}`);
@@ -724,6 +944,173 @@ function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
 
   return currentY;
 }
+
+function truncateCanvasText(ctx, text, maxWidth) {
+  const value = String(text || "");
+
+  if (ctx.measureText(value).width <= maxWidth) return value;
+
+  let result = value;
+  while (result.length && ctx.measureText(`${result}…`).width > maxWidth) {
+    result = result.slice(0, -1);
+  }
+
+  return `${result}…`;
+}
+
+function drawCanvasPill(ctx, text, x, y, fill, color) {
+  ctx.font = "800 24px Inter, Arial, sans-serif";
+  const width = ctx.measureText(text).width + 36;
+  ctx.fillStyle = fill;
+  roundRect(ctx, x, y, width, 44, 22);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.fillText(text, x + 18, y + 29);
+  return width;
+}
+
+function downloadCartelaImage() {
+  if (draw.type !== "numbers") return;
+
+  const info = getCartelaInfo();
+  const stats = getCartelaStats();
+  const showNames = Boolean(cartelaShowNamesToggle && cartelaShowNamesToggle.checked);
+  const columns = stats.total <= 100 ? 10 : 12;
+  const rows = Math.ceil(stats.total / columns);
+  const cellWidth = showNames ? 128 : 112;
+  const cellHeight = showNames ? 104 : 78;
+  const gap = 10;
+  const padding = 58;
+  const gridWidth = columns * cellWidth + (columns - 1) * gap;
+  const width = Math.max(1320, gridWidth + padding * 2);
+  const headerHeight = info.note || info.prize || info.value || info.drawDate ? 360 : 300;
+  const height = headerHeight + rows * cellHeight + (rows - 1) * gap + padding + 110;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) throw new Error("Canvas não disponível.");
+
+  const background = ctx.createLinearGradient(0, 0, width, height);
+  background.addColorStop(0, "#161243");
+  background.addColorStop(0.5, "#4935b8");
+  background.addColorStop(1, "#00a995");
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = "rgba(255,255,255,0.1)";
+  ctx.beginPath();
+  ctx.arc(width - 120, 110, 170, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, 30, 30, width - 60, height - 60, 34);
+  ctx.fill();
+
+  let y = 92;
+  ctx.fillStyle = "#00a995";
+  ctx.font = "900 23px Inter, Arial, sans-serif";
+  ctx.fillText("CARTELA DO SORTEIO", padding, y);
+
+  y += 60;
+  ctx.fillStyle = "#17142f";
+  ctx.font = "900 52px Inter, Arial, sans-serif";
+  const title = truncateCanvasText(ctx, draw.title, width - padding * 2);
+  ctx.fillText(title, padding, y);
+
+  y += 44;
+  const detailLines = [];
+  if (info.prize) detailLines.push(`Prêmio: ${info.prize}`);
+  if (info.value) detailLines.push(`${info.value} por número`);
+  if (info.drawDate) detailLines.push(`Sorteio: ${formatCartelaDate(info.drawDate)}`);
+
+  ctx.fillStyle = "#6f6b85";
+  ctx.font = "700 24px Inter, Arial, sans-serif";
+  if (detailLines.length) {
+    y = wrapCanvasText(ctx, detailLines.join(" · "), padding, y, width - padding * 2, 32);
+  }
+
+  if (info.note) {
+    y += 8;
+    ctx.font = "700 22px Inter, Arial, sans-serif";
+    y = wrapCanvasText(ctx, info.note, padding, y, width - padding * 2, 30);
+  }
+
+  const statY = headerHeight - 94;
+  let pillX = padding;
+  pillX += drawCanvasPill(ctx, `${stats.available} disponíveis`, pillX, statY, "#e8fff4", "#087543") + 12;
+  pillX += drawCanvasPill(ctx, `${stats.occupied} ocupados`, pillX, statY, "#ffeaf0", "#a0173a") + 12;
+  drawCanvasPill(ctx, `${stats.confirmed} confirmados`, pillX, statY, "#eeeaff", "#4d31d7");
+
+  const takenByNumber = new Map(draw.participants.map(participant => [String(participant.number), participant]));
+  const winnerNumber = draw.result && draw.result.participant ? String(draw.result.participant.number) : null;
+  const startY = headerHeight;
+  const nameFont = showNames ? 15 : 0;
+
+  for (let number = 1; number <= stats.total; number += 1) {
+    const index = number - 1;
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = padding + column * (cellWidth + gap);
+    const cellY = startY + row * (cellHeight + gap);
+    const participant = takenByNumber.get(String(number));
+    const isWinner = String(number) === String(winnerNumber);
+
+    let fill = "#18c970";
+    let textColor = "#ffffff";
+
+    if (participant && participant.status === "pending") fill = "#ff4b6e";
+    if (participant && participant.status === "confirmed") fill = "#6c4dff";
+    if (isWinner) {
+      fill = "#ffca3a";
+      textColor = "#261200";
+    }
+
+    ctx.fillStyle = fill;
+    roundRect(ctx, x, cellY, cellWidth, cellHeight, 16);
+    ctx.fill();
+
+    ctx.fillStyle = textColor;
+    ctx.font = "900 30px Inter, Arial, sans-serif";
+    ctx.fillText(String(number), x + 14, cellY + 37);
+
+    if (info.markerStyle === "emoji" && participant) {
+      ctx.font = "22px Arial, sans-serif";
+      ctx.fillText(isWinner ? "🏆" : participant.status === "confirmed" ? "✅" : "🍀", x + cellWidth - 38, cellY + 33);
+    } else if (participant) {
+      ctx.fillStyle = participant.status === "confirmed" ? "#18c970" : "#ff4b6e";
+      ctx.beginPath();
+      ctx.arc(x + cellWidth - 17, cellY + 17, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (showNames && participant) {
+      ctx.fillStyle = textColor;
+      ctx.font = `800 ${nameFont}px Inter, Arial, sans-serif`;
+      const safeName = truncateCanvasText(ctx, participant.name, cellWidth - 26);
+      ctx.fillText(safeName, x + 13, cellY + cellHeight - 17);
+    }
+  }
+
+  ctx.fillStyle = "#6f6b85";
+  ctx.font = "800 20px Inter, Arial, sans-serif";
+  ctx.fillText(`Cartela de 1 a ${stats.total} · ${stats.progress}% preenchida`, padding, height - 62);
+
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#17142f";
+  ctx.font = "900 22px Inter, Arial, sans-serif";
+  ctx.fillText("Feito no Sortick", width - padding, height - 62);
+  ctx.textAlign = "left";
+
+  const link = document.createElement("a");
+  const safeTitle = draw.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "") || "cartela";
+  link.download = `sortick-cartela-${safeTitle}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
 
 function downloadResultImage() {
   if (!draw.result) return;
@@ -831,6 +1218,54 @@ function roundRect(context, x, y, width, height, radius) {
   context.lineTo(x, y + radius);
   context.quadraticCurveTo(x, y, x + radius, y);
   context.closePath();
+}
+
+if (cartelaInfoForm) {
+  cartelaInfoForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    if (draw.type !== "numbers") return;
+
+    const title = Sortick.normalizeText(cartelaTitleInput.value).slice(0, 80);
+    const info = getCartelaInfo();
+
+    draw.title = title || draw.title || "Cartela";
+    info.prize = Sortick.normalizeText(cartelaPrizeInput.value).slice(0, 100);
+    info.value = Sortick.normalizeText(cartelaValueInput.value).slice(0, 30);
+    info.drawDate = cartelaDateInput.value || "";
+    info.note = Sortick.normalizeText(cartelaNoteInput.value).slice(0, 180);
+    info.markerStyle = cartelaMarkerStyle.value === "emoji" ? "emoji" : "default";
+    info.exportShowNames = Boolean(cartelaShowNamesToggle.checked);
+
+    draw.options.cartelaInfo = info;
+    drawTitle.textContent = draw.title;
+    persist();
+    render();
+    setValidation("Detalhes da cartela salvos.");
+  });
+}
+
+if (cartelaShowNamesToggle) {
+  cartelaShowNamesToggle.addEventListener("change", () => {
+    if (draw.type !== "numbers") return;
+    getCartelaInfo().exportShowNames = Boolean(cartelaShowNamesToggle.checked);
+    persist();
+  });
+}
+
+if (previewCartelaButton) {
+  previewCartelaButton.addEventListener("click", openCartelaPreview);
+}
+
+if (exportCartelaButton) {
+  exportCartelaButton.addEventListener("click", () => {
+    try {
+      downloadCartelaImage();
+      setValidation("Imagem da cartela gerada.");
+    } catch {
+      setValidation("Não foi possível gerar a imagem da cartela agora.");
+    }
+  });
 }
 
 participantForm.addEventListener("submit", event => {
@@ -1205,6 +1640,36 @@ shareButton.addEventListener("click", async () => {
     setValidation("Não foi possível compartilhar agora.");
   }
 });
+
+if (whatsappButton) {
+  whatsappButton.addEventListener("click", () => {
+    if (!draw.result) return;
+
+    const text = createShareText();
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    if (typeof window.sortickTrack === "function") {
+      window.sortickTrack("share_result", { draw_type: draw.type, method: "whatsapp" });
+    }
+  });
+}
+
+if (focusButton) {
+  focusButton.addEventListener("click", async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        setValidation("Tela cheia não está disponível neste navegador.");
+      }
+    } catch {
+      setValidation("Não foi possível abrir a tela cheia agora.");
+    }
+  });
+}
 
 downloadButton.addEventListener("click", () => {
   if (typeof window.sortickTrack === "function") {

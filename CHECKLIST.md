@@ -148,3 +148,26 @@
 - [ ] O botão “Excluir sorteio” tem fundo vermelho e texto branco legível.
 - [ ] Cancelar continua sem alterar o sorteio.
 - [ ] Confirmar exclui apenas o sorteio selecionado.
+
+
+## Testes v1.11 — cartela e compartilhamento
+
+### Cartela
+- [ ] Cartela mostra detalhes apenas quando preenchidos.
+- [ ] Salvar detalhes atualiza o título, prêmio, valor, data e observação.
+- [ ] Barra de preenchimento muda quando números são ocupados.
+- [ ] Marcadores padrão e marcadores com 🍀/✅ funcionam.
+- [ ] Visualizar cartela abre painel amplo e fecha por X, Esc ou clique fora.
+- [ ] Números e nomes exibidos na visualização ampla não são alterados.
+
+### Exportação
+- [ ] Exportar imagem baixa a cartela inteira, inclusive números fora da área visível.
+- [ ] Com “Mostrar nomes” desmarcado, os nomes não aparecem na imagem.
+- [ ] Com “Mostrar nomes” marcado, nomes associados aparecem na imagem.
+- [ ] Título, detalhes e resumo aparecem corretamente na imagem.
+
+### Resultado
+- [ ] Copiar resumo, Compartilhar e Baixar imagem continuam funcionando.
+- [ ] WhatsApp abre mensagem pronta de resultado.
+- [ ] Tela cheia abre e fecha corretamente.
+- [ ] Nenhum sorteio salvo, participante ou resultado antigo é apagado.

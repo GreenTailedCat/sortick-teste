@@ -1,4 +1,4 @@
-# Sortick Teste v1.10.10-corrigir-excluir
+# Sortick Teste v1.11-cartela-compartilhamento
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -216,3 +216,16 @@ Correção de consistência de controles já existentes:
 - Corrigido o botão “Excluir sorteio” no modal de confirmação.
 - O botão agora tem fundo vermelho sólido e texto branco no modal claro.
 - Nenhuma lógica dos sorteios salvos foi alterada.
+
+
+## v1.11-cartela-compartilhamento
+
+Atualização maior de recursos de produto, mantida apenas no ambiente de testes:
+
+- Cartela com título, prêmio, valor por número, data e observação opcionais.
+- Barra de preenchimento e resumo de disponíveis, ocupados e confirmados.
+- Marcadores opcionais: padrão por cores/pontos ou marcadores 🍀 e ✅.
+- Visualização ampla da cartela em painel horizontal.
+- Exportação de imagem completa da cartela, com opção “Mostrar nomes”.
+- Compartilhamento de resultados reforçado com atalho para WhatsApp e Tela cheia.
+- Ações de produção, ads.txt e configuração do Google Ads permanecem fora desta cópia de testes.
