@@ -47,17 +47,7 @@ const bulkText = document.querySelector("#bulkText");
 const confirmBulkButton = document.querySelector("#confirmBulkButton");
 const cancelBulkButton = document.querySelector("#cancelBulkButton");
 const bulkPreview = document.querySelector("#bulkPreview");
-const cartelaInfoCard = document.querySelector("#cartelaInfoCard");
-const cartelaInfoForm = document.querySelector("#cartelaInfoForm");
-const cartelaTitleInput = document.querySelector("#cartelaTitleInput");
-const cartelaPrizeInput = document.querySelector("#cartelaPrizeInput");
-const cartelaValueInput = document.querySelector("#cartelaValueInput");
-const cartelaDateInput = document.querySelector("#cartelaDateInput");
-const cartelaNoteInput = document.querySelector("#cartelaNoteInput");
-const cartelaMarkerStyle = document.querySelector("#cartelaMarkerStyle");
-const cartelaShowNamesToggle = document.querySelector("#cartelaShowNamesToggle");
-const previewCartelaButton = document.querySelector("#previewCartelaButton");
-const exportCartelaButton = document.querySelector("#exportCartelaButton");
+
 
 if (!draw) {
   document.body.innerHTML = `
@@ -80,7 +70,8 @@ if (!draw) {
     value: "",
     drawDate: "",
     note: "",
-    markerStyle: "default",
+    imageData: "",
+    imageName: "",
     exportShowNames: false,
     ...(draw.options.cartelaInfo || {})
   };
@@ -106,8 +97,7 @@ function setupDraw() {
     participantNumber.classList.remove("hidden");
     numberLegend.classList.remove("hidden");
     bulkButton.classList.add("hidden");
-    if (cartelaInfoCard) cartelaInfoCard.classList.remove("hidden");
-    syncCartelaInfoForm();
+
     participantNumber.placeholder = `Número de 1 a ${getTotalNumbers()}`;
     participantNumber.max = getTotalNumbers();
     participantHelp.textContent = "Toque em um número verde para selecionar. Toque em um número ocupado para alternar Confirmado/Pendente.";
@@ -152,10 +142,13 @@ function getCartelaInfo() {
     value: "",
     drawDate: "",
     note: "",
-    markerStyle: "default",
+    imageData: "",
+    imageName: "",
     exportShowNames: false,
     ...(draw.options.cartelaInfo || {})
   };
+
+  delete draw.options.cartelaInfo.markerStyle;
 
   return draw.options.cartelaInfo;
 }
@@ -185,15 +178,6 @@ function getCartelaStats() {
   };
 }
 
-function getCartelaMarker(participant, isWinner = false) {
-  const info = getCartelaInfo();
-
-  if (info.markerStyle !== "emoji" || !participant) return "";
-
-  if (isWinner) return "🏆";
-  return participant.status === "confirmed" ? "✅" : "🍀";
-}
-
 function getCartelaDetailParts() {
   const info = getCartelaInfo();
   const details = [];
@@ -204,21 +188,6 @@ function getCartelaDetailParts() {
 
   return details;
 }
-
-function syncCartelaInfoForm() {
-  if (!cartelaInfoCard || draw.type !== "numbers") return;
-
-  const info = getCartelaInfo();
-
-  cartelaTitleInput.value = draw.title || "";
-  cartelaPrizeInput.value = info.prize || "";
-  cartelaValueInput.value = info.value || "";
-  cartelaDateInput.value = info.drawDate || "";
-  cartelaNoteInput.value = info.note || "";
-  cartelaMarkerStyle.value = info.markerStyle === "emoji" ? "emoji" : "default";
-  cartelaShowNamesToggle.checked = Boolean(info.exportShowNames);
-}
-
 
 function persist() { draw.updatedAt = new Date().toISOString(); Sortick.saveDraw(draw); }
 function setValidation(message = "") { validationMessage.textContent = message; }
@@ -636,12 +605,18 @@ function getLabelFontSize(count) { return count <= 6 ? 34 : count <= 10 ? 28 : c
 function degreesToRadians(degrees) { return degrees * Math.PI / 180; }
 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-function buildCartelaCellMarkup(number, participant, isWinner, { interactive = true, showNames = true } = {}) {
+function getCartelaImageMarkup(className = "cartela-prize-thumb") {
   const info = getCartelaInfo();
-  const dot = participant && info.markerStyle !== "emoji"
+
+  if (!info.imageData) return "";
+
+  return `<img class="${className}" src="${info.imageData}" alt="${Sortick.escapeHTML(info.prize || "Imagem do prêmio")}" />`;
+}
+
+function buildCartelaCellMarkup(number, participant, isWinner, { interactive = true, showNames = true } = {}) {
+  const dot = participant
     ? `<i class="status-dot ${participant.status === "confirmed" ? "confirmed-dot" : "pending-dot"}"></i>`
     : "";
-  const marker = getCartelaMarker(participant, isWinner);
   const name = participant && showNames
     ? `<small>${Sortick.escapeHTML(participant.name)}</small>`
     : "";
@@ -653,7 +628,7 @@ function buildCartelaCellMarkup(number, participant, isWinner, { interactive = t
 
   return `
     <${tag} class="number-cell ${participant ? "taken" : "available"} ${isWinner ? "winner" : ""}" ${interactionAttributes} title="${Sortick.escapeHTML(label)}">
-      ${dot}${marker ? `<span class="cartela-marker" aria-hidden="true">${marker}</span>` : ""}
+      ${dot}
       <span>${number}</span>${name}
     </${tag}>`;
 }
@@ -692,15 +667,18 @@ function renderNumberBoard(highlightNumber = null) {
   animationArea.innerHTML = `
     <div class="number-board-wrap">
       <div class="number-board-header cartela-header">
-        <div class="cartela-title-block">
-          <span>${Sortick.escapeHTML(draw.title)}</span>
-          ${details.length ? `<small>${Sortick.escapeHTML(details.join(" · "))}</small>` : ""}
-          ${info.note ? `<small class="cartela-note">${Sortick.escapeHTML(info.note)}</small>` : ""}
+        <div class="cartela-title-with-image">
+          ${getCartelaImageMarkup()}
+          <div class="cartela-title-block">
+            <span>${Sortick.escapeHTML(draw.title)}</span>
+            ${details.length ? `<small>${Sortick.escapeHTML(details.join(" · "))}</small>` : ""}
+            ${info.note ? `<small class="cartela-note">${Sortick.escapeHTML(info.note)}</small>` : ""}
+          </div>
         </div>
 
         <div class="cartela-header-actions">
           <small>${stats.available} disponíveis · ${stats.occupied} ocupados · ${stats.confirmed} confirmados</small>
-          <button id="previewCartelaStageButton" class="cartela-expand-button" type="button">Visualizar cartela</button>
+          <button id="editCartelaButton" class="cartela-expand-button" type="button">Editar detalhes</button>
         </div>
       </div>
 
@@ -710,10 +688,44 @@ function renderNumberBoard(highlightNumber = null) {
       </div>
 
       <div class="number-board ${stats.total <= 100 ? "cartela-board-compact" : "cartela-board-scroll"}">${cells}</div>
+
+      <div class="cartela-board-actions">
+        <label class="inline-option cartela-export-option">
+          <input id="cartelaShowNamesToggle" type="checkbox" ${info.exportShowNames ? "checked" : ""} />
+          Mostrar nomes na imagem
+        </label>
+        <div class="cartela-board-action-buttons">
+          <button id="previewCartelaStageButton" class="btn btn-ghost light" type="button">Visualizar cartela</button>
+          <button id="exportCartelaButton" class="btn btn-primary" type="button">Exportar imagem</button>
+        </div>
+      </div>
     </div>`;
 
   const previewStageButton = animationArea.querySelector("#previewCartelaStageButton");
+  const exportButton = animationArea.querySelector("#exportCartelaButton");
+  const editButton = animationArea.querySelector("#editCartelaButton");
+  const showNamesToggle = animationArea.querySelector("#cartelaShowNamesToggle");
+
   if (previewStageButton) previewStageButton.addEventListener("click", openCartelaPreview);
+  if (editButton) editButton.addEventListener("click", openCartelaEditor);
+
+  if (showNamesToggle) {
+    showNamesToggle.addEventListener("change", () => {
+      getCartelaInfo().exportShowNames = Boolean(showNamesToggle.checked);
+      persist();
+    });
+  }
+
+  if (exportButton) {
+    exportButton.addEventListener("click", async () => {
+      try {
+        await downloadCartelaImage();
+        setValidation("Imagem da cartela gerada.");
+      } catch {
+        setValidation("Não foi possível gerar a imagem da cartela agora.");
+      }
+    });
+  }
 
   animationArea.querySelectorAll(".number-cell[data-number]").forEach(button => {
     button.addEventListener("click", () => {
@@ -734,6 +746,197 @@ function renderNumberBoard(highlightNumber = null) {
     });
   });
 }
+
+function openCartelaEditor() {
+  if (draw.type !== "numbers") return;
+
+  const previousFocus = document.activeElement;
+  const info = getCartelaInfo();
+  let pendingImageData = info.imageData || "";
+  let pendingImageName = info.imageName || "";
+
+  const overlay = document.createElement("div");
+  const panel = document.createElement("section");
+  const headingId = `cartela-editor-${Sortick.createId("title")}`;
+
+  overlay.className = "cartela-editor-backdrop";
+  overlay.setAttribute("role", "presentation");
+
+  panel.className = "cartela-editor-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  panel.setAttribute("aria-labelledby", headingId);
+
+  panel.innerHTML = `
+    <header class="cartela-editor-header">
+      <div>
+        <p class="eyebrow">Editar cartela</p>
+        <h2 id="${headingId}">Detalhes da cartela</h2>
+        <p>Você pode alterar as informações que aparecem na cartela e na imagem exportada.</p>
+      </div>
+      <button class="cartela-preview-close" type="button" aria-label="Fechar edição">×</button>
+    </header>
+
+    <form class="cartela-editor-form">
+      <label>
+        Nome da cartela
+        <input name="title" type="text" maxlength="80" value="${Sortick.escapeHTML(draw.title)}" />
+      </label>
+
+      <div class="cartela-editor-locked">
+        <strong>Cartela de 1 a ${getTotalNumbers()}</strong>
+        <span>A quantidade de números é definida na criação e não pode ser alterada depois.</span>
+      </div>
+
+      <label>
+        Prêmio
+        <input name="prize" type="text" maxlength="100" value="${Sortick.escapeHTML(info.prize || "")}" placeholder="Ex: Cesta de chocolates" />
+      </label>
+
+      <label class="cartela-image-upload">
+        <span>Imagem do prêmio <small>Opcional</small></span>
+        <input name="image" type="file" accept="image/png,image/jpeg,image/webp" />
+        <span class="field-hint">PNG, JPG ou WEBP.</span>
+      </label>
+
+      <div class="cartela-editor-image-preview ${pendingImageData ? "" : "hidden"}">
+        <img alt="Prévia da imagem do prêmio" ${pendingImageData ? `src="${pendingImageData}"` : ""} />
+        <div>
+          <strong>${Sortick.escapeHTML(pendingImageName || "Imagem selecionada")}</strong>
+          <button class="link-button danger-text cartela-editor-remove-image" type="button">Remover imagem</button>
+        </div>
+      </div>
+      <p class="cartela-editor-image-status" aria-live="polite"></p>
+
+      <div class="cartela-editor-row">
+        <label>
+          Valor por número
+          <input name="value" type="text" maxlength="30" value="${Sortick.escapeHTML(info.value || "")}" placeholder="Ex: R$ 5,00" />
+        </label>
+
+        <label>
+          Data do sorteio
+          <input name="drawDate" type="date" value="${Sortick.escapeHTML(info.drawDate || "")}" />
+        </label>
+      </div>
+
+      <label>
+        Condição ou observação
+        <textarea name="note" rows="3" maxlength="180" placeholder="Ex: Sorteio quando todos os números forem ocupados.">${Sortick.escapeHTML(info.note || "")}</textarea>
+      </label>
+
+      <div class="cartela-editor-actions">
+        <button class="btn btn-ghost light cartela-editor-cancel" type="button">Cancelar</button>
+        <button class="btn btn-primary" type="submit">Salvar alterações</button>
+      </div>
+    </form>`;
+
+  const form = panel.querySelector(".cartela-editor-form");
+  const closeButton = panel.querySelector(".cartela-preview-close");
+  const cancelButton = panel.querySelector(".cartela-editor-cancel");
+  const imageInput = form.elements.image;
+  const imagePreview = panel.querySelector(".cartela-editor-image-preview");
+  const imagePreviewImage = imagePreview.querySelector("img");
+  const imagePreviewName = imagePreview.querySelector("strong");
+  const imageStatus = panel.querySelector(".cartela-editor-image-status");
+  const removeImageButton = panel.querySelector(".cartela-editor-remove-image");
+
+  function renderImagePreview() {
+    imagePreview.classList.toggle("hidden", !pendingImageData);
+
+    if (!pendingImageData) {
+      imagePreviewImage.removeAttribute("src");
+      imagePreviewName.textContent = "Imagem selecionada";
+      return;
+    }
+
+    imagePreviewImage.src = pendingImageData;
+    imagePreviewName.textContent = pendingImageName || "Imagem selecionada";
+  }
+
+  function closeEditor() {
+    document.removeEventListener("keydown", onKeyDown);
+    overlay.remove();
+    document.body.classList.remove("sortick-modal-open");
+
+    if (previousFocus && typeof previousFocus.focus === "function") {
+      previousFocus.focus();
+    }
+  }
+
+  function onKeyDown(event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeEditor();
+    }
+  }
+
+  imageInput.addEventListener("change", async () => {
+    const file = imageInput.files && imageInput.files[0];
+    if (!file) return;
+
+    imageStatus.textContent = "Preparando imagem...";
+
+    try {
+      const preparedImage = await Sortick.prepareImageFile(file);
+      pendingImageData = preparedImage.dataUrl;
+      pendingImageName = preparedImage.name;
+      renderImagePreview();
+      imageStatus.textContent = "Imagem pronta.";
+    } catch (error) {
+      imageInput.value = "";
+      imageStatus.textContent = error && error.message ? error.message : "Não foi possível usar esta imagem.";
+    }
+  });
+
+  removeImageButton.addEventListener("click", () => {
+    pendingImageData = "";
+    pendingImageName = "";
+    imageInput.value = "";
+    renderImagePreview();
+    imageStatus.textContent = "Imagem removida.";
+  });
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const title = Sortick.normalizeText(form.elements.title.value).slice(0, 80);
+    if (!title) {
+      form.elements.title.focus();
+      return;
+    }
+
+    const updatedInfo = getCartelaInfo();
+    updatedInfo.prize = Sortick.normalizeText(form.elements.prize.value).slice(0, 100);
+    updatedInfo.imageData = pendingImageData;
+    updatedInfo.imageName = pendingImageName;
+    updatedInfo.value = Sortick.normalizeText(form.elements.value.value).slice(0, 30);
+    updatedInfo.drawDate = form.elements.drawDate.value || "";
+    updatedInfo.note = Sortick.normalizeText(form.elements.note.value).slice(0, 180);
+
+    draw.title = title;
+    draw.options.cartelaInfo = updatedInfo;
+    drawTitle.textContent = draw.title;
+    persist();
+    render();
+    setValidation("Detalhes da cartela atualizados.");
+    closeEditor();
+  });
+
+  closeButton.addEventListener("click", closeEditor);
+  cancelButton.addEventListener("click", closeEditor);
+  overlay.addEventListener("mousedown", event => {
+    if (event.target === overlay) closeEditor();
+  });
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  document.body.classList.add("sortick-modal-open");
+  document.addEventListener("keydown", onKeyDown);
+
+  requestAnimationFrame(() => form.elements.title.focus());
+}
+
 
 function openCartelaPreview() {
   if (draw.type !== "numbers") return;
@@ -756,11 +959,14 @@ function openCartelaPreview() {
 
   panel.innerHTML = `
     <header class="cartela-preview-header">
-      <div>
-        <p class="eyebrow">Visualização da cartela</p>
-        <h2 id="${headingId}">${Sortick.escapeHTML(draw.title)}</h2>
-        ${details.length ? `<p>${Sortick.escapeHTML(details.join(" · "))}</p>` : ""}
-        ${info.note ? `<p>${Sortick.escapeHTML(info.note)}</p>` : ""}
+      <div class="cartela-title-with-image">
+        ${getCartelaImageMarkup("cartela-preview-image")}
+        <div>
+          <p class="eyebrow">Visualização da cartela</p>
+          <h2 id="${headingId}">${Sortick.escapeHTML(draw.title)}</h2>
+          ${details.length ? `<p>${Sortick.escapeHTML(details.join(" · "))}</p>` : ""}
+          ${info.note ? `<p>${Sortick.escapeHTML(info.note)}</p>` : ""}
+        </div>
       </div>
       <button class="cartela-preview-close" type="button" aria-label="Fechar visualização">×</button>
     </header>
@@ -805,7 +1011,6 @@ function openCartelaPreview() {
 
   requestAnimationFrame(() => panel.querySelector(".cartela-preview-close").focus());
 }
-
 
 function renderResult() {
   if (!draw.result) {
@@ -969,12 +1174,40 @@ function drawCanvasPill(ctx, text, x, y, fill, color) {
   return width;
 }
 
-function downloadCartelaImage() {
+function loadCanvasImage(source) {
+  return new Promise((resolve, reject) => {
+    if (!source) {
+      resolve(null);
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Não foi possível carregar a imagem."));
+    image.src = source;
+  });
+}
+
+function drawCanvasCoverImage(ctx, image, x, y, width, height, radius = 20) {
+  const scale = Math.max(width / image.width, height / image.height);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = (image.width - sourceWidth) / 2;
+  const sourceY = (image.height - sourceHeight) / 2;
+
+  ctx.save();
+  roundRect(ctx, x, y, width, height, radius);
+  ctx.clip();
+  ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+  ctx.restore();
+}
+
+async function downloadCartelaImage() {
   if (draw.type !== "numbers") return;
 
   const info = getCartelaInfo();
   const stats = getCartelaStats();
-  const showNames = Boolean(cartelaShowNamesToggle && cartelaShowNamesToggle.checked);
+  const showNames = Boolean(info.exportShowNames);
   const columns = stats.total <= 100 ? 10 : 12;
   const rows = Math.ceil(stats.total / columns);
   const cellWidth = showNames ? 128 : 112;
@@ -983,7 +1216,8 @@ function downloadCartelaImage() {
   const padding = 58;
   const gridWidth = columns * cellWidth + (columns - 1) * gap;
   const width = Math.max(1320, gridWidth + padding * 2);
-  const headerHeight = info.note || info.prize || info.value || info.drawDate ? 360 : 300;
+  const hasImage = Boolean(info.imageData);
+  const headerHeight = hasImage ? 410 : (info.note || info.prize || info.value || info.drawDate ? 360 : 300);
   const height = headerHeight + rows * cellHeight + (rows - 1) * gap + padding + 110;
 
   const canvas = document.createElement("canvas");
@@ -992,6 +1226,15 @@ function downloadCartelaImage() {
   const ctx = canvas.getContext("2d");
 
   if (!ctx) throw new Error("Canvas não disponível.");
+
+  let prizeImage = null;
+  if (hasImage) {
+    try {
+      prizeImage = await loadCanvasImage(info.imageData);
+    } catch {
+      prizeImage = null;
+    }
+  }
 
   const background = ctx.createLinearGradient(0, 0, width, height);
   background.addColorStop(0, "#161243");
@@ -1009,7 +1252,9 @@ function downloadCartelaImage() {
   roundRect(ctx, 30, 30, width - 60, height - 60, 34);
   ctx.fill();
 
+  const contentRight = hasImage ? width - padding - 310 : width - padding;
   let y = 92;
+
   ctx.fillStyle = "#00a995";
   ctx.font = "900 23px Inter, Arial, sans-serif";
   ctx.fillText("CARTELA DO SORTEIO", padding, y);
@@ -1017,7 +1262,7 @@ function downloadCartelaImage() {
   y += 60;
   ctx.fillStyle = "#17142f";
   ctx.font = "900 52px Inter, Arial, sans-serif";
-  const title = truncateCanvasText(ctx, draw.title, width - padding * 2);
+  const title = truncateCanvasText(ctx, draw.title, contentRight - padding);
   ctx.fillText(title, padding, y);
 
   y += 44;
@@ -1029,13 +1274,17 @@ function downloadCartelaImage() {
   ctx.fillStyle = "#6f6b85";
   ctx.font = "700 24px Inter, Arial, sans-serif";
   if (detailLines.length) {
-    y = wrapCanvasText(ctx, detailLines.join(" · "), padding, y, width - padding * 2, 32);
+    y = wrapCanvasText(ctx, detailLines.join(" · "), padding, y, contentRight - padding, 32);
   }
 
   if (info.note) {
     y += 8;
     ctx.font = "700 22px Inter, Arial, sans-serif";
-    y = wrapCanvasText(ctx, info.note, padding, y, width - padding * 2, 30);
+    y = wrapCanvasText(ctx, info.note, padding, y, contentRight - padding, 30);
+  }
+
+  if (prizeImage) {
+    drawCanvasCoverImage(ctx, prizeImage, width - padding - 250, 84, 250, 188, 22);
   }
 
   const statY = headerHeight - 94;
@@ -1076,10 +1325,7 @@ function downloadCartelaImage() {
     ctx.font = "900 30px Inter, Arial, sans-serif";
     ctx.fillText(String(number), x + 14, cellY + 37);
 
-    if (info.markerStyle === "emoji" && participant) {
-      ctx.font = "22px Arial, sans-serif";
-      ctx.fillText(isWinner ? "🏆" : participant.status === "confirmed" ? "✅" : "🍀", x + cellWidth - 38, cellY + 33);
-    } else if (participant) {
+    if (participant) {
       ctx.fillStyle = participant.status === "confirmed" ? "#18c970" : "#ff4b6e";
       ctx.beginPath();
       ctx.arc(x + cellWidth - 17, cellY + 17, 8, 0, Math.PI * 2);
@@ -1110,7 +1356,6 @@ function downloadCartelaImage() {
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
-
 
 function downloadResultImage() {
   if (!draw.result) return;
@@ -1220,53 +1465,8 @@ function roundRect(context, x, y, width, height, radius) {
   context.closePath();
 }
 
-if (cartelaInfoForm) {
-  cartelaInfoForm.addEventListener("submit", event => {
-    event.preventDefault();
+// Controles da cartela são renderizados junto da própria cartela.
 
-    if (draw.type !== "numbers") return;
-
-    const title = Sortick.normalizeText(cartelaTitleInput.value).slice(0, 80);
-    const info = getCartelaInfo();
-
-    draw.title = title || draw.title || "Cartela";
-    info.prize = Sortick.normalizeText(cartelaPrizeInput.value).slice(0, 100);
-    info.value = Sortick.normalizeText(cartelaValueInput.value).slice(0, 30);
-    info.drawDate = cartelaDateInput.value || "";
-    info.note = Sortick.normalizeText(cartelaNoteInput.value).slice(0, 180);
-    info.markerStyle = cartelaMarkerStyle.value === "emoji" ? "emoji" : "default";
-    info.exportShowNames = Boolean(cartelaShowNamesToggle.checked);
-
-    draw.options.cartelaInfo = info;
-    drawTitle.textContent = draw.title;
-    persist();
-    render();
-    setValidation("Detalhes da cartela salvos.");
-  });
-}
-
-if (cartelaShowNamesToggle) {
-  cartelaShowNamesToggle.addEventListener("change", () => {
-    if (draw.type !== "numbers") return;
-    getCartelaInfo().exportShowNames = Boolean(cartelaShowNamesToggle.checked);
-    persist();
-  });
-}
-
-if (previewCartelaButton) {
-  previewCartelaButton.addEventListener("click", openCartelaPreview);
-}
-
-if (exportCartelaButton) {
-  exportCartelaButton.addEventListener("click", () => {
-    try {
-      downloadCartelaImage();
-      setValidation("Imagem da cartela gerada.");
-    } catch {
-      setValidation("Não foi possível gerar a imagem da cartela agora.");
-    }
-  });
-}
 
 participantForm.addEventListener("submit", event => {
   event.preventDefault(); if (isDrawing) return; setValidation();

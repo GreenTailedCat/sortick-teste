@@ -31,18 +31,158 @@ const bingoTotalNumbersInput = document.querySelector("#bingoTotalNumbers");
 const groupQuantityField = document.querySelector("#groupQuantityField");
 const groupCountInput = document.querySelector("#groupCount");
 const savedDrawsList = document.querySelector("#savedDrawsList");
+const drawTitleField = document.querySelector("#drawTitleField");
+const drawModeField = document.querySelector("#drawModeField");
+const createSubmitButton = document.querySelector("#createSubmitButton");
+const cartelaCreateWizard = document.querySelector("#cartelaCreateWizard");
+const cartelaCreateTitle = document.querySelector("#cartelaCreateTitle");
+const cartelaCreateTotal = document.querySelector("#cartelaCreateTotal");
+const cartelaCreatePrize = document.querySelector("#cartelaCreatePrize");
+const cartelaCreateImage = document.querySelector("#cartelaCreateImage");
+const cartelaCreateImagePreview = document.querySelector("#cartelaCreateImagePreview");
+const cartelaCreateImagePreviewImage = document.querySelector("#cartelaCreateImagePreviewImage");
+const cartelaCreateImageName = document.querySelector("#cartelaCreateImageName");
+const cartelaCreateImageStatus = document.querySelector("#cartelaCreateImageStatus");
+const cartelaCreateRemoveImage = document.querySelector("#cartelaCreateRemoveImage");
+const cartelaCreateValue = document.querySelector("#cartelaCreateValue");
+const cartelaCreateDate = document.querySelector("#cartelaCreateDate");
+const cartelaCreateNote = document.querySelector("#cartelaCreateNote");
+const cartelaWizardNext1 = document.querySelector("#cartelaWizardNext1");
+const cartelaWizardBack2 = document.querySelector("#cartelaWizardBack2");
+const cartelaWizardNext2 = document.querySelector("#cartelaWizardNext2");
+const cartelaWizardBack3 = document.querySelector("#cartelaWizardBack3");
+const cartelaWizardCreate = document.querySelector("#cartelaWizardCreate");
+
+let cartelaWizardStep = 1;
+let cartelaCreateImageData = "";
+let cartelaCreateImageNameValue = ""; 
+
+function setCartelaWizardStep(step) {
+  cartelaWizardStep = Math.max(1, Math.min(3, Number(step) || 1));
+
+  document.querySelectorAll("[data-cartela-step]").forEach(section => {
+    section.classList.toggle("hidden", Number(section.dataset.cartelaStep) !== cartelaWizardStep);
+  });
+
+  document.querySelectorAll("[data-cartela-step-indicator]").forEach(indicator => {
+    const indicatorStep = Number(indicator.dataset.cartelaStepIndicator);
+    indicator.classList.toggle("is-active", indicatorStep === cartelaWizardStep);
+    indicator.classList.toggle("is-complete", indicatorStep < cartelaWizardStep);
+  });
+}
+
+function updateCartelaCreateImagePreview() {
+  const hasImage = Boolean(cartelaCreateImageData);
+
+  cartelaCreateImagePreview.classList.toggle("hidden", !hasImage);
+
+  if (!hasImage) {
+    cartelaCreateImagePreviewImage.removeAttribute("src");
+    cartelaCreateImageName.textContent = "Imagem selecionada";
+    return;
+  }
+
+  cartelaCreateImagePreviewImage.src = cartelaCreateImageData;
+  cartelaCreateImageName.textContent = cartelaCreateImageNameValue || "Imagem selecionada";
+}
+
+function setCartelaCreateImageStatus(message = "") {
+  cartelaCreateImageStatus.textContent = message;
+}
 
 function syncTypeSettings() {
   const type = typeInput.value;
+  const isCartela = type === "numbers";
 
-  numberQuantityField.classList.toggle("hidden", type !== "numbers");
-  totalNumbersInput.required = type === "numbers";
+  numberQuantityField.classList.add("hidden");
+  totalNumbersInput.required = false;
 
   bingoQuantityField.classList.toggle("hidden", type !== "bingo");
   bingoTotalNumbersInput.required = type === "bingo";
 
   groupQuantityField.classList.toggle("hidden", type !== "groups");
   groupCountInput.required = type === "groups";
+
+  drawTitleField.classList.toggle("hidden", isCartela);
+  drawModeField.classList.toggle("hidden", isCartela);
+  createSubmitButton.classList.toggle("hidden", isCartela);
+  cartelaCreateWizard.classList.toggle("hidden", !isCartela);
+  titleInput.required = !isCartela;
+
+  if (isCartela) {
+    setCartelaWizardStep(cartelaWizardStep);
+  }
+}
+
+function validateCartelaStepOne() {
+  const title = Sortick.normalizeText(cartelaCreateTitle.value);
+
+  if (!title) {
+    cartelaCreateTitle.focus();
+    return false;
+  }
+
+  const total = Number.parseInt(cartelaCreateTotal.value, 10);
+  if (!Number.isInteger(total) || total < 2 || total > 500) {
+    cartelaCreateTotal.focus();
+    return false;
+  }
+
+  return true;
+}
+
+function createCartelaFromWizard() {
+  if (!validateCartelaStepOne()) {
+    setCartelaWizardStep(1);
+    return;
+  }
+
+  const title = Sortick.normalizeText(cartelaCreateTitle.value).slice(0, 80);
+  const mode = "simple";
+  const options = {
+    confirmedOnly: false,
+    removeWinnerAfterDraw: false,
+    soundEnabled: false,
+    totalNumbers: Sortick.clampNumber(cartelaCreateTotal.value, 2, 500),
+    cartelaInfo: {
+      prize: Sortick.normalizeText(cartelaCreatePrize.value).slice(0, 100),
+      imageData: cartelaCreateImageData,
+      imageName: cartelaCreateImageNameValue,
+      value: Sortick.normalizeText(cartelaCreateValue.value).slice(0, 30),
+      drawDate: cartelaCreateDate.value || "",
+      note: Sortick.normalizeText(cartelaCreateNote.value).slice(0, 180),
+      exportShowNames: false
+    }
+  };
+
+  const draw = {
+    id: Sortick.createId("draw"),
+    title,
+    type: "numbers",
+    mode,
+    options,
+    participants: [],
+    result: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    Sortick.saveDraw(draw);
+  } catch {
+    setCartelaCreateImageStatus("Não foi possível salvar a cartela. Tente remover a imagem ou usar outra menor.");
+    setCartelaWizardStep(2);
+    return;
+  }
+
+  if (typeof window.sortickTrack === "function") {
+    window.sortickTrack("create_draw", {
+      draw_type: "numbers",
+      draw_mode: mode
+    });
+  }
+
+  window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(draw.id)}`;
 }
 
 typeInput.addEventListener("change", syncTypeSettings);
@@ -60,6 +200,52 @@ function applyTypeFromURL() {
 }
 
 applyTypeFromURL();
+
+if (cartelaWizardNext1) {
+  cartelaWizardNext1.addEventListener("click", () => {
+    if (validateCartelaStepOne()) setCartelaWizardStep(2);
+  });
+}
+
+if (cartelaWizardBack2) cartelaWizardBack2.addEventListener("click", () => setCartelaWizardStep(1));
+if (cartelaWizardNext2) cartelaWizardNext2.addEventListener("click", () => setCartelaWizardStep(3));
+if (cartelaWizardBack3) cartelaWizardBack3.addEventListener("click", () => setCartelaWizardStep(2));
+if (cartelaWizardCreate) cartelaWizardCreate.addEventListener("click", createCartelaFromWizard);
+
+if (cartelaCreateImage) {
+  cartelaCreateImage.addEventListener("change", async () => {
+    const file = cartelaCreateImage.files && cartelaCreateImage.files[0];
+
+    if (!file) return;
+
+    setCartelaCreateImageStatus("Preparando imagem...");
+
+    try {
+      const preparedImage = await Sortick.prepareImageFile(file);
+      cartelaCreateImageData = preparedImage.dataUrl;
+      cartelaCreateImageNameValue = preparedImage.name;
+      updateCartelaCreateImagePreview();
+      setCartelaCreateImageStatus("Imagem pronta.");
+    } catch (error) {
+      cartelaCreateImage.value = "";
+      cartelaCreateImageData = "";
+      cartelaCreateImageNameValue = "";
+      updateCartelaCreateImagePreview();
+      setCartelaCreateImageStatus(error && error.message ? error.message : "Não foi possível usar esta imagem.");
+    }
+  });
+}
+
+if (cartelaCreateRemoveImage) {
+  cartelaCreateRemoveImage.addEventListener("click", () => {
+    cartelaCreateImage.value = "";
+    cartelaCreateImageData = "";
+    cartelaCreateImageNameValue = "";
+    updateCartelaCreateImagePreview();
+    setCartelaCreateImageStatus("Imagem removida.");
+  });
+}
+
 
 
 function getSavedDraws() {
@@ -344,8 +530,14 @@ renderSavedDraws();
 form.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const title = Sortick.normalizeText(titleInput.value);
   const type = typeInput.value;
+
+  if (type === "numbers") {
+    createCartelaFromWizard();
+    return;
+  }
+
+  const title = Sortick.normalizeText(titleInput.value);
   const mode = modeInput.value;
 
   if (!title) {
@@ -358,10 +550,6 @@ form.addEventListener("submit", (event) => {
     removeWinnerAfterDraw: false,
     soundEnabled: false
   };
-
-  if (type === "numbers") {
-    options.totalNumbers = Sortick.clampNumber(totalNumbersInput.value, 2, 500);
-  }
 
   if (type === "bingo") {
     options.totalNumbers = Sortick.clampNumber(bingoTotalNumbersInput.value, 2, 500);

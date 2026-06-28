@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1111" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=11111" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -206,7 +206,7 @@
         </div>
 
         <form id="createForm" class="form">
-          <label>
+          <label id="drawTitleField">
             Nome do sorteio
             <input id="drawTitle" type="text" placeholder="Ex: Rifa da cesta, sorteio da turma..." maxlength="80" required />
           </label>
@@ -228,6 +228,96 @@
             <span class="field-hint">Exemplo: 50 cria uma cartela de 1 a 50.</span>
           </label>
 
+          <section id="cartelaCreateWizard" class="cartela-create-wizard hidden" aria-label="Criar cartela">
+            <div class="cartela-wizard-progress" aria-label="Etapas de criação">
+              <span class="is-active" data-cartela-step-indicator="1">1. Cartela</span>
+              <span data-cartela-step-indicator="2">2. Prêmio</span>
+              <span data-cartela-step-indicator="3">3. Opcionais</span>
+            </div>
+
+            <section class="cartela-wizard-step" data-cartela-step="1">
+              <p class="eyebrow">Etapa 1 de 3</p>
+              <h3>Comece pela cartela</h3>
+              <p class="subtle">Defina como a cartela será identificada e quantos números ela terá.</p>
+
+              <label>
+                Nome da cartela
+                <input id="cartelaCreateTitle" type="text" maxlength="80" placeholder="Ex: Rifa da cesta" autocomplete="off" />
+              </label>
+
+              <label>
+                Quantidade de números
+                <input id="cartelaCreateTotal" type="number" min="2" max="500" value="100" />
+                <span class="field-hint">Essa quantidade fica definida após criar a cartela.</span>
+              </label>
+
+              <div class="cartela-wizard-actions">
+                <button id="cartelaWizardNext1" class="btn btn-primary" type="button">Continuar</button>
+              </div>
+            </section>
+
+            <section class="cartela-wizard-step hidden" data-cartela-step="2">
+              <p class="eyebrow">Etapa 2 de 3</p>
+              <h3>Qual é o prêmio?</h3>
+              <p class="subtle">Você pode informar o prêmio e incluir uma imagem para aparecer na cartela e na exportação.</p>
+
+              <label>
+                Prêmio
+                <input id="cartelaCreatePrize" type="text" maxlength="100" placeholder="Ex: Cesta de chocolates" />
+              </label>
+
+              <label class="cartela-image-upload">
+                <span>Imagem do prêmio <small>Opcional</small></span>
+                <input id="cartelaCreateImage" type="file" accept="image/png,image/jpeg,image/webp" />
+                <span class="field-hint">PNG, JPG ou WEBP.</span>
+              </label>
+
+              <div id="cartelaCreateImagePreview" class="cartela-image-preview hidden">
+                <img id="cartelaCreateImagePreviewImage" alt="Prévia da imagem do prêmio" />
+                <div>
+                  <strong id="cartelaCreateImageName">Imagem selecionada</strong>
+                  <button id="cartelaCreateRemoveImage" class="link-button danger-text" type="button">Remover imagem</button>
+                </div>
+              </div>
+
+              <p id="cartelaCreateImageStatus" class="cartela-image-status" aria-live="polite"></p>
+
+              <div class="cartela-wizard-actions">
+                <button id="cartelaWizardBack2" class="btn btn-ghost light" type="button">Voltar</button>
+                <button id="cartelaWizardNext2" class="btn btn-primary" type="button">Continuar</button>
+              </div>
+            </section>
+
+            <section class="cartela-wizard-step hidden" data-cartela-step="3">
+              <p class="eyebrow">Etapa 3 de 3</p>
+              <h3>Detalhes opcionais</h3>
+              <p class="subtle">Essas informações podem ser alteradas depois.</p>
+
+              <div class="cartela-wizard-row">
+                <label>
+                  Valor por número
+                  <input id="cartelaCreateValue" type="text" maxlength="30" placeholder="Ex: R$ 5,00" />
+                </label>
+
+                <label>
+                  Data do sorteio
+                  <input id="cartelaCreateDate" type="date" />
+                </label>
+              </div>
+
+              <label>
+                Condição ou observação
+                <textarea id="cartelaCreateNote" rows="3" maxlength="180" placeholder="Ex: Sorteio quando todos os números forem ocupados."></textarea>
+              </label>
+
+              <div class="cartela-wizard-actions">
+                <button id="cartelaWizardBack3" class="btn btn-ghost light" type="button">Voltar</button>
+                <button id="cartelaWizardCreate" class="btn btn-primary" type="button">Criar cartela</button>
+              </div>
+            </section>
+          </section>
+
+
           <label id="bingoQuantityField" class="hidden">
             Números do bingo
             <input id="bingoTotalNumbers" type="number" min="2" max="500" value="75" />
@@ -240,7 +330,7 @@
             <span class="field-hint">Exemplo: 2 divide a lista em dois grupos.</span>
           </label>
 
-          <label>
+          <label id="drawModeField">
             Modo
             <select id="drawMode" required>
               <option value="simple">Simples — dono adiciona e sorteia</option>
@@ -248,7 +338,7 @@
             </select>
           </label>
 
-          <button class="btn btn-primary full" type="submit">Criar sorteio</button>
+          <button id="createSubmitButton" class="btn btn-primary full" type="submit">Criar sorteio</button>
         </form>
 
         <section class="saved-draws-card" aria-labelledby="savedDrawsTitle">
@@ -283,7 +373,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1111"></script>
-  <script src="/sortick-teste/js/index.js?v=1111"></script>
+  <script src="/sortick-teste/js/utils.js?v=11111"></script>
+  <script src="/sortick-teste/js/index.js?v=11111"></script>
 </body>
 </html>

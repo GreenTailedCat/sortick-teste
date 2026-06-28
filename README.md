@@ -1,4 +1,4 @@
-# Sortick Teste v1.11-cartela-compartilhamento
+# Sortick Teste v1.11.1-criacao-cartela
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -229,3 +229,16 @@ Atualização maior de recursos de produto, mantida apenas no ambiente de testes
 - Exportação de imagem completa da cartela, com opção “Mostrar nomes”.
 - Compartilhamento de resultados reforçado com atalho para WhatsApp e Tela cheia.
 - Ações de produção, ads.txt e configuração do Google Ads permanecem fora desta cópia de testes.
+
+
+## v1.11.1-criacao-cartela
+
+Ajuste da experiência de cartela após testes:
+
+- A cartela agora é configurada antes da criação, em três etapas: Cartela, Prêmio e Opcionais.
+- Prêmio e imagem podem ser adicionados antes de abrir a cartela.
+- Depois de criada, a cartela usa “Editar detalhes” em vez de um painel lateral longo.
+- Título, prêmio, imagem, valor, data e observação podem ser alterados depois.
+- A quantidade de números é definida na criação e não pode ser alterada depois.
+- Marcadores personalizados foram removidos; permanece o padrão visual de disponível, ocupado e confirmado.
+- Imagem do prêmio aparece na cartela, na visualização e na exportação.

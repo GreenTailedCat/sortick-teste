@@ -171,3 +171,17 @@
 - [ ] WhatsApp abre mensagem pronta de resultado.
 - [ ] Tela cheia abre e fecha corretamente.
 - [ ] Nenhum sorteio salvo, participante ou resultado antigo é apagado.
+
+
+## Testes v1.11.1 — criação e edição da cartela
+
+- [ ] Ao selecionar Cartela, aparece a criação em três etapas.
+- [ ] Etapa 1 pede nome e quantidade de números.
+- [ ] Etapa 2 permite prêmio e imagem opcional.
+- [ ] Etapa 3 permite valor, data e observação opcionais.
+- [ ] A cartela criada recebe todas as informações preenchidas.
+- [ ] A imagem aparece na cartela, na visualização ampla e na exportação.
+- [ ] “Editar detalhes” permite alterar título, prêmio, imagem, valor, data e observação.
+- [ ] A quantidade de números aparece como bloqueada na edição.
+- [ ] Não existe mais opção de marcadores personalizados.
+- [ ] Exportar imagem continua respeitando “Mostrar nomes”.

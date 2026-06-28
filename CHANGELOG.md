@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.11.1-criacao-cartela
+- Reorganizada a criação da cartela e removidos marcadores personalizados.
+
 ## v1.11-cartela-compartilhamento
 - Adicionados detalhes, marcadores, visualização ampla e imagem exportável para cartelas; reforçado compartilhamento de resultados.
 

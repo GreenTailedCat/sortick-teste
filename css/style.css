@@ -2518,3 +2518,299 @@ body:fullscreen .draw-stage {
     font-size: 0.54rem;
   }
 }
+
+
+/* v1.11.1 - criação guiada e edição da cartela */
+
+.cartela-create-wizard {
+  display: grid;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(108, 77, 255, 0.08), rgba(0, 194, 168, 0.08));
+}
+
+.cartela-wizard-progress {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.cartela-wizard-progress span {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--muted);
+  font-size: 0.73rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.cartela-wizard-progress span.is-active {
+  background: var(--primary);
+  color: white;
+}
+
+.cartela-wizard-progress span.is-complete {
+  background: rgba(0, 194, 168, 0.18);
+  color: #087563;
+}
+
+.cartela-wizard-step {
+  display: grid;
+  gap: 13px;
+}
+
+.cartela-wizard-step h3 {
+  margin: -3px 0 0;
+  color: var(--text);
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.cartela-wizard-step .eyebrow {
+  margin-bottom: -6px;
+}
+
+.cartela-wizard-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cartela-wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 2px;
+}
+
+.cartela-image-upload {
+  display: grid;
+  gap: 7px;
+}
+
+.cartela-image-upload > span:first-child {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.cartela-image-upload small {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.cartela-image-preview,
+.cartela-editor-image-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: white;
+}
+
+.cartela-image-preview img,
+.cartela-editor-image-preview img {
+  width: 76px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--surface-soft);
+}
+
+.cartela-image-preview > div,
+.cartela-editor-image-preview > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.cartela-image-preview strong,
+.cartela-editor-image-preview strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cartela-image-status,
+.cartela-editor-image-status {
+  min-height: 1.2em;
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.cartela-title-with-image {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+}
+
+.cartela-prize-thumb,
+.cartela-preview-image {
+  width: 58px;
+  height: 48px;
+  flex: 0 0 auto;
+  border: 2px solid rgba(255, 255, 255, 0.34);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  object-fit: cover;
+}
+
+.cartela-preview-image {
+  width: 88px;
+  height: 70px;
+  border-color: var(--border);
+}
+
+.cartela-board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 2px 2px;
+}
+
+.cartela-board-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cartela-editor-backdrop {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(10, 8, 31, 0.78);
+  backdrop-filter: blur(7px);
+  animation: sortick-modal-fade-in 0.18s ease both;
+}
+
+.cartela-editor-panel {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 26px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 32px 90px rgba(8, 4, 28, 0.48);
+  animation: sortick-modal-pop-in 0.2s ease both;
+}
+
+.cartela-editor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.cartela-editor-header .eyebrow {
+  margin-bottom: 6px;
+}
+
+.cartela-editor-header h2 {
+  margin: 0 0 6px;
+  color: var(--text);
+  letter-spacing: -0.04em;
+}
+
+.cartela-editor-header p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.cartela-editor-form {
+  display: grid;
+  gap: 13px;
+}
+
+.cartela-editor-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cartela-editor-locked {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.cartela-editor-locked strong {
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.cartela-editor-locked span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.cartela-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 4px;
+}
+
+@media (max-width: 720px) {
+  .cartela-wizard-row,
+  .cartela-editor-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cartela-wizard-progress {
+    gap: 4px;
+  }
+
+  .cartela-wizard-progress span {
+    font-size: 0.66rem;
+    padding-inline: 5px;
+  }
+
+  .cartela-board-actions {
+    align-items: stretch;
+  }
+
+  .cartela-board-actions .inline-option {
+    width: fit-content;
+  }
+
+  .cartela-board-action-buttons {
+    width: 100%;
+  }
+
+  .cartela-board-action-buttons .btn {
+    flex: 1 1 150px;
+  }
+
+  .cartela-editor-panel {
+    padding: 18px;
+    border-radius: 22px;
+  }
+}

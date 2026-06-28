@@ -124,6 +124,86 @@ const Sortick = (() => {
 
 
 
+
+  function prepareImageFile(file, {
+    maxWidth = 1000,
+    maxHeight = 700,
+    quality = 0.82,
+    maxDataUrlLength = 380000
+  } = {}) {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type || !file.type.startsWith("image/")) {
+        reject(new Error("Selecione uma imagem válida."));
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
+
+      reader.onload = () => {
+        const image = new Image();
+
+        image.onerror = () => reject(new Error("Não foi possível abrir a imagem."));
+
+        image.onload = () => {
+          let width = image.naturalWidth || image.width;
+          let height = image.naturalHeight || image.height;
+          const scale = Math.min(1, maxWidth / width, maxHeight / height);
+
+          width = Math.max(1, Math.round(width * scale));
+          height = Math.max(1, Math.round(height * scale));
+
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+
+          if (!context) {
+            reject(new Error("Não foi possível preparar a imagem."));
+            return;
+          }
+
+          let attempt = 0;
+          let currentQuality = quality;
+          let currentWidth = width;
+          let currentHeight = height;
+          let dataUrl = "";
+
+          do {
+            canvas.width = currentWidth;
+            canvas.height = currentHeight;
+
+            context.fillStyle = "#ffffff";
+            context.fillRect(0, 0, currentWidth, currentHeight);
+            context.drawImage(image, 0, 0, currentWidth, currentHeight);
+
+            dataUrl = canvas.toDataURL("image/jpeg", currentQuality);
+
+            if (dataUrl.length <= maxDataUrlLength) break;
+
+            currentQuality = Math.max(0.58, currentQuality - 0.08);
+            currentWidth = Math.max(360, Math.round(currentWidth * 0.82));
+            currentHeight = Math.max(240, Math.round(currentHeight * 0.82));
+            attempt += 1;
+          } while (attempt < 4);
+
+          if (dataUrl.length > maxDataUrlLength) {
+            reject(new Error("A imagem ficou grande demais. Escolha outra imagem mais simples."));
+            return;
+          }
+
+          resolve({
+            dataUrl,
+            name: normalizeText(file.name).slice(0, 80)
+          });
+        };
+
+        image.src = String(reader.result || "");
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
   function createActionModal({
     title,
     message = "",
@@ -287,6 +367,7 @@ const Sortick = (() => {
     normalizeText,
     escapeHTML,
     clampNumber,
+    prepareImageFile,
     askForConfirmation,
     askForText
   };
