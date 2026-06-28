@@ -185,3 +185,34 @@
 - [ ] A quantidade de números aparece como bloqueada na edição.
 - [ ] Não existe mais opção de marcadores personalizados.
 - [ ] Exportar imagem continua respeitando “Mostrar nomes”.
+
+
+## Testes v1.12 — núcleo simples
+
+### Nomes e Roleta
+- [ ] Um sorteado funciona com lista comum.
+- [ ] Vários sorteados respeita a quantidade escolhida.
+- [ ] Ordem completa cria uma lista embaralhada de todos os participantes elegíveis.
+- [ ] Não repetir evita novos sorteios da mesma pessoa durante a rodada.
+- [ ] Reiniciar rodada mantém a lista, mas libera todos novamente.
+- [ ] Roleta funciona em um sorteado, vários sorteados e ordem completa.
+- [ ] Copiar, compartilhar e baixar imagem registram o formato correto.
+
+### Grupos / Times
+- [ ] Nomes personalizados são usados nos cartões.
+- [ ] Com 10 pessoas e 3 grupos, a diferença entre grupos é no máximo uma pessoa.
+- [ ] Gerar novamente cria nova distribuição sem apagar participantes.
+- [ ] Copiar resumo traz os grupos e integrantes.
+- [ ] Baixar imagem mostra grupos e integrantes.
+
+### Decisões rápidas
+- [ ] Cara ou coroa retorna Cara ou Coroa.
+- [ ] Dado respeita o número de lados escolhido.
+- [ ] Número aleatório respeita mínimo e máximo, inclusive valores negativos.
+- [ ] Não existe lista de participantes em Decisões rápidas.
+- [ ] Copiar, compartilhar e baixar imagem funcionam.
+
+### Limpeza
+- [ ] Não há botões WhatsApp ou Tela cheia.
+- [ ] Cartela, Bingo e sorteios salvos continuam funcionando.
+- [ ] Nenhuma janela nativa do navegador aparece.

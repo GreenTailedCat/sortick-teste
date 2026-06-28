@@ -1,21 +1,24 @@
-# Produção — etapas depois da validação da v1.11
+# Publicação após validar a v1.12
 
-Esta versão é exclusiva do ambiente de testes.
+Este pacote é exclusivo do ambiente de testes. Ele usa:
 
-## Não publicar no site oficial antes de validar
+- caminhos iniciados em `/sortick-teste/`;
+- armazenamento separado de testes;
+- `noindex`;
+- sem Analytics, AdSense e redirecionamento do domínio oficial.
 
-- cartela com detalhes;
-- exportação de imagem;
-- visualização ampla;
-- compartilhamento e tela cheia.
+## Não subir este ZIP diretamente no repositório oficial
 
-## Depois da aprovação no teste
+Depois de validar a v1.12 em computador e celular, preparar uma cópia específica de produção:
 
-1. Preparar uma cópia de produção sem referências a `/sortick-teste/`.
-2. Adicionar `ads.txt` no domínio oficial com o publisher ID correto.
-3. Conferir o Google Ads:
+1. Remover o prefixo `/sortick-teste/` dos links e arquivos.
+2. Restaurar Analytics, AdSense, PWA e o domínio oficial conforme a versão de produção.
+3. Manter a mesma chave de armazenamento de produção, sem alterar dados salvos dos usuários.
+4. Adicionar ou confirmar `ads.txt` no domínio oficial.
+5. Conferir Google Ads:
    - `create_draw` como conversão principal;
    - `start_draw` como conversão complementar;
-   - visualização de página fora do objetivo principal.
-4. Publicar uma única atualização no repositório oficial.
-5. Testar o domínio `sortick.com.br` em computador e celular.
+   - page view fora da meta principal.
+6. Publicar uma única atualização no repositório oficial e testar `sortick.com.br`.
+
+A versão pode ser publicada no site padrão depois desse processo e de uma revisão final de compatibilidade.

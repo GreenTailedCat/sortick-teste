@@ -20,8 +20,6 @@ const drawButton = document.querySelector("#drawButton");
 const copyButton = document.querySelector("#copyButton");
 const shareButton = document.querySelector("#shareButton");
 const downloadButton = document.querySelector("#downloadButton");
-const whatsappButton = document.querySelector("#whatsappButton");
-const focusButton = document.querySelector("#focusButton");
 const resetButton = document.querySelector("#resetButton");
 const participantForm = document.querySelector("#participantForm");
 const participantName = document.querySelector("#participantName");
@@ -48,6 +46,19 @@ const confirmBulkButton = document.querySelector("#confirmBulkButton");
 const cancelBulkButton = document.querySelector("#cancelBulkButton");
 const bulkPreview = document.querySelector("#bulkPreview");
 
+const participantPanel = document.querySelector("#participantPanel");
+const selectionOptionsPanel = document.querySelector("#selectionOptionsPanel");
+const selectionModeControl = document.querySelector("#selectionModeControl");
+const selectionCountControlField = document.querySelector("#selectionCountControlField");
+const selectionCountControl = document.querySelector("#selectionCountControl");
+const noRepeatToggle = document.querySelector("#noRepeatToggle");
+const resetRoundButton = document.querySelector("#resetRoundButton");
+const groupSettingsPanel = document.querySelector("#groupSettingsPanel");
+const groupNamesControl = document.querySelector("#groupNamesControl");
+const saveGroupNamesButton = document.querySelector("#saveGroupNamesButton");
+const quickSettingsPanel = document.querySelector("#quickSettingsPanel");
+const quickSettingsText = document.querySelector("#quickSettingsText");
+
 
 if (!draw) {
   document.body.innerHTML = `
@@ -65,6 +76,20 @@ if (!draw) {
   draw.options.groupCount = Sortick.clampNumber(draw.options.groupCount || 2, 2, 50);
   draw.options.bingoAllowRepeats = Boolean(draw.options.bingoAllowRepeats);
   draw.options.bingoDrawnNumbers = Array.isArray(draw.options.bingoDrawnNumbers) ? draw.options.bingoDrawnNumbers : [];
+  draw.options.selectionMode = ["single", "multiple", "order"].includes(draw.options.selectionMode)
+    ? draw.options.selectionMode
+    : "single";
+  draw.options.selectionCount = Sortick.clampNumber(draw.options.selectionCount || 2, 2, 100);
+  draw.options.noRepeat = Boolean(draw.options.noRepeat || draw.options.removeWinnerAfterDraw);
+  draw.options.roundDrawnIds = Array.isArray(draw.options.roundDrawnIds) ? draw.options.roundDrawnIds : [];
+  draw.options.groupNames = Array.isArray(draw.options.groupNames) ? draw.options.groupNames : [];
+  draw.options.quickType = ["coin", "dice", "random"].includes(draw.options.quickType) ? draw.options.quickType : "coin";
+  draw.options.diceSides = Sortick.clampNumber(draw.options.diceSides || 6, 2, 100);
+  draw.options.randomMin = Number.isInteger(draw.options.randomMin) ? draw.options.randomMin : 1;
+  draw.options.randomMax = Number.isInteger(draw.options.randomMax) ? draw.options.randomMax : 100;
+  if (draw.options.randomMin > draw.options.randomMax) {
+    [draw.options.randomMin, draw.options.randomMax] = [draw.options.randomMax, draw.options.randomMin];
+  }
   draw.options.cartelaInfo = {
     prize: "",
     value: "",
@@ -1841,35 +1866,6 @@ shareButton.addEventListener("click", async () => {
   }
 });
 
-if (whatsappButton) {
-  whatsappButton.addEventListener("click", () => {
-    if (!draw.result) return;
-
-    const text = createShareText();
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-
-    if (typeof window.sortickTrack === "function") {
-      window.sortickTrack("share_result", { draw_type: draw.type, method: "whatsapp" });
-    }
-  });
-}
-
-if (focusButton) {
-  focusButton.addEventListener("click", async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-      } else {
-        setValidation("Tela cheia não está disponível neste navegador.");
-      }
-    } catch {
-      setValidation("Não foi possível abrir a tela cheia agora.");
-    }
-  });
-}
 
 downloadButton.addEventListener("click", () => {
   if (typeof window.sortickTrack === "function") {
@@ -2071,3 +2067,744 @@ shuffleButton.addEventListener("click", () => {
   setValidation("Lista embaralhada.");
   render();
 });
+
+
+/* v1.12 — núcleo simples completo */
+
+function getCoreSelectionLabel() {
+  const labels = {
+    single: "Um sorteado",
+    multiple: "Vários sorteados",
+    order: "Ordem completa"
+  };
+
+  return labels[draw.options.selectionMode] || "Um sorteado";
+}
+
+function getGroupNames() {
+  const count = Sortick.clampNumber(draw.options.groupCount || 2, 2, 50);
+  const cleaned = (Array.isArray(draw.options.groupNames) ? draw.options.groupNames : [])
+    .map(Sortick.normalizeText)
+    .filter(Boolean)
+    .slice(0, count);
+
+  const names = [];
+  for (let index = 0; index < count; index += 1) {
+    names.push(cleaned[index] || `Grupo ${index + 1}`);
+  }
+
+  draw.options.groupNames = names;
+  return names;
+}
+
+function parseCoreGroupNames(value) {
+  const count = Sortick.clampNumber(draw.options.groupCount || 2, 2, 50);
+  const supplied = String(value || "")
+    .split(/[\n,;]+/)
+    .map(Sortick.normalizeText)
+    .filter(Boolean)
+    .slice(0, count);
+
+  const names = [];
+  for (let index = 0; index < count; index += 1) {
+    names.push(supplied[index] || `Grupo ${index + 1}`);
+  }
+
+  return names;
+}
+
+function getQuickDescription() {
+  if (draw.options.quickType === "dice") {
+    return `Dado de ${draw.options.diceSides} lados`;
+  }
+
+  if (draw.options.quickType === "random") {
+    return `Número aleatório de ${draw.options.randomMin} a ${draw.options.randomMax}`;
+  }
+
+  return "Cara ou coroa";
+}
+
+function setupSimpleCorePanels() {
+  const isSelection = draw.type === "names" || draw.type === "roulette";
+  const isGroups = draw.type === "groups";
+  const isQuick = draw.type === "quick";
+
+  if (selectionOptionsPanel) selectionOptionsPanel.classList.toggle("hidden", !isSelection);
+  if (groupSettingsPanel) groupSettingsPanel.classList.toggle("hidden", !isGroups);
+  if (quickSettingsPanel) quickSettingsPanel.classList.toggle("hidden", !isQuick);
+
+  if (participantPanel) participantPanel.classList.toggle("hidden", isQuick);
+
+  if (removeWinnerToggle && removeWinnerToggle.closest("label")) {
+    removeWinnerToggle.closest("label").classList.add("hidden");
+  }
+
+  if (isSelection) {
+    selectionModeControl.value = draw.options.selectionMode;
+    selectionCountControl.value = draw.options.selectionCount;
+    noRepeatToggle.checked = Boolean(draw.options.noRepeat);
+    selectionCountControlField.classList.toggle("hidden", draw.options.selectionMode !== "multiple");
+
+    const remainingCount = getEligibleParticipants().length;
+    resetRoundButton.classList.toggle("hidden", !(draw.options.noRepeat && draw.options.roundDrawnIds.length));
+    resetButton.classList.toggle("hidden", true);
+    const resetHint = document.querySelector("#resetHint");
+    if (resetHint) resetHint.classList.add("hidden");
+
+    drawButton.textContent = draw.options.selectionMode === "order"
+      ? "Gerar ordem"
+      : draw.type === "roulette"
+        ? "Girar roleta"
+        : "Sortear";
+
+    participantHelp.textContent = draw.type === "roulette"
+      ? "Adicione nomes ou opções. A roleta pode sortear uma pessoa, vários resultados ou uma ordem."
+      : "Adicione nomes ou opções. Escolha um sorteado, vários resultados ou uma ordem completa.";
+
+    if (draw.options.noRepeat && remainingCount === 0 && draw.participants.length) {
+      setValidation("Todos os participantes já saíram nesta rodada. Use “Reiniciar rodada” para começar de novo.");
+    }
+  }
+
+  if (isGroups) {
+    const groupNames = getGroupNames();
+    groupNamesControl.value = groupNames.join("\n");
+    drawButton.textContent = draw.result?.groups ? "Gerar novamente" : "Gerar grupos";
+    participantHelp.textContent = `Adicione nomes e distribua em ${draw.options.groupCount} grupo(s) equilibrados.`;
+  }
+
+  if (isQuick) {
+    drawButton.textContent = "Decidir";
+    if (quickSettingsText) quickSettingsText.textContent = getQuickDescription();
+  }
+}
+
+function getMinimumParticipants() {
+  if (draw.type === "numbers") return 1;
+  if (draw.type === "bingo" || draw.type === "quick") return 0;
+  if (draw.type === "groups") return 2;
+  return 1;
+}
+
+function getEligibleParticipants() {
+  let participants = draw.options.confirmedOnly
+    ? draw.participants.filter(participant => participant.status === "confirmed")
+    : draw.participants.slice();
+
+  if ((draw.type === "names" || draw.type === "roulette") && draw.options.noRepeat) {
+    const alreadyDrawn = new Set(draw.options.roundDrawnIds);
+    participants = participants.filter(participant => !alreadyDrawn.has(participant.id));
+  }
+
+  return participants;
+}
+
+function getSelectionCount(eligible) {
+  if (draw.options.selectionMode === "order") return eligible.length;
+  if (draw.options.selectionMode === "multiple") {
+    return Math.min(
+      eligible.length,
+      Math.max(1, Sortick.clampNumber(draw.options.selectionCount, 2, 100))
+    );
+  }
+
+  return 1;
+}
+
+function renderStatusSummary() {
+  if (draw.type === "quick") {
+    statusSummary.innerHTML = `
+      <span>Modo: ${Sortick.escapeHTML(getQuickDescription())}</span>
+      <span>Sem lista de participantes</span>
+    `;
+    return;
+  }
+
+  if (draw.type === "bingo") {
+    const drawn = draw.options.bingoDrawnNumbers.length;
+    const uniqueDrawn = new Set(draw.options.bingoDrawnNumbers.map(String)).size;
+    const total = getTotalNumbers();
+
+    statusSummary.innerHTML = `
+      <span>Total: ${total}</span>
+      <span>Sorteados: ${drawn}</span>
+      <span>${draw.options.bingoAllowRepeats ? "Repetição: sim" : `Restantes: ${total - uniqueDrawn}`}</span>
+    `;
+    return;
+  }
+
+  if (draw.type === "groups") {
+    const groupNames = getGroupNames();
+    statusSummary.innerHTML = `
+      <span>Participantes: ${draw.participants.length}</span>
+      <span>Grupos: ${groupNames.length}</span>
+      <span>Distribuição equilibrada</span>
+    `;
+    return;
+  }
+
+  const counts = getStatusCounts();
+  const remaining = (draw.type === "names" || draw.type === "roulette") && draw.options.noRepeat
+    ? getEligibleParticipants().length
+    : null;
+
+  statusSummary.innerHTML = `
+    <span>Total: ${counts.total}</span>
+    <span>Confirmados: ${counts.confirmed}</span>
+    <span>Pendentes: ${counts.pending}</span>
+    ${draw.type === "numbers" ? `<span>Disponíveis: ${getTotalNumbers() - counts.total}</span>` : ""}
+    ${remaining !== null ? `<span>Restantes na rodada: ${remaining}</span>` : ""}
+  `;
+}
+
+function renderSelectionBoard(participants, heading = "") {
+  if (!participants || !participants.length) return "";
+
+  return `
+    <div class="selection-board">
+      ${heading ? `<p class="selection-board-heading">${Sortick.escapeHTML(heading)}</p>` : ""}
+      <ol>
+        ${participants.map((participant, index) => `
+          <li><span>${index + 1}</span><strong>${Sortick.escapeHTML(getParticipantDisplay(participant))}</strong></li>
+        `).join("")}
+      </ol>
+    </div>`;
+}
+
+function renderQuickIdle() {
+  const result = draw.result?.quickResult || null;
+  const icon = draw.options.quickType === "coin" ? "🪙" : draw.options.quickType === "dice" ? "🎲" : "🔢";
+
+  animationArea.innerHTML = `
+    <div class="quick-decision-card">
+      <span class="empty-icon">${icon}</span>
+      <strong>${result ? Sortick.escapeHTML(result.label) : Sortick.escapeHTML(getQuickDescription())}</strong>
+      <p>${result ? "Última decisão registrada." : "Clique em Decidir para gerar um resultado."}</p>
+    </div>`;
+}
+
+function renderAnimationIdle() {
+  if (draw.type === "numbers") return renderNumberBoard();
+  if (draw.type === "bingo") return renderBingoBoard();
+  if (draw.type === "groups") return renderGroupsIdle();
+  if (draw.type === "quick") return renderQuickIdle();
+
+  if (draw.result?.participants && draw.result.participants.length > 1) {
+    const heading = draw.options.selectionMode === "order" ? "Ordem definida" : "Sorteados";
+    animationArea.innerHTML = renderSelectionBoard(draw.result.participants, heading);
+    return;
+  }
+
+  if (draw.type === "roulette") {
+    return renderRouletteCanvas(draw.result?.wheelRotation || 0, draw.result?.participantIndex ?? null);
+  }
+
+  if (draw.result) {
+    animationArea.innerHTML = `<div class="rolling-name">${Sortick.escapeHTML(getParticipantDisplay(draw.result.participant))}</div>`;
+    return;
+  }
+
+  const eligible = getEligibleParticipants();
+  animationArea.innerHTML = `
+    <div class="empty-state">
+      <span class="empty-icon">✨</span>
+      <strong>${eligible.length >= getMinimumParticipants() ? "Pronto para sortear" : "Faltam participantes elegíveis"}</strong>
+      <p>${eligible.length} participante(s) pronto(s) para o sorteio.</p>
+    </div>`;
+}
+
+function renderGroupsIdle() {
+  if (draw.result?.groups) {
+    animationArea.innerHTML = renderGroupsHTML(draw.result.groups);
+    return;
+  }
+
+  const groups = getGroupNames();
+  animationArea.innerHTML = `
+    <div class="empty-state">
+      <span class="empty-icon">🏆</span>
+      <strong>${draw.participants.length >= 2 ? "Pronto para gerar grupos" : "Adicione pelo menos 2 participantes"}</strong>
+      <p>${draw.participants.length} participante(s) · ${groups.join(" · ")}</p>
+    </div>`;
+}
+
+function renderGroupsHTML(groups) {
+  return `
+    <div class="groups-board">
+      ${groups.map((group, index) => {
+        const name = group.name || getGroupNames()[index] || `Grupo ${index + 1}`;
+        const members = Array.isArray(group.members) ? group.members : group;
+        return `
+          <div class="group-card">
+            <h3>${Sortick.escapeHTML(name)}</h3>
+            <ol>
+              ${members.map(member => `<li>${Sortick.escapeHTML(typeof member === "string" ? member : member.name)}</li>`).join("")}
+            </ol>
+          </div>`;
+      }).join("")}
+    </div>`;
+}
+
+function generateGroups() {
+  const shuffled = Sortick.shuffleArray(draw.participants.map(participant => ({ ...participant })));
+  const groupNames = getGroupNames().slice(0, Math.min(draw.options.groupCount, shuffled.length));
+  const groups = groupNames.map(name => ({ name, members: [] }));
+
+  shuffled.forEach((participant, index) => {
+    groups[index % groups.length].members.push(participant.name);
+  });
+
+  return groups;
+}
+
+function getParticipantDisplay(participant) {
+  if (!participant) return "";
+  if (draw.type === "numbers" || draw.type === "bingo") return `Nº ${participant.number}`;
+  return participant.name || participant.label || "";
+}
+
+function renderResult() {
+  if (!draw.result) {
+    winnerCard.classList.add("hidden");
+    winnerName.textContent = "";
+    winnerMeta.textContent = "";
+    proofText.textContent = "";
+    return;
+  }
+
+  winnerCard.classList.remove("hidden");
+
+  if (draw.type === "groups") {
+    winnerName.textContent = "Grupos gerados";
+    winnerMeta.textContent = `${draw.result.groups.length} grupo(s) · ${draw.result.participantCount} participante(s)`;
+    proofText.textContent = createProofText();
+    return;
+  }
+
+  if (draw.type === "quick") {
+    winnerName.textContent = draw.result.quickResult.label;
+    winnerMeta.textContent = getQuickDescription();
+    proofText.textContent = createProofText();
+    return;
+  }
+
+  const selected = Array.isArray(draw.result.participants) ? draw.result.participants : [draw.result.participant].filter(Boolean);
+
+  if (selected.length > 1) {
+    winnerName.textContent = draw.options.selectionMode === "order" ? "Ordem completa" : `${selected.length} sorteados`;
+    winnerMeta.textContent = selected.map((participant, index) => `${index + 1}. ${getParticipantDisplay(participant)}`).join(" · ");
+    proofText.textContent = createProofText();
+    return;
+  }
+
+  const participant = draw.result.participant;
+  winnerName.textContent = getParticipantDisplay(participant);
+
+  if (draw.type === "bingo") {
+    winnerMeta.textContent = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
+  } else {
+    winnerMeta.textContent = draw.type === "numbers"
+      ? `Associado a: ${participant.name} · ${Sortick.statusLabel(participant.status)}`
+      : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(participant.status)}`;
+  }
+
+  proofText.textContent = createProofText();
+}
+
+function createProofText() {
+  if (!draw.result) return "";
+
+  const header = [
+    `Sortick — ${Sortick.typeLabel(draw.type)}`,
+    `Sorteio: ${draw.title}`
+  ];
+
+  if (draw.type === "groups") {
+    header.push(`Participantes: ${draw.result.participantCount}`);
+    header.push(`Data: ${Sortick.formatDateTime(draw.result.createdAt)}`);
+    header.push("");
+
+    draw.result.groups.forEach((group, index) => {
+      const name = group.name || `Grupo ${index + 1}`;
+      const members = Array.isArray(group.members) ? group.members : group;
+      header.push(`${name}: ${members.join(", ")}`);
+    });
+
+    header.push("");
+    header.push("Feito no Sortick");
+    return header.join("\n");
+  }
+
+  if (draw.type === "quick") {
+    header.push(`Resultado: ${draw.result.quickResult.label}`);
+    header.push(`Data: ${Sortick.formatDateTime(draw.result.createdAt)}`);
+    header.push("Feito no Sortick");
+    return header.join("\n");
+  }
+
+  const selected = Array.isArray(draw.result.participants) ? draw.result.participants : [draw.result.participant].filter(Boolean);
+
+  if (selected.length > 1) {
+    header.push(`Formato: ${getCoreSelectionLabel()}`);
+    header.push("");
+    selected.forEach((participant, index) => {
+      header.push(`${index + 1}. ${getParticipantDisplay(participant)}`);
+    });
+    header.push("");
+    header.push(`Participantes elegíveis: ${draw.result.participantCount || draw.participants.length}`);
+    header.push(`Data: ${Sortick.formatDateTime(draw.result.createdAt)}`);
+    header.push("Feito no Sortick");
+    return header.join("\n");
+  }
+
+  const participant = draw.result.participant;
+  header.push(`Resultado: ${getParticipantDisplay(participant)}`);
+
+  if (draw.type === "numbers") {
+    header.push(`Associado a: ${participant.name}`);
+    header.push(`Cartela: 1 a ${getTotalNumbers()}`);
+    header.push(`Status: ${Sortick.statusLabel(participant.status)}`);
+  } else if (draw.type === "bingo") {
+    header.push(`Bingo: 1 a ${getTotalNumbers()}`);
+    header.push(`Modo: ${draw.options.bingoAllowRepeats ? "com repetição" : "sem repetição"}`);
+    header.push(`Números sorteados: ${draw.options.bingoDrawnNumbers.join(", ")}`);
+  } else {
+    header.push(`Status: ${Sortick.statusLabel(participant.status)}`);
+  }
+
+  header.push(`Participantes elegíveis: ${draw.result.participantCount || draw.participants.length}`);
+  header.push(`Data: ${Sortick.formatDateTime(draw.result.createdAt)}`);
+  header.push("Feito no Sortick");
+  return header.join("\n");
+}
+
+function createShareText() {
+  return createProofText();
+}
+
+function render() {
+  setupSimpleCorePanels();
+  renderStatusSummary();
+  renderParticipants();
+  renderAnimationIdle();
+  renderResult();
+
+  let canDraw = getEligibleParticipants().length >= getMinimumParticipants();
+
+  if (draw.type === "bingo") {
+    canDraw = draw.options.bingoAllowRepeats || getRemainingBingoNumbers().length > 0;
+  }
+
+  if (draw.type === "quick") {
+    canDraw = true;
+  }
+
+  drawButton.disabled = !canDraw || isDrawing;
+  copyButton.disabled = !draw.result;
+  shareButton.disabled = !draw.result;
+  downloadButton.disabled = !draw.result;
+  setRuleOptionsLocked(isDrawing);
+}
+
+function makeQuickResult() {
+  if (draw.options.quickType === "dice") {
+    const value = Sortick.secureRandomIndex(draw.options.diceSides) + 1;
+    return { label: `Dado: ${value}`, value: String(value) };
+  }
+
+  if (draw.options.quickType === "random") {
+    const span = draw.options.randomMax - draw.options.randomMin + 1;
+    const value = draw.options.randomMin + Sortick.secureRandomIndex(span);
+    return { label: `Número: ${value}`, value: String(value) };
+  }
+
+  const face = Sortick.secureRandomIndex(2) === 0 ? "Cara" : "Coroa";
+  return { label: face, value: face };
+}
+
+function getCoreSelectionResult(eligible) {
+  const selected = Sortick.shuffleArray(eligible).slice(0, getSelectionCount(eligible));
+  return selected;
+}
+
+async function performCoreDraw() {
+  const eligible = getEligibleParticipants();
+
+  if (draw.type !== "quick" && draw.type !== "groups" && eligible.length < getMinimumParticipants()) {
+    return;
+  }
+
+  if (draw.type !== "quick" && draw.type !== "groups" && !eligible.length) {
+    setValidation("Não há participantes disponíveis nesta rodada.");
+    return;
+  }
+
+  isDrawing = true;
+  render();
+  winnerCard.classList.add("hidden");
+
+  if (typeof window.sortickTrack === "function") {
+    window.sortickTrack("start_draw", {
+      draw_type: draw.type,
+      draw_mode: draw.mode
+    });
+  }
+
+  if (draw.type === "groups") {
+    const groups = generateGroups();
+    draw.result = {
+      groups,
+      participant: { id: Sortick.createId("g"), name: "Grupos gerados", status: "confirmed" },
+      createdAt: new Date().toISOString(),
+      participantCount: draw.participants.length
+    };
+    playSuccessSound();
+  } else if (draw.type === "quick") {
+    await runCountdown();
+    const quickResult = makeQuickResult();
+    draw.result = {
+      participant: { id: Sortick.createId("q"), name: quickResult.label, status: "confirmed" },
+      quickResult,
+      createdAt: new Date().toISOString(),
+      participantCount: 0
+    };
+    playSuccessSound();
+  } else {
+    const selected = getCoreSelectionResult(eligible);
+    const first = selected[0];
+    const firstIndex = eligible.findIndex(participant => participant.id === first.id);
+
+    if (draw.options.selectionMode !== "order") {
+      await runCountdown();
+      await runAnimation(first, firstIndex, eligible);
+    }
+
+    if (draw.options.noRepeat) {
+      const selectedIds = new Set(draw.options.roundDrawnIds);
+      selected.forEach(participant => selectedIds.add(participant.id));
+      draw.options.roundDrawnIds = Array.from(selectedIds);
+    }
+
+    draw.result = {
+      participant: first,
+      participants: selected,
+      participantIndex: firstIndex,
+      createdAt: new Date().toISOString(),
+      participantCount: eligible.length,
+      rouletteParticipants: draw.type === "roulette" ? eligible.map(participant => ({ ...participant })) : null,
+      selectionMode: draw.options.selectionMode,
+      wheelRotation: draw.type === "roulette" ? currentWheelRotation : null
+    };
+
+    playSuccessSound();
+  }
+
+  persist();
+  isDrawing = false;
+  render();
+  launchConfetti();
+}
+
+function drawGroupsResultImage() {
+  const groups = draw.result.groups || [];
+  const width = 1400;
+  const columns = Math.min(3, Math.max(1, groups.length));
+  const rows = Math.ceil(groups.length / columns);
+  const cardWidth = Math.floor((width - 150 - (columns - 1) * 26) / columns);
+  const groupRows = Math.max(...groups.map(group => (group.members || group).length), 1);
+  const cardHeight = Math.max(210, 110 + groupRows * 38);
+  const height = 280 + rows * cardHeight + (rows - 1) * 26 + 160;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+
+  const gradient = context.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, "#6c4dff");
+  gradient.addColorStop(1, "#00c2a8");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, width, height);
+
+  context.fillStyle = "#ffffff";
+  roundRect(context, 38, 38, width - 76, height - 76, 34);
+  context.fill();
+
+  context.fillStyle = "#17142f";
+  context.font = "900 48px Inter, Arial, sans-serif";
+  context.fillText(draw.title, 76, 120);
+  context.fillStyle = "#6f6b85";
+  context.font = "700 24px Inter, Arial, sans-serif";
+  context.fillText("Grupos equilibrados gerados no Sortick", 76, 160);
+
+  groups.forEach((group, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = 76 + column * (cardWidth + 26);
+    const y = 215 + row * (cardHeight + 26);
+    const name = group.name || `Grupo ${index + 1}`;
+    const members = group.members || group;
+
+    context.fillStyle = "#f5f5ff";
+    roundRect(context, x, y, cardWidth, cardHeight, 22);
+    context.fill();
+
+    context.fillStyle = "#17142f";
+    context.font = "900 28px Inter, Arial, sans-serif";
+    context.fillText(name, x + 22, y + 46);
+
+    context.fillStyle = "#6f6b85";
+    context.font = "700 22px Inter, Arial, sans-serif";
+    members.forEach((member, memberIndex) => {
+      context.fillText(`${memberIndex + 1}. ${member}`, x + 22, y + 88 + memberIndex * 34);
+    });
+  });
+
+  context.fillStyle = "#17142f";
+  context.font = "900 24px Inter, Arial, sans-serif";
+  context.fillText("Feito no Sortick", 76, height - 72);
+
+  const link = document.createElement("a");
+  link.download = `sortick-grupos-${draw.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-") || "grupos"}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+function downloadResultImage() {
+  if (draw.type === "groups" && draw.result?.groups) {
+    drawGroupsResultImage();
+    return;
+  }
+
+  if (!draw.result) return;
+
+  const selected = Array.isArray(draw.result.participants)
+    ? draw.result.participants
+    : [draw.result.participant].filter(Boolean);
+  const title = draw.type === "quick" ? "Decisão rápida" : draw.options.selectionMode === "order" ? "Ordem completa" : "Resultado do sorteio";
+  const width = 1200;
+  const height = selected.length > 4 ? 1400 : 1200;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+
+  const gradient = context.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, "#6c4dff");
+  gradient.addColorStop(1, "#00c2a8");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, width, height);
+
+  context.fillStyle = "#ffffff";
+  roundRect(context, 80, 80, width - 160, height - 160, 42);
+  context.fill();
+
+  context.fillStyle = "#17142f";
+  context.font = "900 46px Inter, Arial, sans-serif";
+  context.fillText(title, 140, 170);
+  context.fillStyle = "#6f6b85";
+  context.font = "700 27px Inter, Arial, sans-serif";
+  context.fillText(draw.title, 140, 220);
+
+  let y = 305;
+  context.fillStyle = "#f5f5ff";
+  roundRect(context, 140, 255, width - 280, height - 470, 30);
+  context.fill();
+
+  context.fillStyle = "#17142f";
+  context.font = "900 54px Inter, Arial, sans-serif";
+
+  if (draw.type === "quick") {
+    context.fillText(draw.result.quickResult.label, 190, y + 50);
+  } else {
+    selected.forEach((participant, index) => {
+      context.font = `900 ${selected.length > 5 ? 36 : 48}px Inter, Arial, sans-serif`;
+      context.fillText(`${index + 1}. ${getParticipantDisplay(participant)}`, 190, y + 44);
+      y += selected.length > 5 ? 62 : 76;
+    });
+  }
+
+  context.fillStyle = "#6f6b85";
+  context.font = "700 25px Inter, Arial, sans-serif";
+  wrapCanvasText(context, `Data: ${Sortick.formatDateTime(draw.result.createdAt)}`, 140, height - 180, width - 280, 34);
+  context.fillStyle = "#17142f";
+  context.font = "900 28px Inter, Arial, sans-serif";
+  context.fillText("Feito no Sortick", 140, height - 115);
+
+  const link = document.createElement("a");
+  link.download = `sortick-resultado-${draw.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-") || "sorteio"}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+function installSimpleCoreControls() {
+  if (selectionModeControl) {
+    selectionModeControl.addEventListener("change", () => {
+      draw.options.selectionMode = ["single", "multiple", "order"].includes(selectionModeControl.value)
+        ? selectionModeControl.value
+        : "single";
+      draw.result = null;
+      persist();
+      render();
+    });
+  }
+
+  if (selectionCountControl) {
+    selectionCountControl.addEventListener("change", () => {
+      draw.options.selectionCount = Sortick.clampNumber(selectionCountControl.value, 2, 100);
+      draw.result = null;
+      persist();
+      render();
+    });
+  }
+
+  if (noRepeatToggle) {
+    noRepeatToggle.addEventListener("change", () => {
+      draw.options.noRepeat = Boolean(noRepeatToggle.checked);
+      draw.options.removeWinnerAfterDraw = false;
+      draw.result = null;
+      persist();
+      render();
+    });
+  }
+
+  if (resetRoundButton) {
+    resetRoundButton.addEventListener("click", async () => {
+      const response = await Sortick.askForConfirmation({
+        title: "Reiniciar rodada?",
+        message: "Os participantes voltam a ficar disponíveis para sorteio. A lista original será mantida.",
+        confirmText: "Reiniciar rodada",
+        tone: "danger"
+      });
+
+      if (!response.confirmed) return;
+
+      draw.options.roundDrawnIds = [];
+      draw.result = null;
+      persist();
+      setValidation("Rodada reiniciada.");
+      render();
+    });
+  }
+
+  if (saveGroupNamesButton) {
+    saveGroupNamesButton.addEventListener("click", () => {
+      draw.options.groupNames = parseCoreGroupNames(groupNamesControl.value);
+      persist();
+      render();
+      setValidation("Nomes dos grupos atualizados.");
+    });
+  }
+
+  drawButton.addEventListener("click", event => {
+    if (!["names", "roulette", "groups", "quick"].includes(draw.type)) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    performCoreDraw();
+  }, true);
+}
+
+installSimpleCoreControls();
+render();

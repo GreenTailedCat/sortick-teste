@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.12-nucleo-simples
+- Fechado o núcleo simples: formatos de nomes/roleta, grupos personalizados e decisões rápidas.
+
 ## v1.11.1-criacao-cartela
 - Reorganizada a criação da cartela e removidos marcadores personalizados.
 

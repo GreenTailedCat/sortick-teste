@@ -53,6 +53,21 @@ const cartelaWizardNext2 = document.querySelector("#cartelaWizardNext2");
 const cartelaWizardBack3 = document.querySelector("#cartelaWizardBack3");
 const cartelaWizardCreate = document.querySelector("#cartelaWizardCreate");
 
+const selectionCreationField = document.querySelector("#selectionCreationField");
+const selectionModeInput = document.querySelector("#selectionModeInput");
+const selectionCountField = document.querySelector("#selectionCountField");
+const selectionCountInput = document.querySelector("#selectionCountInput");
+const noRepeatInput = document.querySelector("#noRepeatInput");
+const groupNamesCreationField = document.querySelector("#groupNamesCreationField");
+const groupNamesInput = document.querySelector("#groupNamesInput");
+const quickCreationField = document.querySelector("#quickCreationField");
+const quickTypeInput = document.querySelector("#quickTypeInput");
+const quickDiceField = document.querySelector("#quickDiceField");
+const quickDiceSidesInput = document.querySelector("#quickDiceSidesInput");
+const quickRandomFields = document.querySelector("#quickRandomFields");
+const quickMinInput = document.querySelector("#quickMinInput");
+const quickMaxInput = document.querySelector("#quickMaxInput");
+
 let cartelaWizardStep = 1;
 let cartelaCreateImageData = "";
 let cartelaCreateImageNameValue = ""; 
@@ -90,9 +105,40 @@ function setCartelaCreateImageStatus(message = "") {
   cartelaCreateImageStatus.textContent = message;
 }
 
+function parseGroupNames(value, groupCount) {
+  const rawNames = String(value || "")
+    .split(/[\n,;]+/)
+    .map(Sortick.normalizeText)
+    .filter(Boolean)
+    .slice(0, groupCount);
+
+  const names = [];
+  for (let index = 0; index < groupCount; index += 1) {
+    names.push(rawNames[index] || `Grupo ${index + 1}`);
+  }
+
+  return names;
+}
+
+function syncSelectionCreation() {
+  const isMultiple = selectionModeInput.value === "multiple";
+  selectionCountField.classList.toggle("hidden", !isMultiple);
+}
+
+function syncQuickCreation() {
+  const isDice = quickTypeInput.value === "dice";
+  const isRandom = quickTypeInput.value === "random";
+
+  quickDiceField.classList.toggle("hidden", !isDice);
+  quickRandomFields.classList.toggle("hidden", !isRandom);
+}
+
 function syncTypeSettings() {
   const type = typeInput.value;
   const isCartela = type === "numbers";
+  const isSelection = type === "names" || type === "roulette";
+  const isGroups = type === "groups";
+  const isQuick = type === "quick";
 
   numberQuantityField.classList.add("hidden");
   totalNumbersInput.required = false;
@@ -100,11 +146,15 @@ function syncTypeSettings() {
   bingoQuantityField.classList.toggle("hidden", type !== "bingo");
   bingoTotalNumbersInput.required = type === "bingo";
 
-  groupQuantityField.classList.toggle("hidden", type !== "groups");
-  groupCountInput.required = type === "groups";
+  groupQuantityField.classList.toggle("hidden", !isGroups);
+  groupCountInput.required = isGroups;
+
+  selectionCreationField.classList.toggle("hidden", !isSelection);
+  groupNamesCreationField.classList.toggle("hidden", !isGroups);
+  quickCreationField.classList.toggle("hidden", !isQuick);
 
   drawTitleField.classList.toggle("hidden", isCartela);
-  drawModeField.classList.toggle("hidden", isCartela);
+  drawModeField.classList.toggle("hidden", isCartela || isQuick);
   createSubmitButton.classList.toggle("hidden", isCartela);
   cartelaCreateWizard.classList.toggle("hidden", !isCartela);
   titleInput.required = !isCartela;
@@ -112,7 +162,11 @@ function syncTypeSettings() {
   if (isCartela) {
     setCartelaWizardStep(cartelaWizardStep);
   }
+
+  syncSelectionCreation();
+  syncQuickCreation();
 }
+
 
 function validateCartelaStepOne() {
   const title = Sortick.normalizeText(cartelaCreateTitle.value);
@@ -191,7 +245,7 @@ syncTypeSettings();
 function applyTypeFromURL() {
   const params = new URLSearchParams(window.location.search);
   const type = params.get("tipo");
-  const allowedTypes = ["names", "roulette", "numbers", "bingo", "groups"];
+  const allowedTypes = ["names", "roulette", "numbers", "bingo", "groups", "quick"];
 
   if (type && allowedTypes.includes(type)) {
     typeInput.value = type;
@@ -200,6 +254,9 @@ function applyTypeFromURL() {
 }
 
 applyTypeFromURL();
+
+selectionModeInput.addEventListener("change", syncSelectionCreation);
+quickTypeInput.addEventListener("change", syncQuickCreation);
 
 if (cartelaWizardNext1) {
   cartelaWizardNext1.addEventListener("click", () => {
@@ -275,6 +332,16 @@ function getSavedDrawSummary(savedDraw) {
     return `${participants.length} participante(s) · ${options.groupCount || 2} grupo(s)`;
   }
 
+  if (savedDraw.type === "quick") {
+    const labels = { coin: "Cara ou coroa", dice: "Dado", random: "Número aleatório" };
+    return labels[options.quickType] || "Decisão rápida";
+  }
+
+  if (savedDraw.type === "names" || savedDraw.type === "roulette") {
+    const selectionLabels = { multiple: "vários sorteados", order: "ordem completa", single: "um sorteado" };
+    return `${participants.length} participante(s) · ${selectionLabels[options.selectionMode] || "um sorteado"}`;
+  }
+
   return `${participants.length} participante(s)`;
 }
 
@@ -296,8 +363,12 @@ function cloneParticipants(participants) {
 function getCopyOptions(type, sourceOptions = {}) {
   const options = {
     confirmedOnly: Boolean(sourceOptions.confirmedOnly),
-    removeWinnerAfterDraw: Boolean(sourceOptions.removeWinnerAfterDraw),
-    soundEnabled: Boolean(sourceOptions.soundEnabled)
+    removeWinnerAfterDraw: false,
+    soundEnabled: Boolean(sourceOptions.soundEnabled),
+    selectionMode: ["single", "multiple", "order"].includes(sourceOptions.selectionMode) ? sourceOptions.selectionMode : "single",
+    selectionCount: Sortick.clampNumber(sourceOptions.selectionCount || 2, 2, 100),
+    noRepeat: Boolean(sourceOptions.noRepeat || sourceOptions.removeWinnerAfterDraw),
+    roundDrawnIds: []
   };
 
   if (type === "numbers") {
@@ -312,6 +383,18 @@ function getCopyOptions(type, sourceOptions = {}) {
 
   if (type === "groups") {
     options.groupCount = Sortick.clampNumber(sourceOptions.groupCount || 2, 2, 50);
+    options.groupNames = Array.isArray(sourceOptions.groupNames)
+      ? sourceOptions.groupNames.slice(0, options.groupCount)
+      : [];
+  }
+
+  if (type === "quick") {
+    options.quickType = ["coin", "dice", "random"].includes(sourceOptions.quickType)
+      ? sourceOptions.quickType
+      : "coin";
+    options.diceSides = Sortick.clampNumber(sourceOptions.diceSides || 6, 2, 100);
+    options.randomMin = Number.isInteger(sourceOptions.randomMin) ? sourceOptions.randomMin : 1;
+    options.randomMax = Number.isInteger(sourceOptions.randomMax) ? sourceOptions.randomMax : 100;
   }
 
   return options;
@@ -537,8 +620,17 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const title = Sortick.normalizeText(titleInput.value);
-  const mode = modeInput.value;
+  const mode = type === "quick" ? "simple" : modeInput.value;
+  let title = Sortick.normalizeText(titleInput.value);
+
+  if (!title && type === "quick") {
+    const quickTitles = {
+      coin: "Cara ou coroa",
+      dice: "Dado",
+      random: "Número aleatório"
+    };
+    title = quickTitles[quickTypeInput.value] || "Decisão rápida";
+  }
 
   if (!title) {
     titleInput.focus();
@@ -551,6 +643,15 @@ form.addEventListener("submit", (event) => {
     soundEnabled: false
   };
 
+  if (type === "names" || type === "roulette") {
+    options.selectionMode = ["single", "multiple", "order"].includes(selectionModeInput.value)
+      ? selectionModeInput.value
+      : "single";
+    options.selectionCount = Sortick.clampNumber(selectionCountInput.value, 2, 100);
+    options.noRepeat = Boolean(noRepeatInput.checked);
+    options.roundDrawnIds = [];
+  }
+
   if (type === "bingo") {
     options.totalNumbers = Sortick.clampNumber(bingoTotalNumbersInput.value, 2, 500);
     options.bingoDrawnNumbers = [];
@@ -559,11 +660,30 @@ form.addEventListener("submit", (event) => {
 
   if (type === "groups") {
     options.groupCount = Sortick.clampNumber(groupCountInput.value, 2, 50);
+    options.groupNames = parseGroupNames(groupNamesInput.value, options.groupCount);
+  }
+
+  if (type === "quick") {
+    const quickType = ["coin", "dice", "random"].includes(quickTypeInput.value)
+      ? quickTypeInput.value
+      : "coin";
+
+    const minimum = Number.parseInt(quickMinInput.value, 10);
+    const maximum = Number.parseInt(quickMaxInput.value, 10);
+
+    options.quickType = quickType;
+    options.diceSides = Sortick.clampNumber(quickDiceSidesInput.value, 2, 100);
+    options.randomMin = Number.isInteger(minimum) ? minimum : 1;
+    options.randomMax = Number.isInteger(maximum) ? maximum : 100;
+
+    if (options.randomMin > options.randomMax) {
+      [options.randomMin, options.randomMax] = [options.randomMax, options.randomMin];
+    }
   }
 
   const draw = {
     id: Sortick.createId("draw"),
-    title,
+    title: title.slice(0, 80),
     type,
     mode,
     options,

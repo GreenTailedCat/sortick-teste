@@ -1,4 +1,4 @@
-# Sortick Teste v1.11.1-criacao-cartela
+# Sortick Teste v1.12-nucleo-simples
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -242,3 +242,31 @@ Ajuste da experiência de cartela após testes:
 - A quantidade de números é definida na criação e não pode ser alterada depois.
 - Marcadores personalizados foram removidos; permanece o padrão visual de disponível, ocupado e confirmado.
 - Imagem do prêmio aparece na cartela, na visualização e na exportação.
+
+
+## v1.12-nucleo-simples
+
+Atualização para fechar o núcleo simples do Sortick sem multiplicar modos parecidos.
+
+### Sorteio por nomes e Roleta
+- Formatos: um sorteado, vários sorteados ou ordem completa.
+- Opção para não repetir sorteados durante a rodada.
+- Reinício de rodada sem apagar a lista original.
+- Roleta usa os mesmos formatos como versão visual do sorteio.
+
+### Grupos / Times
+- Nomes personalizados de grupos.
+- Distribuição equilibrada, com diferença máxima de uma pessoa.
+- Gerar novamente, copiar resumo e baixar imagem dos grupos.
+
+### Decisões rápidas
+- Novo tipo compacto, sem cartão extra na home:
+  - Cara ou coroa.
+  - Dado de 6, 8, 10, 12 ou 20 lados.
+  - Número aleatório com mínimo e máximo.
+- Sem lista de participantes, conta ou servidor.
+
+### Limpeza
+- Removidos os botões WhatsApp e Tela cheia.
+- Permanecem copiar resumo, compartilhar e baixar imagem.
+- Cartela, Bingo e sorteios salvos mantêm as funções já validadas.

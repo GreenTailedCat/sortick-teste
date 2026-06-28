@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=11111" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1120" />
   <script src="/sortick-teste/js/clean-url.js"></script>
 </head>
 <body class="draw-page">
@@ -62,16 +62,14 @@
         <button id="drawButton" class="btn btn-primary btn-xl" disabled>Sortear</button>
         <button id="copyButton" class="btn btn-ghost" disabled>Copiar resumo</button>
         <button id="shareButton" class="btn btn-ghost" disabled>Compartilhar</button>
-        <button id="whatsappButton" class="btn btn-ghost" disabled>WhatsApp</button>
         <button id="downloadButton" class="btn btn-ghost" disabled>Baixar imagem</button>
-        <button id="focusButton" class="btn btn-ghost" type="button">Tela cheia</button>
         <button id="resetButton" class="btn btn-secondary hidden" type="button">Reiniciar bingo</button>
       </div>
       <p id="resetHint" class="stage-action-hint hidden">Reinicia o histórico de números do bingo.</p>
     </section>
 
     <aside class="side-panel">
-      <div class="panel-card">
+      <div id="participantPanel" class="panel-card">
         <h2>Participantes</h2>
         <p id="participantHelp" class="subtle">Adicione nomes para o sorteio.</p>
 
@@ -142,6 +140,46 @@
             Permitir números repetidos
           </label>
 
+          <section id="selectionOptionsPanel" class="simple-core-panel hidden">
+            <h3>Formato do resultado</h3>
+
+            <label class="compact-label">
+              Resultado
+              <select id="selectionModeControl">
+                <option value="single">Um sorteado</option>
+                <option value="multiple">Vários sorteados</option>
+                <option value="order">Ordem completa</option>
+              </select>
+            </label>
+
+            <label id="selectionCountControlField" class="compact-label hidden">
+              Quantos sorteados
+              <input id="selectionCountControl" type="number" min="2" max="100" value="2" />
+            </label>
+
+            <label class="inline-option">
+              <input id="noRepeatToggle" type="checkbox" />
+              Não repetir sorteados nesta rodada
+            </label>
+
+            <button id="resetRoundButton" class="link-button danger-text hidden" type="button">Reiniciar rodada</button>
+          </section>
+
+          <section id="groupSettingsPanel" class="simple-core-panel hidden">
+            <h3>Grupos</h3>
+            <label class="compact-label">
+              Nomes dos grupos
+              <textarea id="groupNamesControl" rows="3" maxlength="240" placeholder="Um por linha ou separados por vírgula"></textarea>
+            </label>
+            <button id="saveGroupNamesButton" class="btn btn-ghost light" type="button">Salvar nomes dos grupos</button>
+          </section>
+
+          <section id="quickSettingsPanel" class="simple-core-panel hidden">
+            <h3>Decisão rápida</h3>
+            <p id="quickSettingsText" class="subtle">Pronto para decidir.</p>
+          </section>
+
+
           <label class="compact-label">
             Mostrar
             <select id="participantFilter">
@@ -171,7 +209,7 @@
     </aside>
   </main>
 
-  <script src="/sortick-teste/js/utils.js?v=11111"></script>
-  <script src="/sortick-teste/js/sorteio.js?v=11111"></script>
+  <script src="/sortick-teste/js/utils.js?v=1120"></script>
+  <script src="/sortick-teste/js/sorteio.js?v=1120"></script>
 </body>
 </html>
