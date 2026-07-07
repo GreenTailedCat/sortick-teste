@@ -46,3 +46,12 @@
 
 - Sorteios salvos localmente no navegador com painel para continuar/excluir.
 - Salvamento em nuvem permanece como possibilidade futura quando houver contas/login.
+
+
+## Após v1.13
+
+- Modal horizontal de visualização da cartela, separado da visualização atual.
+- Layouts adicionais para imagem exportada.
+- Atalho de ordem de apresentações.
+- Perguntas/opções aleatórias como extensão das decisões rápidas.
+- Sincronização em nuvem somente com autenticação, privacidade e custos definidos.

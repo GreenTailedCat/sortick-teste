@@ -1,4 +1,4 @@
-# Sortick Teste v1.12-nucleo-simples
+# Sortick Teste v1.13-finalizacao
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -270,3 +270,13 @@ Atualização para fechar o núcleo simples do Sortick sem multiplicar modos par
 - Removidos os botões WhatsApp e Tela cheia.
 - Permanecem copiar resumo, compartilhar e baixar imagem.
 - Cartela, Bingo e sorteios salvos mantêm as funções já validadas.
+
+
+## v1.13-finalizacao
+
+- Corrigida a estrutura da seção de modos e reforçada a ocultação da barra horizontal do carrossel.
+- Adicionado D4 nas decisões rápidas.
+- Cara ou coroa, dado e número aleatório agora usam visuais 2D próprios, sem emoji como resultado principal.
+- Criadas páginas: Como funciona, Ideias de uso e Perguntas frequentes.
+- Reescritas as páginas dos modos com passos, exemplos e limites específicos.
+- Esta continua sendo uma cópia de testes: sem Analytics, sem AdSense, sem PWA ativo e sem indexação.

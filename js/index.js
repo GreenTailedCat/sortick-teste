@@ -67,6 +67,7 @@ const quickDiceSidesInput = document.querySelector("#quickDiceSidesInput");
 const quickRandomFields = document.querySelector("#quickRandomFields");
 const quickMinInput = document.querySelector("#quickMinInput");
 const quickMaxInput = document.querySelector("#quickMaxInput");
+const QUICK_DICE_SIDES = [4, 6, 8, 10, 12, 20];
 
 let cartelaWizardStep = 1;
 let cartelaCreateImageData = "";
@@ -153,11 +154,11 @@ function syncTypeSettings() {
   groupNamesCreationField.classList.toggle("hidden", !isGroups);
   quickCreationField.classList.toggle("hidden", !isQuick);
 
-  drawTitleField.classList.toggle("hidden", isCartela);
+  drawTitleField.classList.toggle("hidden", isCartela || isQuick);
   drawModeField.classList.toggle("hidden", isCartela || isQuick);
   createSubmitButton.classList.toggle("hidden", isCartela);
   cartelaCreateWizard.classList.toggle("hidden", !isCartela);
-  titleInput.required = !isCartela;
+  titleInput.required = !isCartela && !isQuick;
 
   if (isCartela) {
     setCartelaWizardStep(cartelaWizardStep);
@@ -672,7 +673,8 @@ form.addEventListener("submit", (event) => {
     const maximum = Number.parseInt(quickMaxInput.value, 10);
 
     options.quickType = quickType;
-    options.diceSides = Sortick.clampNumber(quickDiceSidesInput.value, 2, 100);
+    const selectedSides = Number.parseInt(quickDiceSidesInput.value, 10);
+    options.diceSides = QUICK_DICE_SIDES.includes(selectedSides) ? selectedSides : 6;
     options.randomMin = Number.isInteger(minimum) ? minimum : 1;
     options.randomMax = Number.isInteger(maximum) ? maximum : 100;
 

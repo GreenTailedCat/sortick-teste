@@ -1,4 +1,4 @@
-const CACHE_NAME = "sortick-teste-v1-12-nucleo-simples-cache";
+const CACHE_NAME = "sortick-teste-v1-13-finalizacao-cache";
 
 const APP_SHELL = [
   "/",

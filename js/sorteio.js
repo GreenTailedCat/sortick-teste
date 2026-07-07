@@ -7,6 +7,7 @@ let currentWheelRotation = 0;
 let isCartelaExpanded = false;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
+const QUICK_DICE_SIDES = [4, 6, 8, 10, 12, 20];
 
 const drawTitle = document.querySelector("#drawTitle");
 const drawKind = document.querySelector("#drawKind");
@@ -84,7 +85,9 @@ if (!draw) {
   draw.options.roundDrawnIds = Array.isArray(draw.options.roundDrawnIds) ? draw.options.roundDrawnIds : [];
   draw.options.groupNames = Array.isArray(draw.options.groupNames) ? draw.options.groupNames : [];
   draw.options.quickType = ["coin", "dice", "random"].includes(draw.options.quickType) ? draw.options.quickType : "coin";
-  draw.options.diceSides = Sortick.clampNumber(draw.options.diceSides || 6, 2, 100);
+  draw.options.diceSides = QUICK_DICE_SIDES.includes(Number(draw.options.diceSides))
+    ? Number(draw.options.diceSides)
+    : 6;
   draw.options.randomMin = Number.isInteger(draw.options.randomMin) ? draw.options.randomMin : 1;
   draw.options.randomMax = Number.isInteger(draw.options.randomMax) ? draw.options.randomMax : 100;
   if (draw.options.randomMin > draw.options.randomMax) {
@@ -2115,7 +2118,7 @@ function parseCoreGroupNames(value) {
 
 function getQuickDescription() {
   if (draw.options.quickType === "dice") {
-    return `Dado de ${draw.options.diceSides} lados`;
+    return `Dado D${draw.options.diceSides}`;
   }
 
   if (draw.options.quickType === "random") {
@@ -2272,16 +2275,77 @@ function renderSelectionBoard(participants, heading = "") {
     </div>`;
 }
 
-function renderQuickIdle() {
-  const result = draw.result?.quickResult || null;
-  const icon = draw.options.quickType === "coin" ? "🪙" : draw.options.quickType === "dice" ? "🎲" : "🔢";
+function getQuickVisualMarkup(result = null, { isAnimating = false } = {}) {
+  const quickType = draw.options.quickType;
+  const resultValue = result ? String(result.value) : "";
+  const resultLabel = result ? result.label : getQuickDescription();
 
+  if (quickType === "coin") {
+    const face = resultValue || "?";
+    return `
+      <div class="quick-visual quick-coin ${isAnimating ? "is-animating" : ""}" aria-hidden="true">
+        <span class="quick-coin-face">${Sortick.escapeHTML(face)}</span>
+        <small>${isAnimating ? "girando" : "cara ou coroa"}</small>
+      </div>
+      <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
+  }
+
+  if (quickType === "dice") {
+    const value = resultValue || "?";
+    return `
+      <div class="quick-visual quick-die quick-die-d${draw.options.diceSides} ${isAnimating ? "is-animating" : ""}" aria-hidden="true">
+        <small>D${draw.options.diceSides}</small>
+        <strong>${Sortick.escapeHTML(value)}</strong>
+      </div>
+      <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
+  }
+
+  const value = resultValue || "?";
+  return `
+    <div class="quick-visual quick-number-display ${isAnimating ? "is-animating" : ""}" aria-hidden="true">${Sortick.escapeHTML(value)}</div>
+    <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
+}
+
+function renderQuickDecision(result = null, { isAnimating = false } = {}) {
   animationArea.innerHTML = `
-    <div class="quick-decision-card">
-      <span class="empty-icon">${icon}</span>
-      <strong>${result ? Sortick.escapeHTML(result.label) : Sortick.escapeHTML(getQuickDescription())}</strong>
-      <p>${result ? "Última decisão registrada." : "Clique em Decidir para gerar um resultado."}</p>
+    <div class="quick-decision-card ${isAnimating ? "quick-is-rolling" : ""}">
+      ${getQuickVisualMarkup(result, { isAnimating })}
+      <p>${isAnimating ? "Sorteando..." : result ? "Decisão registrada. Você pode decidir novamente quando quiser." : "Clique em Decidir para gerar um resultado."}</p>
     </div>`;
+}
+
+function renderQuickIdle() {
+  renderQuickDecision(draw.result?.quickResult || null);
+}
+
+function runQuickAnimation(finalResult) {
+  const duration = 1050;
+  const start = performance.now();
+  let lastTick = 0;
+
+  return new Promise(resolve => {
+    function frame(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const delay = 55 + progress * 125;
+
+      if (now - lastTick > delay) {
+        lastTick = now;
+        renderQuickDecision(makeQuickResult(), { isAnimating: true });
+        playTickSound();
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+        return;
+      }
+
+      renderQuickDecision(finalResult);
+      playSuccessSound();
+      setTimeout(resolve, 280);
+    }
+
+    requestAnimationFrame(frame);
+  });
 }
 
 function renderAnimationIdle() {
@@ -2510,7 +2574,7 @@ function render() {
 function makeQuickResult() {
   if (draw.options.quickType === "dice") {
     const value = Sortick.secureRandomIndex(draw.options.diceSides) + 1;
-    return { label: `Dado: ${value}`, value: String(value) };
+    return { label: `D${draw.options.diceSides}: ${value}`, value: String(value) };
   }
 
   if (draw.options.quickType === "random") {
@@ -2561,15 +2625,14 @@ async function performCoreDraw() {
     };
     playSuccessSound();
   } else if (draw.type === "quick") {
-    await runCountdown();
     const quickResult = makeQuickResult();
+    await runQuickAnimation(quickResult);
     draw.result = {
       participant: { id: Sortick.createId("q"), name: quickResult.label, status: "confirmed" },
       quickResult,
       createdAt: new Date().toISOString(),
       participantCount: 0
     };
-    playSuccessSound();
   } else {
     const selected = getCoreSelectionResult(eligible);
     const first = selected[0];

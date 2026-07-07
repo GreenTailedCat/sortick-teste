@@ -1,5 +1,9 @@
 # Changelog do Sortick
 
+## v1.13-finalizacao
+- Decisões rápidas com animações 2D, D4 e páginas de conteúdo originais.
+- Correções de carrossel e estrutura da home.
+
 ## v1.12-nucleo-simples
 - Fechado o núcleo simples: formatos de nomes/roleta, grupos personalizados e decisões rápidas.
 

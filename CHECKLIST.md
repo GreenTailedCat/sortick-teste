@@ -216,3 +216,16 @@
 - [ ] Não há botões WhatsApp ou Tela cheia.
 - [ ] Cartela, Bingo e sorteios salvos continuam funcionando.
 - [ ] Nenhuma janela nativa do navegador aparece.
+
+
+## Testes v1.13 — finalização
+
+- [ ] Carrossel de modos sem barra horizontal visível; setas e toque continuam funcionando.
+- [ ] A página inicial mostra seis opções, incluindo Decisões rápidas.
+- [ ] Cara ou coroa usa moeda 2D e muda para Cara ou Coroa.
+- [ ] D4, D6, D8, D10, D12 e D20 geram somente valores válidos.
+- [ ] Número aleatório respeita os limites configurados.
+- [ ] Bingo faz 3, 2, 1 apenas no primeiro número da rodada.
+- [ ] Como funciona, Ideias de uso e Perguntas frequentes abrem sem links quebrados.
+- [ ] As cinco páginas de modos têm conteúdo específico.
+- [ ] Testar computador e celular antes de preparar produção.

@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1120" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1130" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -29,8 +29,15 @@
       overflow-y: hidden;
       scroll-snap-type: x proximity;
       scroll-behavior: smooth;
-      padding: 4px 8px 18px;
-      scrollbar-width: thin;
+      padding: 4px 8px 6px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #modos .mode-carousel-track.mode-grid::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
     }
 
     #modos .mode-carousel-track .mode-card {
@@ -104,6 +111,9 @@
 
     <nav class="nav">
       <a href="/sortick-teste/#modos">Modos</a>
+      <a href="/sortick-teste/como-funciona/">Como funciona</a>
+      <a href="/sortick-teste/ideias-de-uso/">Ideias de uso</a>
+      <a href="/sortick-teste/perguntas-frequentes/">Perguntas frequentes</a>
       <a href="/sortick-teste/sobre/">Sobre</a>
       <a href="/sortick-teste/#criar">Criar</a>
     </nav>
@@ -153,6 +163,7 @@
       <div class="section-heading">
         <p class="eyebrow">Modos disponíveis</p>
         <h2>Comece pelo essencial.</h2>
+      </div>
       <div class="mode-carousel" aria-label="Modos disponíveis">
         <button class="carousel-button carousel-button-prev" type="button" aria-label="Ver modos anteriores">‹</button>
 
@@ -191,12 +202,47 @@
             <p>Adicione nomes e divida os participantes em grupos aleatórios.</p>
             <a class="mode-more-link" href="/sortick-teste/grupos/">Saiba mais</a>
           </article>
+
+          <article class="mode-card">
+            <div class="icon">✦</div>
+            <h3>Decisões rápidas</h3>
+            <p>Use cara ou coroa, dado ou número aleatório para resolver escolhas em segundos.</p>
+            <a class="mode-more-link" href="/sortick-teste/?tipo=quick#criar">Abrir decisões rápidas</a>
+          </article>
         </div>
 
         <button class="carousel-button carousel-button-next" type="button" aria-label="Ver próximos modos">›</button>
       </div>
     </section>
 
+
+    <section class="section guide-overview-section">
+      <div class="section-heading">
+        <p class="eyebrow">GUIAS E EXEMPLOS</p>
+        <h2>Mais do que apertar um botão.</h2>
+        <p class="section-description">Entenda onde os dados ficam, escolha o modo certo e encontre ideias para grupos, eventos, equipes, turmas e atividades.</p>
+      </div>
+      <div class="guide-overview-grid">
+        <article class="guide-overview-card">
+          <span class="guide-overview-number">01</span>
+          <h3>Entenda como funciona</h3>
+          <p>Crie, use, salve no navegador e compartilhe resultados de forma clara.</p>
+          <a href="/sortick-teste/como-funciona/">Ler como funciona</a>
+        </article>
+        <article class="guide-overview-card">
+          <span class="guide-overview-number">02</span>
+          <h3>Encontre uma ideia</h3>
+          <p>Use o Sortick para escolhas, ordens, grupos, atividades e momentos em comunidade.</p>
+          <a href="/sortick-teste/ideias-de-uso/">Ver ideias de uso</a>
+        </article>
+        <article class="guide-overview-card">
+          <span class="guide-overview-number">03</span>
+          <h3>Tire dúvidas importantes</h3>
+          <p>Veja o que fica salvo, como usar no celular e o que o Sortick não faz.</p>
+          <a href="/sortick-teste/perguntas-frequentes/">Abrir perguntas frequentes</a>
+        </article>
+      </div>
+    </section>
     <section id="criar" class="section create-section">
       <div class="create-panel">
         <div>
@@ -376,6 +422,7 @@
             <label id="quickDiceField">
               Lados do dado
               <select id="quickDiceSidesInput">
+                <option value="4">4 lados</option>
                 <option value="6">6 lados</option>
                 <option value="8">8 lados</option>
                 <option value="10">10 lados</option>
@@ -440,7 +487,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1120"></script>
-  <script src="/sortick-teste/js/index.js?v=1120"></script>
+  <script src="/sortick-teste/js/utils.js?v=1130"></script>
+  <script src="/sortick-teste/js/index.js?v=1130"></script>
 </body>
 </html>
