@@ -30,3 +30,11 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - Imagem opcional disponível para Nomes, Roleta, Bingo e Grupos; também pode ser editada depois.
 - Correção do primeiro desenho do modo Dados: a mesa aparece diretamente, sem painel de participantes e sem estado genérico.
 - Dados mantêm limite de 10 unidades por rodada, resultado em cada dado, total, rolar e limpar.
+
+
+## v1.17 — correção de criação e modo Dado
+
+- Formulário de Nomes, Roleta, Bingo e Grupos usa a mesma estrutura visual de 3 etapas da cartela.
+- Corrigidos botões Continuar, imagem e observação desses modos.
+- Decisões rápidas continuam diretas, sem formulário de atividade.
+- Dado não usa nem exibe participantes.

@@ -3135,3 +3135,29 @@ body:fullscreen .draw-stage {
   .dice-stage { min-height: 286px; }
   .dice-piece { width: 124px; height: 124px; }
 }
+
+
+/* v1.17 — formulário unificado e proteção do modo rápido */
+.activity-create-wizard {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(108,77,255,0.08), rgba(0,194,168,0.08));
+}
+.activity-create-wizard.hidden { display: none; }
+.activity-mode-config-area { display: grid; gap: 14px; }
+.quick-create-direct { display: grid; gap: 14px; }
+
+body[data-sortick-draw-type="quick"] #participantPanel,
+body[data-sortick-draw-type="quick"] #participantForm {
+  display: none !important;
+}
+body[data-sortick-draw-type="quick"] .draw-layout {
+  grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+@media (max-width: 900px) {
+  body[data-sortick-draw-type="quick"] .draw-layout { grid-template-columns: 1fr; }
+}

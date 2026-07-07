@@ -4,891 +4,248 @@ const modeCarouselNext = document.querySelector("#modos .carousel-button-next");
 
 function scrollModeCarousel(direction) {
   if (!modeCarouselTrack) return;
-
-  const firstCard = modeCarouselTrack.querySelector(".mode-card");
-  const amount = firstCard ? firstCard.getBoundingClientRect().width + 18 : 320;
-
-  modeCarouselTrack.scrollBy({
-    left: amount * direction,
-    behavior: "smooth"
-  });
+  const card = modeCarouselTrack.querySelector(".mode-card");
+  const amount = card ? card.getBoundingClientRect().width + 18 : 320;
+  modeCarouselTrack.scrollBy({ left: direction * amount, behavior: "smooth" });
 }
-
-if (modeCarouselPrev && modeCarouselNext) {
-  modeCarouselPrev.addEventListener("click", () => scrollModeCarousel(-1));
-  modeCarouselNext.addEventListener("click", () => scrollModeCarousel(1));
-}
-
+if (modeCarouselPrev) modeCarouselPrev.addEventListener("click", () => scrollModeCarousel(-1));
+if (modeCarouselNext) modeCarouselNext.addEventListener("click", () => scrollModeCarousel(1));
 
 const form = document.querySelector("#createForm");
-const titleInput = document.querySelector("#drawTitle");
 const typeInput = document.querySelector("#drawType");
+const titleInput = document.querySelector("#drawTitle");
 const modeInput = document.querySelector("#drawMode");
-const numberQuantityField = document.querySelector("#numberQuantityField");
-const totalNumbersInput = document.querySelector("#totalNumbers");
-const bingoQuantityField = document.querySelector("#bingoQuantityField");
-const bingoTotalNumbersInput = document.querySelector("#bingoTotalNumbers");
-const groupQuantityField = document.querySelector("#groupQuantityField");
-const groupCountInput = document.querySelector("#groupCount");
-const savedDrawsList = document.querySelector("#savedDrawsList");
-const drawTitleField = document.querySelector("#drawTitleField");
-const drawModeField = document.querySelector("#drawModeField");
-const createSubmitButton = document.querySelector("#createSubmitButton");
-const cartelaCreateWizard = document.querySelector("#cartelaCreateWizard");
+const activityWizard = document.querySelector("#activityCreateWizard");
+const cartelaWizard = document.querySelector("#cartelaCreateWizard");
+const quickCreationField = document.querySelector("#quickCreationField");
+const activityDescription = document.querySelector("#activityDescription");
+const activityDate = document.querySelector("#activityDate");
+const activityNote = document.querySelector("#activityNote");
+const activityImage = document.querySelector("#activityCreateImage");
+const activityImagePreview = document.querySelector("#activityCreateImagePreview");
+const activityImagePreviewImage = document.querySelector("#activityCreateImagePreviewImage");
+const activityImageName = document.querySelector("#activityCreateImageName");
+const activityImageStatus = document.querySelector("#activityCreateImageStatus");
+const activityRemoveImage = document.querySelector("#activityCreateRemoveImage");
+const activityNext1 = document.querySelector("#activityWizardNext1");
+const activityBack2 = document.querySelector("#activityWizardBack2");
+const activityNext2 = document.querySelector("#activityWizardNext2");
+const activityBack3 = document.querySelector("#activityWizardBack3");
+const activityModeConfigArea = document.querySelector("#activityModeConfigArea");
+const selectionField = document.querySelector("#selectionCreationField");
+const selectionMode = document.querySelector("#selectionModeInput");
+const selectionCountField = document.querySelector("#selectionCountField");
+const selectionCount = document.querySelector("#selectionCountInput");
+const noRepeat = document.querySelector("#noRepeatInput");
+const bingoField = document.querySelector("#bingoQuantityField");
+const bingoTotal = document.querySelector("#bingoTotalNumbers");
+const groupField = document.querySelector("#groupQuantityField");
+const groupCount = document.querySelector("#groupCount");
+const groupNamesField = document.querySelector("#groupNamesCreationField");
+const groupNames = document.querySelector("#groupNamesInput");
+const quickType = document.querySelector("#quickTypeInput");
+const quickDiceField = document.querySelector("#quickDiceField");
+const quickDiceSides = document.querySelector("#quickDiceSidesInput");
+const quickRandomFields = document.querySelector("#quickRandomFields");
+const quickMin = document.querySelector("#quickMinInput");
+const quickMax = document.querySelector("#quickMaxInput");
+const quickRepeat = document.querySelector("#quickRandomRepeatInput");
 const cartelaCreateTitle = document.querySelector("#cartelaCreateTitle");
 const cartelaCreateDescription = document.querySelector("#cartelaCreateDescription");
 const cartelaCreateTotal = document.querySelector("#cartelaCreateTotal");
+const cartelaCreateDate = document.querySelector("#cartelaCreateDate");
+const cartelaCreateValue = document.querySelector("#cartelaCreateValue");
+const cartelaCreateNote = document.querySelector("#cartelaCreateNote");
 const cartelaCreatePrizeList = document.querySelector("#cartelaCreatePrizeList");
 const cartelaCreateAddPrize = document.querySelector("#cartelaCreateAddPrize");
-const cartelaCreateImage = document.querySelector("#cartelaCreateImage");
-const cartelaCreateImagePreview = document.querySelector("#cartelaCreateImagePreview");
-const cartelaCreateImagePreviewImage = document.querySelector("#cartelaCreateImagePreviewImage");
-const cartelaCreateImageName = document.querySelector("#cartelaCreateImageName");
-const cartelaCreateImageStatus = document.querySelector("#cartelaCreateImageStatus");
-const cartelaCreateRemoveImage = document.querySelector("#cartelaCreateRemoveImage");
-const cartelaCreateValue = document.querySelector("#cartelaCreateValue");
-const cartelaCreateDate = document.querySelector("#cartelaCreateDate");
-const cartelaCreateNote = document.querySelector("#cartelaCreateNote");
-const cartelaWizardNext1 = document.querySelector("#cartelaWizardNext1");
-const cartelaWizardBack2 = document.querySelector("#cartelaWizardBack2");
-const cartelaWizardNext2 = document.querySelector("#cartelaWizardNext2");
-const cartelaWizardBack3 = document.querySelector("#cartelaWizardBack3");
-const cartelaWizardCreate = document.querySelector("#cartelaWizardCreate");
+const cartelaImage = document.querySelector("#cartelaCreateImage");
+const cartelaImagePreview = document.querySelector("#cartelaCreateImagePreview");
+const cartelaImagePreviewImage = document.querySelector("#cartelaCreateImagePreviewImage");
+const cartelaImageName = document.querySelector("#cartelaCreateImageName");
+const cartelaImageStatus = document.querySelector("#cartelaCreateImageStatus");
+const cartelaRemoveImage = document.querySelector("#cartelaCreateRemoveImage");
+const cartelaNext1 = document.querySelector("#cartelaWizardNext1");
+const cartelaBack2 = document.querySelector("#cartelaWizardBack2");
+const cartelaNext2 = document.querySelector("#cartelaWizardNext2");
+const cartelaBack3 = document.querySelector("#cartelaWizardBack3");
+const cartelaCreate = document.querySelector("#cartelaWizardCreate");
+const savedDrawsList = document.querySelector("#savedDrawsList");
 
-const selectionCreationField = document.querySelector("#selectionCreationField");
-const selectionModeInput = document.querySelector("#selectionModeInput");
-const selectionCountField = document.querySelector("#selectionCountField");
-const selectionCountInput = document.querySelector("#selectionCountInput");
-const noRepeatInput = document.querySelector("#noRepeatInput");
-const groupNamesCreationField = document.querySelector("#groupNamesCreationField");
-const groupNamesInput = document.querySelector("#groupNamesInput");
-const quickCreationField = document.querySelector("#quickCreationField");
-const quickTypeInput = document.querySelector("#quickTypeInput");
-const quickDiceField = document.querySelector("#quickDiceField");
-const quickDiceSidesInput = document.querySelector("#quickDiceSidesInput");
-const quickRandomFields = document.querySelector("#quickRandomFields");
-const quickMinInput = document.querySelector("#quickMinInput");
-const quickMaxInput = document.querySelector("#quickMaxInput");
-const quickRandomRepeatInput = document.querySelector("#quickRandomRepeatInput");
-const activityCreateWizard = document.querySelector("#activityCreateWizard");
-const activityModeConfigArea = document.querySelector("#activityModeConfigArea");
-const activityDescriptionInput = document.querySelector("#activityDescription");
-const activityDateInput = document.querySelector("#activityDate");
-const activityNoteInput = document.querySelector("#activityNote");
-const activityCreateImage = document.querySelector("#activityCreateImage");
-const activityCreateImagePreview = document.querySelector("#activityCreateImagePreview");
-const activityCreateImagePreviewImage = document.querySelector("#activityCreateImagePreviewImage");
-const activityCreateImageName = document.querySelector("#activityCreateImageName");
-const activityCreateImageStatus = document.querySelector("#activityCreateImageStatus");
-const activityCreateRemoveImage = document.querySelector("#activityCreateRemoveImage");
-const activityWizardNext1 = document.querySelector("#activityWizardNext1");
-const activityWizardBack2 = document.querySelector("#activityWizardBack2");
-const activityWizardNext2 = document.querySelector("#activityWizardNext2");
-const activityWizardBack3 = document.querySelector("#activityWizardBack3");
+let activityStep = 1;
+let cartelaStep = 1;
+let activityImageData = "";
+let activityImageNameValue = "";
+let cartelaImageData = "";
+let cartelaImageNameValue = "";
 
-let cartelaWizardStep = 1;
-let activityWizardStep = 1;
-let cartelaCreateImageData = "";
-let cartelaCreateImageNameValue = "";
-let activityCreateImageData = "";
-let activityCreateImageNameValue = "";
+function normalize(text) { return Sortick.normalizeText(text || ""); }
+function allowedType(type) { return ["names", "roulette", "numbers", "bingo", "groups", "quick"].includes(type) ? type : "names"; }
+function currentType() { return allowedType(typeInput.value); }
+function isGeneric() { return ["names", "roulette", "bingo", "groups"].includes(currentType()); }
+function setHidden(element, hidden) { if (element) element.classList.toggle("hidden", hidden); }
 
-function setCartelaWizardStep(step) {
-  cartelaWizardStep = Math.max(1, Math.min(3, Number(step) || 1));
-
-  document.querySelectorAll("[data-cartela-step]").forEach(section => {
-    section.classList.toggle("hidden", Number(section.dataset.cartelaStep) !== cartelaWizardStep);
+function setActivityStep(step) {
+  activityStep = Math.max(1, Math.min(3, Number(step) || 1));
+  document.querySelectorAll("[data-activity-step]").forEach(section => setHidden(section, Number(section.dataset.activityStep) !== activityStep));
+  document.querySelectorAll("[data-activity-step-indicator]").forEach(indicator => {
+    const value = Number(indicator.dataset.activityStepIndicator);
+    indicator.classList.toggle("is-active", value === activityStep);
+    indicator.classList.toggle("is-complete", value < activityStep);
   });
+  if (activityModeConfigArea) setHidden(activityModeConfigArea, activityStep !== 3 || !isGeneric());
+}
 
+function setCartelaStep(step) {
+  cartelaStep = Math.max(1, Math.min(3, Number(step) || 1));
+  document.querySelectorAll("[data-cartela-step]").forEach(section => setHidden(section, Number(section.dataset.cartelaStep) !== cartelaStep));
   document.querySelectorAll("[data-cartela-step-indicator]").forEach(indicator => {
-    const indicatorStep = Number(indicator.dataset.cartelaStepIndicator);
-    indicator.classList.toggle("is-active", indicatorStep === cartelaWizardStep);
-    indicator.classList.toggle("is-complete", indicatorStep < cartelaWizardStep);
+    const value = Number(indicator.dataset.cartelaStepIndicator);
+    indicator.classList.toggle("is-active", value === cartelaStep);
+    indicator.classList.toggle("is-complete", value < cartelaStep);
   });
 }
 
-function updateCartelaCreateImagePreview() {
-  const hasImage = Boolean(cartelaCreateImageData);
+function syncSelection() { setHidden(selectionCountField, selectionMode.value !== "multiple"); }
+function syncQuick() {
+  const type = quickType.value;
+  setHidden(quickDiceField, type !== "dice");
+  setHidden(quickRandomFields, type !== "random");
+}
+function syncForm() {
+  const type = currentType();
+  const generic = isGeneric();
+  setHidden(activityWizard, !generic);
+  setHidden(cartelaWizard, type !== "numbers");
+  setHidden(quickCreationField, type !== "quick");
+  titleInput.required = generic;
+  setHidden(selectionField, !(generic && (type === "names" || type === "roulette")));
+  setHidden(bingoField, !(generic && type === "bingo"));
+  setHidden(groupField, !(generic && type === "groups"));
+  setHidden(groupNamesField, !(generic && type === "groups"));
+  if (generic) setActivityStep(activityStep);
+  if (type === "numbers") setCartelaStep(cartelaStep);
+  syncSelection();
+  syncQuick();
+}
 
-  cartelaCreateImagePreview.classList.toggle("hidden", !hasImage);
-
-  if (!hasImage) {
-    cartelaCreateImagePreviewImage.removeAttribute("src");
-    cartelaCreateImageName.textContent = "Imagem selecionada";
-    return;
+function updateImagePreview(kind) {
+  const isActivity = kind === "activity";
+  const data = isActivity ? activityImageData : cartelaImageData;
+  const name = isActivity ? activityImageNameValue : cartelaImageNameValue;
+  const preview = isActivity ? activityImagePreview : cartelaImagePreview;
+  const image = isActivity ? activityImagePreviewImage : cartelaImagePreviewImage;
+  const label = isActivity ? activityImageName : cartelaImageName;
+  if (!preview) return;
+  setHidden(preview, !data);
+  if (data) { image.src = data; label.textContent = name || "Imagem selecionada"; }
+  else { image.removeAttribute("src"); label.textContent = "Imagem selecionada"; }
+}
+function setImageStatus(kind, message) { const el = kind === "activity" ? activityImageStatus : cartelaImageStatus; if (el) el.textContent = message; }
+async function handleImage(kind) {
+  const input = kind === "activity" ? activityImage : cartelaImage;
+  const file = input && input.files ? input.files[0] : null;
+  if (!file) return;
+  setImageStatus(kind, "Preparando imagem...");
+  try {
+    const prepared = await Sortick.prepareImageFile(file);
+    if (kind === "activity") { activityImageData = prepared.dataUrl; activityImageNameValue = prepared.name; }
+    else { cartelaImageData = prepared.dataUrl; cartelaImageNameValue = prepared.name; }
+    updateImagePreview(kind); setImageStatus(kind, "Imagem pronta.");
+  } catch (error) {
+    input.value = "";
+    if (kind === "activity") { activityImageData = ""; activityImageNameValue = ""; }
+    else { cartelaImageData = ""; cartelaImageNameValue = ""; }
+    updateImagePreview(kind); setImageStatus(kind, error && error.message ? error.message : "Não foi possível usar esta imagem.");
   }
-
-  cartelaCreateImagePreviewImage.src = cartelaCreateImageData;
-  cartelaCreateImageName.textContent = cartelaCreateImageNameValue || "Imagem selecionada";
+}
+function removeImage(kind) {
+  const input = kind === "activity" ? activityImage : cartelaImage;
+  if (input) input.value = "";
+  if (kind === "activity") { activityImageData = ""; activityImageNameValue = ""; }
+  else { cartelaImageData = ""; cartelaImageNameValue = ""; }
+  updateImagePreview(kind); setImageStatus(kind, "Imagem removida.");
 }
 
-function setCartelaCreateImageStatus(message = "") {
-  cartelaCreateImageStatus.textContent = message;
-}
-
-function createCartelaPrizeId() {
-  return Sortick.createId("prize");
-}
-
-function addCartelaCreatePrizeRow(prize = {}, shouldFocus = false) {
-  if (!cartelaCreatePrizeList) return;
-  if (cartelaCreatePrizeList.children.length >= 10) {
-    setCartelaCreateImageStatus("Você pode adicionar no máximo 10 prêmios.");
-    return;
-  }
-
+function prizeRow(prize = {}, focus = false) {
+  if (!cartelaCreatePrizeList || cartelaCreatePrizeList.children.length >= 10) return;
   const row = document.createElement("div");
   row.className = "cartela-prize-row";
-  row.dataset.prizeId = prize.id || createCartelaPrizeId();
-  row.innerHTML = `
-    <label>
-      Prêmio
-      <input data-prize-name type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name || "")}" placeholder="Ex: Cesta de chocolates" />
-    </label>
-    <label class="inline-option cartela-prize-repeat-option">
-      <input data-prize-repeat type="checkbox" ${prize.repeatable ? "checked" : ""} />
-      Pode repetir este prêmio
-    </label>
-    <button class="link-button danger-text" type="button">Remover</button>`;
-
-  row.querySelector("button").addEventListener("click", () => {
-    if (cartelaCreatePrizeList.children.length === 1) {
-      row.querySelector("[data-prize-name]").value = "";
-      row.querySelector("[data-prize-repeat]").checked = false;
-      return;
-    }
-    row.remove();
-  });
-
-  cartelaCreatePrizeList.appendChild(row);
-  if (shouldFocus) row.querySelector("[data-prize-name]").focus();
+  row.dataset.prizeId = prize.id || Sortick.createId("prize");
+  row.innerHTML = `<label>Prêmio<input data-prize-name type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name || "")}" placeholder="Ex: Cesta de chocolates" /></label><label class="inline-option cartela-prize-repeat-option"><input data-prize-repeat type="checkbox" ${prize.repeatable ? "checked" : ""} />Pode repetir este prêmio</label><button class="link-button danger-text" type="button">Remover</button>`;
+  row.querySelector("button").addEventListener("click", () => { if (cartelaCreatePrizeList.children.length === 1) { row.querySelector("[data-prize-name]").value = ""; row.querySelector("[data-prize-repeat]").checked = false; } else row.remove(); });
+  cartelaCreatePrizeList.appendChild(row); if (focus) row.querySelector("[data-prize-name]").focus();
 }
-
-function getCartelaCreatePrizes() {
-  if (!cartelaCreatePrizeList) return [];
-  return Array.from(cartelaCreatePrizeList.querySelectorAll(".cartela-prize-row"))
-    .map(row => ({
-      id: row.dataset.prizeId || createCartelaPrizeId(),
-      name: Sortick.normalizeText(row.querySelector("[data-prize-name]").value).slice(0, 100),
-      repeatable: Boolean(row.querySelector("[data-prize-repeat]").checked)
-    }))
-    .filter(prize => prize.name);
+function prizes() {
+  return Array.from(cartelaCreatePrizeList ? cartelaCreatePrizeList.querySelectorAll(".cartela-prize-row") : []).map(row => ({ id: row.dataset.prizeId || Sortick.createId("prize"), name: normalize(row.querySelector("[data-prize-name]").value).slice(0,100), repeatable: Boolean(row.querySelector("[data-prize-repeat]").checked) })).filter(item => item.name);
 }
-
-function ensureCartelaCreatePrizeRow() {
-  if (cartelaCreatePrizeList && !cartelaCreatePrizeList.children.length) addCartelaCreatePrizeRow();
+function groupNameList(value, count) {
+  const entries = String(value || "").split(/[\n,;]+/).map(normalize).filter(Boolean).slice(0,count);
+  return Array.from({length: count}, (_, index) => entries[index] || `Grupo ${index + 1}`);
 }
-
-function parseGroupNames(value, groupCount) {
-  const rawNames = String(value || "")
-    .split(/[\n,;]+/)
-    .map(Sortick.normalizeText)
-    .filter(Boolean)
-    .slice(0, groupCount);
-
-  const names = [];
-  for (let index = 0; index < groupCount; index += 1) {
-    names.push(rawNames[index] || `Grupo ${index + 1}`);
-  }
-
-  return names;
-}
-
-function setActivityWizardStep(step) {
-  activityWizardStep = Math.max(1, Math.min(3, Number(step) || 1));
-  document.querySelectorAll("[data-activity-step]").forEach(section => {
-    section.classList.toggle("hidden", Number(section.dataset.activityStep) !== activityWizardStep);
-  });
-  document.querySelectorAll("[data-activity-step-indicator]").forEach(indicator => {
-    const indicatorStep = Number(indicator.dataset.activityStepIndicator);
-    indicator.classList.toggle("is-active", indicatorStep === activityWizardStep);
-    indicator.classList.toggle("is-complete", indicatorStep < activityWizardStep);
-  });
-
-  const type = typeInput.value;
-  const usesGenericWizard = type !== "numbers" && type !== "quick";
-  if (activityModeConfigArea) {
-    activityModeConfigArea.classList.toggle("hidden", !usesGenericWizard || activityWizardStep !== 3);
-  }
-}
-
-function updateActivityCreateImagePreview() {
-  const hasImage = Boolean(activityCreateImageData);
-  if (!activityCreateImagePreview) return;
-  activityCreateImagePreview.classList.toggle("hidden", !hasImage);
-  if (!hasImage) {
-    activityCreateImagePreviewImage.removeAttribute("src");
-    activityCreateImageName.textContent = "Imagem selecionada";
-    return;
-  }
-  activityCreateImagePreviewImage.src = activityCreateImageData;
-  activityCreateImageName.textContent = activityCreateImageNameValue || "Imagem selecionada";
-}
-
-function setActivityCreateImageStatus(message = "") {
-  if (activityCreateImageStatus) activityCreateImageStatus.textContent = message;
-}
-
-function validateActivityWizardStepOne() {
-  const title = Sortick.normalizeText(titleInput.value);
-  if (!title) {
-    titleInput.focus();
-    return false;
-  }
-  return true;
-}
-
-function syncSelectionCreation() {
-  const isMultiple = selectionModeInput.value === "multiple";
-  selectionCountField.classList.toggle("hidden", !isMultiple);
-}
-
-function syncQuickCreation() {
-  const isDice = quickTypeInput.value === "dice";
-  const isRandom = quickTypeInput.value === "random";
-
-  quickDiceField.classList.toggle("hidden", !isDice);
-  quickRandomFields.classList.toggle("hidden", !isRandom);
-}
-
-function syncTypeSettings() {
-  const type = typeInput.value;
-  const isCartela = type === "numbers";
-  const isSelection = type === "names" || type === "roulette";
-  const isGroups = type === "groups";
-  const isQuick = type === "quick";
-  const usesGenericWizard = !isCartela && !isQuick;
-
-  numberQuantityField.classList.add("hidden");
-  totalNumbersInput.required = false;
-  bingoQuantityField.classList.toggle("hidden", type !== "bingo");
-  bingoTotalNumbersInput.required = type === "bingo";
-  groupQuantityField.classList.toggle("hidden", !isGroups);
-  groupCountInput.required = isGroups;
-  selectionCreationField.classList.toggle("hidden", !isSelection);
-  groupNamesCreationField.classList.toggle("hidden", !isGroups);
-  quickCreationField.classList.toggle("hidden", !isQuick);
-  drawModeField.classList.toggle("hidden", isCartela || isQuick);
-  createSubmitButton.classList.toggle("hidden", isCartela);
-  cartelaCreateWizard.classList.toggle("hidden", !isCartela);
-  activityCreateWizard.classList.toggle("hidden", !usesGenericWizard);
-  titleInput.required = usesGenericWizard;
-
-  if (isCartela) {
-    setCartelaWizardStep(cartelaWizardStep);
-    if (activityModeConfigArea) activityModeConfigArea.classList.add("hidden");
-  } else if (isQuick) {
-    if (activityModeConfigArea) activityModeConfigArea.classList.remove("hidden");
-  } else {
-    setActivityWizardStep(activityWizardStep);
-  }
-
-  syncSelectionCreation();
-  syncQuickCreation();
-}
-
-
+function validateGenericStepOne() { if (!normalize(titleInput.value)) { titleInput.focus(); return false; } return true; }
 function validateCartelaStepOne() {
-  const title = Sortick.normalizeText(cartelaCreateTitle.value);
-
-  if (!title) {
-    cartelaCreateTitle.focus();
-    return false;
-  }
-
-  const total = Number.parseInt(cartelaCreateTotal.value, 10);
-  if (!Number.isInteger(total) || total < 2 || total > 500) {
-    cartelaCreateTotal.focus();
-    return false;
-  }
-
+  if (!normalize(cartelaCreateTitle.value)) { cartelaCreateTitle.focus(); return false; }
+  const value = Number.parseInt(cartelaCreateTotal.value, 10);
+  if (!Number.isInteger(value) || value < 2 || value > 500) { cartelaCreateTotal.focus(); return false; }
   return true;
 }
-
-function createCartelaFromWizard() {
-  if (!validateCartelaStepOne()) {
-    setCartelaWizardStep(1);
-    return;
-  }
-
-  const title = Sortick.normalizeText(cartelaCreateTitle.value).slice(0, 80);
-  const mode = "simple";
-  const options = {
-    confirmedOnly: false,
-    removeWinnerAfterDraw: false,
-    soundEnabled: false,
-    totalNumbers: Sortick.clampNumber(cartelaCreateTotal.value, 2, 500),
-    cartelaInfo: (() => {
-      const prizes = getCartelaCreatePrizes();
-      return {
-        description: Sortick.normalizeText(cartelaCreateDescription.value).slice(0, 180),
-        prize: prizes[0] ? prizes[0].name : "",
-        prizes,
-        prizeDrawHistory: [],
-        imageData: cartelaCreateImageData,
-        imageName: cartelaCreateImageNameValue,
-        value: Sortick.normalizeText(cartelaCreateValue.value).slice(0, 30),
-        drawDate: cartelaCreateDate.value || "",
-        note: Sortick.normalizeText(cartelaCreateNote.value).slice(0, 180),
-        exportShowNames: false
-      };
-    })()
-  };
-
-  const draw = {
-    id: Sortick.createId("draw"),
-    title,
-    type: "numbers",
-    mode,
-    options,
-    participants: [],
-    result: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  try {
-    Sortick.saveDraw(draw);
-  } catch {
-    setCartelaCreateImageStatus("Não foi possível salvar a cartela. Tente remover a imagem ou usar outra menor.");
-    setCartelaWizardStep(2);
-    return;
-  }
-
-  if (typeof window.sortickTrack === "function") {
-    window.sortickTrack("create_draw", {
-      draw_type: "numbers",
-      draw_mode: mode
-    });
-  }
-
+function createCartela() {
+  if (!validateCartelaStepOne()) { setCartelaStep(1); return; }
+  const allPrizes = prizes();
+  const draw = { id: Sortick.createId("draw"), title: normalize(cartelaCreateTitle.value).slice(0,80), type:"numbers", mode:"simple", participants:[], result:null, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(), options:{ confirmedOnly:false, removeWinnerAfterDraw:false, soundEnabled:false, totalNumbers:Sortick.clampNumber(cartelaCreateTotal.value,2,500), cartelaInfo:{ description:normalize(cartelaCreateDescription.value).slice(0,180), prize:allPrizes[0] ? allPrizes[0].name : "", prizes:allPrizes, prizeDrawHistory:[], imageData:cartelaImageData, imageName:cartelaImageNameValue, value:normalize(cartelaCreateValue.value).slice(0,30), drawDate:cartelaCreateDate.value || "", note:normalize(cartelaCreateNote.value).slice(0,180), exportShowNames:false } } };
+  try { Sortick.saveDraw(draw); } catch { setImageStatus("cartela", "Não foi possível salvar a cartela. Tente remover a imagem ou usar outra menor."); setCartelaStep(2); return; }
   window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(draw.id)}`;
 }
-
-typeInput.addEventListener("change", syncTypeSettings);
-syncTypeSettings();
-
-function applyTypeFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const type = params.get("tipo");
-  const allowedTypes = ["names", "roulette", "numbers", "bingo", "groups", "quick"];
-
-  if (type && allowedTypes.includes(type)) {
-    typeInput.value = type;
-    syncTypeSettings();
-  }
-}
-
-applyTypeFromURL();
-
-selectionModeInput.addEventListener("change", syncSelectionCreation);
-quickTypeInput.addEventListener("change", syncQuickCreation);
-
-if (cartelaWizardNext1) {
-  cartelaWizardNext1.addEventListener("click", () => {
-    if (validateCartelaStepOne()) setCartelaWizardStep(2);
-  });
-}
-
-if (cartelaWizardBack2) cartelaWizardBack2.addEventListener("click", () => setCartelaWizardStep(1));
-if (cartelaWizardNext2) cartelaWizardNext2.addEventListener("click", () => setCartelaWizardStep(3));
-if (cartelaWizardBack3) cartelaWizardBack3.addEventListener("click", () => setCartelaWizardStep(2));
-if (cartelaWizardCreate) cartelaWizardCreate.addEventListener("click", createCartelaFromWizard);
-
-ensureCartelaCreatePrizeRow();
-if (cartelaCreateAddPrize) {
-  cartelaCreateAddPrize.addEventListener("click", () => addCartelaCreatePrizeRow({}, true));
-}
-
-if (cartelaCreateImage) {
-  cartelaCreateImage.addEventListener("change", async () => {
-    const file = cartelaCreateImage.files && cartelaCreateImage.files[0];
-
-    if (!file) return;
-
-    setCartelaCreateImageStatus("Preparando imagem...");
-
-    try {
-      const preparedImage = await Sortick.prepareImageFile(file);
-      cartelaCreateImageData = preparedImage.dataUrl;
-      cartelaCreateImageNameValue = preparedImage.name;
-      updateCartelaCreateImagePreview();
-      setCartelaCreateImageStatus("Imagem pronta.");
-    } catch (error) {
-      cartelaCreateImage.value = "";
-      cartelaCreateImageData = "";
-      cartelaCreateImageNameValue = "";
-      updateCartelaCreateImagePreview();
-      setCartelaCreateImageStatus(error && error.message ? error.message : "Não foi possível usar esta imagem.");
-    }
-  });
-}
-
-if (cartelaCreateRemoveImage) {
-  cartelaCreateRemoveImage.addEventListener("click", () => {
-    cartelaCreateImage.value = "";
-    cartelaCreateImageData = "";
-    cartelaCreateImageNameValue = "";
-    updateCartelaCreateImagePreview();
-    setCartelaCreateImageStatus("Imagem removida.");
-  });
-}
-
-
-
-function getSavedDraws() {
-  return Object.values(Sortick.readDraws())
-    .filter(item => item && item.id && item.title)
-    .sort((a, b) => {
-      const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-      const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-      return dateB - dateA;
-    });
-}
-
-function getSavedDrawSummary(savedDraw) {
-  const options = savedDraw.options || {};
-  const participants = Array.isArray(savedDraw.participants) ? savedDraw.participants : [];
-
-  if (savedDraw.type === "bingo") {
-    const drawn = Array.isArray(options.bingoDrawnNumbers) ? options.bingoDrawnNumbers.length : 0;
-    return `${drawn} número(s) sorteado(s)`;
-  }
-
-  if (savedDraw.type === "numbers") {
-    return `${participants.length} número(s) ocupado(s)`;
-  }
-
-  if (savedDraw.type === "groups") {
-    return `${participants.length} participante(s) · ${options.groupCount || 2} grupo(s)`;
-  }
-
-  if (savedDraw.type === "quick") {
-    const labels = { coin: "Cara ou coroa", dice: "Dado", random: "Número aleatório" };
-    return labels[options.quickType] || "Decisão rápida";
-  }
-
-  if (savedDraw.type === "names" || savedDraw.type === "roulette") {
-    const selectionLabels = { multiple: "vários sorteados", order: "ordem completa", single: "um sorteado" };
-    return `${participants.length} participante(s) · ${selectionLabels[options.selectionMode] || "um sorteado"}`;
-  }
-
-  return `${participants.length} participante(s)`;
-}
-
-function formatSavedDrawDate(savedDraw) {
-  try {
-    return Sortick.formatDateTime(savedDraw.updatedAt || savedDraw.createdAt);
-  } catch {
-    return "Data indisponível";
-  }
-}
-
-function cloneParticipants(participants) {
-  return (Array.isArray(participants) ? participants : []).map(participant => ({
-    ...participant,
-    id: Sortick.createId("p")
-  }));
-}
-
-function getCopyOptions(type, sourceOptions = {}) {
-  const options = {
-    confirmedOnly: Boolean(sourceOptions.confirmedOnly),
-    removeWinnerAfterDraw: false,
-    soundEnabled: Boolean(sourceOptions.soundEnabled),
-    selectionMode: ["single", "multiple", "order"].includes(sourceOptions.selectionMode) ? sourceOptions.selectionMode : "single",
-    selectionCount: Sortick.clampNumber(sourceOptions.selectionCount || 2, 2, 100),
-    noRepeat: Boolean(sourceOptions.noRepeat || sourceOptions.removeWinnerAfterDraw),
-    roundDrawnIds: []
-  };
-
-  if (type === "numbers") {
-    options.totalNumbers = Sortick.clampNumber(sourceOptions.totalNumbers || 50, 2, 500);
-  }
-
-  if (type === "bingo") {
-    options.totalNumbers = Sortick.clampNumber(sourceOptions.totalNumbers || 75, 2, 500);
-    options.bingoDrawnNumbers = [];
-    options.bingoAllowRepeats = Boolean(sourceOptions.bingoAllowRepeats);
-  }
-
-  if (type === "groups") {
-    options.groupCount = Sortick.clampNumber(sourceOptions.groupCount || 2, 2, 50);
-    options.groupNames = Array.isArray(sourceOptions.groupNames)
-      ? sourceOptions.groupNames.slice(0, options.groupCount)
-      : [];
-  }
-
+function createGenericOrQuick() {
+  const type = currentType();
+  if (type === "numbers") return createCartela();
+  if (type !== "quick" && !validateGenericStepOne()) { setActivityStep(1); return; }
+  const quickTitles = {coin:"Cara ou coroa",dice:"Dado",random:"Número aleatório"};
+  const title = type === "quick" ? quickTitles[quickType.value] || "Decisão rápida" : normalize(titleInput.value).slice(0,80);
+  const options = { confirmedOnly:false, removeWinnerAfterDraw:false, soundEnabled:false };
+  if (type !== "quick") options.activityInfo = { description:normalize(activityDescription.value).slice(0,180), date:activityDate.value || "", note:normalize(activityNote.value).slice(0,180), imageData:activityImageData, imageName:activityImageNameValue };
+  if (type === "names" || type === "roulette") { options.selectionMode=["single","multiple","order"].includes(selectionMode.value) ? selectionMode.value : "single"; options.selectionCount=Sortick.clampNumber(selectionCount.value,2,100); options.noRepeat=Boolean(noRepeat.checked); options.roundDrawnIds=[]; }
+  if (type === "bingo") { options.totalNumbers=Sortick.clampNumber(bingoTotal.value,2,500); options.bingoDrawnNumbers=[]; options.bingoAllowRepeats=false; }
+  if (type === "groups") { options.groupCount=Sortick.clampNumber(groupCount.value,2,50); options.groupNames=groupNameList(groupNames.value,options.groupCount); }
   if (type === "quick") {
-    options.quickType = ["coin", "dice", "random"].includes(sourceOptions.quickType)
-      ? sourceOptions.quickType
-      : "coin";
-    options.diceSides = Sortick.clampNumber(sourceOptions.diceSides || 6, 2, 100);
-    options.randomMin = Number.isInteger(sourceOptions.randomMin) ? sourceOptions.randomMin : 1;
-    options.randomMax = Number.isInteger(sourceOptions.randomMax) ? sourceOptions.randomMax : 100;
+    const selected = ["coin","dice","random"].includes(quickType.value) ? quickType.value : "coin";
+    const sides = Number.parseInt(quickDiceSides.value,10);
+    const min = Number.parseInt(quickMin.value,10), max=Number.parseInt(quickMax.value,10);
+    options.quickType=selected; options.diceSides=[4,6,8,10,12,20].includes(sides)?sides:6; options.diceTray=selected === "dice" ? [{id:Sortick.createId("die"),sides:options.diceSides,value:null}] : []; options.randomMin=Number.isInteger(min)?min:1; options.randomMax=Number.isInteger(max)?max:100; if(options.randomMin>options.randomMax)[options.randomMin,options.randomMax]=[options.randomMax,options.randomMin]; options.randomAllowRepeats=Boolean(quickRepeat.checked); options.randomDrawnNumbers=[];
   }
-
-  return options;
+  const draw={id:Sortick.createId("draw"),title,type,mode:"simple",options,participants:[],result:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  Sortick.saveDraw(draw); window.location.href=`/sortick-teste/sorteio/?id=${encodeURIComponent(draw.id)}`;
 }
 
-function buildCopyTitle(savedDraw, targetType) {
-  const suffix = targetType === savedDraw.type
-    ? " (cópia)"
-    : ` — ${Sortick.typeLabel(targetType)}`;
+// Step controls.
+activityNext1.addEventListener("click", () => { if (validateGenericStepOne()) setActivityStep(2); });
+activityBack2.addEventListener("click", () => setActivityStep(1));
+activityNext2.addEventListener("click", () => setActivityStep(3));
+activityBack3.addEventListener("click", () => setActivityStep(2));
+cartelaNext1.addEventListener("click", () => { if (validateCartelaStepOne()) setCartelaStep(2); });
+cartelaBack2.addEventListener("click", () => setCartelaStep(1));
+cartelaNext2.addEventListener("click", () => setCartelaStep(3));
+cartelaBack3.addEventListener("click", () => setCartelaStep(2));
+cartelaCreate.addEventListener("click", createCartela);
+cartelaCreateAddPrize.addEventListener("click", () => prizeRow({}, true));
+if (!cartelaCreatePrizeList.children.length) prizeRow();
+activityImage.addEventListener("change", () => handleImage("activity"));
+cartelaImage.addEventListener("change", () => handleImage("cartela"));
+activityRemoveImage.addEventListener("click", () => removeImage("activity"));
+cartelaRemoveImage.addEventListener("click", () => removeImage("cartela"));
+typeInput.addEventListener("change", () => { activityStep=1; cartelaStep=1; syncForm(); });
+selectionMode.addEventListener("change", syncSelection);
+quickType.addEventListener("change", syncQuick);
+form.addEventListener("submit", event => { event.preventDefault(); createGenericOrQuick(); });
 
-  const availableLength = Math.max(1, 80 - suffix.length);
-  return `${Sortick.normalizeText(savedDraw.title).slice(0, availableLength)}${suffix}`;
-}
-
-function createSavedCopy(savedDraw, targetType = savedDraw.type) {
-  const sourceDraw = Sortick.getDraw(savedDraw.id) || savedDraw;
-  const isTransfer = targetType !== sourceDraw.type;
-
-  const copy = {
-    id: Sortick.createId("draw"),
-    title: buildCopyTitle(sourceDraw, targetType),
-    type: targetType,
-    mode: isTransfer ? "simple" : (sourceDraw.mode || "simple"),
-    options: getCopyOptions(targetType, isTransfer ? {} : (sourceDraw.options || {})),
-    participants: cloneParticipants(sourceDraw.participants),
-    result: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  Sortick.saveDraw(copy);
-  return copy;
-}
-
-async function renameSavedDraw(savedDraw) {
-  const response = await Sortick.askForText({
-    title: "Renomear sorteio",
-    message: "Escolha um nome claro para identificar este sorteio salvo.",
-    confirmText: "Salvar nome",
-    input: {
-      label: "Novo nome do sorteio",
-      value: savedDraw.title,
-      maxLength: 80,
-      validate: value => value ? "" : "Digite um nome para o sorteio."
-    }
-  });
-
-  if (!response.confirmed) return;
-
-  Sortick.updateDraw(savedDraw.id, current => ({
-    ...current,
-    title: response.value,
-    updatedAt: new Date().toISOString()
-  }));
-
-  if (activityWizardNext1) {
-  activityWizardNext1.addEventListener("click", () => {
-    if (validateActivityWizardStepOne()) setActivityWizardStep(2);
-  });
-}
-if (activityWizardBack2) activityWizardBack2.addEventListener("click", () => setActivityWizardStep(1));
-if (activityWizardNext2) activityWizardNext2.addEventListener("click", () => setActivityWizardStep(3));
-if (activityWizardBack3) activityWizardBack3.addEventListener("click", () => setActivityWizardStep(2));
-
-if (activityCreateImage) {
-  activityCreateImage.addEventListener("change", async () => {
-    const file = activityCreateImage.files && activityCreateImage.files[0];
-    if (!file) return;
-    setActivityCreateImageStatus("Preparando imagem...");
-    try {
-      const prepared = await Sortick.prepareImageFile(file);
-      activityCreateImageData = prepared.dataUrl;
-      activityCreateImageNameValue = prepared.name;
-      updateActivityCreateImagePreview();
-      setActivityCreateImageStatus("Imagem pronta.");
-    } catch (error) {
-      activityCreateImage.value = "";
-      activityCreateImageData = "";
-      activityCreateImageNameValue = "";
-      updateActivityCreateImagePreview();
-      setActivityCreateImageStatus(error && error.message ? error.message : "Não foi possível usar esta imagem.");
-    }
-  });
-}
-if (activityCreateRemoveImage) {
-  activityCreateRemoveImage.addEventListener("click", () => {
-    activityCreateImage.value = "";
-    activityCreateImageData = "";
-    activityCreateImageNameValue = "";
-    updateActivityCreateImagePreview();
-    setActivityCreateImageStatus("Imagem removida.");
-  });
-}
-
-renderSavedDraws();
-}
-
-function createTransferControls(savedDraw, item) {
-  const reusableTypes = ["names", "roulette", "groups"];
-  const targetTypes = reusableTypes.filter(type => type !== savedDraw.type);
-
-  if (!targetTypes.length) return;
-
-  const existingMenu = item.querySelector(".saved-transfer-menu");
-  if (existingMenu) {
-    existingMenu.remove();
-    return;
-  }
-
-  const menu = document.createElement("div");
-  menu.className = "saved-transfer-menu";
-
-  const description = document.createElement("span");
-  description.textContent = "Usar esta lista em outro sorteio:";
-
-  const select = document.createElement("select");
-  select.className = "saved-transfer-select";
-  select.setAttribute("aria-label", "Escolher modo para usar esta lista");
-
-  targetTypes.forEach(type => {
-    const option = document.createElement("option");
-    option.value = type;
-    option.textContent = Sortick.typeLabel(type);
-    select.appendChild(option);
-  });
-
-  const createButton = document.createElement("button");
-  createButton.className = "btn btn-secondary saved-transfer-create";
-  createButton.type = "button";
-  createButton.textContent = "Criar e abrir";
-
-  const cancelButton = document.createElement("button");
-  cancelButton.className = "saved-action-button";
-  cancelButton.type = "button";
-  cancelButton.textContent = "Cancelar";
-
-  createButton.addEventListener("click", () => {
-    const copiedDraw = createSavedCopy(savedDraw, select.value);
-    window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(copiedDraw.id)}`;
-  });
-
-  cancelButton.addEventListener("click", () => menu.remove());
-
-  menu.append(description, select, createButton, cancelButton);
-  item.appendChild(menu);
-}
-
+function readDraws() { return Object.values(Sortick.readDraws()).filter(item => item && item.id && item.title).sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt)); }
+function drawSummary(item) { const p=(item.participants||[]).length; if(item.type==="numbers")return `${p} número(s) ocupado(s)`; if(item.type==="bingo")return `${(item.options?.bingoDrawnNumbers||[]).length} número(s) sorteado(s)`; if(item.type==="groups")return `${p} participante(s) · ${item.options?.groupCount||2} grupo(s)`; if(item.type==="quick")return ({coin:"Cara ou coroa",dice:"Dados",random:"Número aleatório"})[item.options?.quickType]||"Decisão rápida"; return `${p} participante(s)`; }
 function renderSavedDraws() {
-  if (!savedDrawsList) return;
-
-  const savedDraws = getSavedDraws();
-
-  if (!savedDraws.length) {
-    savedDrawsList.innerHTML = `
-      <div class="saved-empty">
-        <strong>Nenhum sorteio salvo ainda</strong>
-        <p>Quando você criar um sorteio, ele ficará salvo automaticamente neste navegador.</p>
-      </div>`;
-    return;
-  }
-
-  savedDrawsList.innerHTML = "";
-
-  savedDraws.forEach(savedDraw => {
-    const item = document.createElement("article");
-    item.className = "saved-draw-item";
-
-    const info = document.createElement("div");
-    info.className = "saved-draw-info";
-
-    const title = document.createElement("strong");
-    title.textContent = savedDraw.title;
-
-    const meta = document.createElement("span");
-    meta.textContent = `${Sortick.typeLabel(savedDraw.type)} · ${getSavedDrawSummary(savedDraw)}`;
-
-    const date = document.createElement("small");
-    date.textContent = `Atualizado em ${formatSavedDrawDate(savedDraw)}`;
-
-    info.append(title, meta, date);
-
-    const actions = document.createElement("div");
-    actions.className = "saved-draw-actions";
-
-    const continueLink = document.createElement("a");
-    continueLink.className = "btn btn-secondary saved-continue";
-    continueLink.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(savedDraw.id)}`;
-    continueLink.textContent = "Continuar";
-
-    const duplicateButton = document.createElement("button");
-    duplicateButton.className = "saved-action-button";
-    duplicateButton.type = "button";
-    duplicateButton.textContent = "Duplicar";
-    duplicateButton.setAttribute("aria-label", `Duplicar o sorteio ${savedDraw.title}`);
-
-    duplicateButton.addEventListener("click", () => {
-      const copiedDraw = createSavedCopy(savedDraw);
-      window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(copiedDraw.id)}`;
-    });
-
-    const renameButton = document.createElement("button");
-    renameButton.className = "saved-action-button";
-    renameButton.type = "button";
-    renameButton.textContent = "Renomear";
-    renameButton.setAttribute("aria-label", `Renomear o sorteio ${savedDraw.title}`);
-    renameButton.addEventListener("click", () => renameSavedDraw(savedDraw));
-
-    actions.append(continueLink, duplicateButton, renameButton);
-
-    if (["names", "roulette", "groups"].includes(savedDraw.type) && savedDraw.participants.length) {
-      const transferButton = document.createElement("button");
-      transferButton.className = "saved-action-button";
-      transferButton.type = "button";
-      transferButton.textContent = "Usar em outro sorteio";
-      transferButton.setAttribute("aria-expanded", "false");
-      transferButton.setAttribute("aria-label", `Usar a lista de ${savedDraw.title} em outro modo`);
-
-      transferButton.addEventListener("click", () => {
-        const willOpen = !item.querySelector(".saved-transfer-menu");
-        createTransferControls(savedDraw, item);
-        transferButton.setAttribute("aria-expanded", String(willOpen));
-      });
-
-      actions.appendChild(transferButton);
-    }
-
-    const deleteButton = document.createElement("button");
-    deleteButton.className = "saved-delete";
-    deleteButton.type = "button";
-    deleteButton.textContent = "Excluir";
-    deleteButton.setAttribute("aria-label", `Excluir sorteio ${savedDraw.title}`);
-
-    deleteButton.addEventListener("click", async () => {
-      const response = await Sortick.askForConfirmation({
-        title: "Excluir sorteio?",
-        message: `“${savedDraw.title}” será removido deste navegador. Essa ação não pode ser desfeita.`,
-        confirmText: "Excluir sorteio",
-        tone: "danger"
-      });
-
-      if (!response.confirmed) return;
-
-      Sortick.deleteDraw(savedDraw.id);
-      renderSavedDraws();
-    });
-
-    actions.append(deleteButton);
-    item.append(info, actions);
-    savedDrawsList.appendChild(item);
-  });
+  if(!savedDrawsList)return; const draws=readDraws();
+  if(!draws.length){savedDrawsList.innerHTML='<div class="saved-empty"><strong>Nenhum sorteio salvo ainda</strong><p>Quando você criar um sorteio, ele ficará salvo automaticamente neste navegador.</p></div>';return;}
+  savedDrawsList.innerHTML="";
+  draws.forEach(item=>{const card=document.createElement("article");card.className="saved-draw-item";card.innerHTML=`<div class="saved-draw-info"><strong>${Sortick.escapeHTML(item.title)}</strong><span>${Sortick.escapeHTML(Sortick.typeLabel(item.type))} · ${Sortick.escapeHTML(drawSummary(item))}</span><small>Atualizado em ${Sortick.escapeHTML(Sortick.formatDateTime(item.updatedAt||item.createdAt))}</small></div><div class="saved-draw-actions"><a class="btn btn-secondary saved-continue" href="/sortick-teste/sorteio/?id=${encodeURIComponent(item.id)}">Continuar</a><button class="saved-action-button" type="button">Duplicar</button><button class="saved-delete" type="button">Excluir</button></div>`;const [duplicate,remove]=card.querySelectorAll("button");duplicate.addEventListener("click",()=>{const copy={...item,id:Sortick.createId("draw"),title:`${item.title} (cópia)`.slice(0,80),participants:(item.participants||[]).map(p=>({...p,id:Sortick.createId("p")})),result:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};Sortick.saveDraw(copy);window.location.href=`/sortick-teste/sorteio/?id=${encodeURIComponent(copy.id)}`;});remove.addEventListener("click",async()=>{const confirmation=await Sortick.askForConfirmation({title:"Excluir sorteio?",message:`“${item.title}” será removido deste navegador.`,confirmText:"Excluir",tone:"danger"});if(confirmation.confirmed){Sortick.deleteDraw(item.id);renderSavedDraws();}});savedDrawsList.appendChild(card);});
 }
 
-renderSavedDraws();
-
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const type = typeInput.value;
-
-  if (type === "numbers") {
-    createCartelaFromWizard();
-    return;
-  }
-
-  const mode = type === "quick" ? "simple" : modeInput.value;
-  let title = Sortick.normalizeText(titleInput.value);
-
-  if (!title && type === "quick") {
-    const quickTitles = {
-      coin: "Cara ou coroa",
-      dice: "Dado",
-      random: "Número aleatório"
-    };
-    title = quickTitles[quickTypeInput.value] || "Decisão rápida";
-  }
-
-  if (!title) {
-    titleInput.focus();
-    return;
-  }
-
-  const options = {
-    confirmedOnly: false,
-    removeWinnerAfterDraw: false,
-    soundEnabled: false,
-    activityInfo: type === "quick" ? {
-      description: "",
-      date: "",
-      note: "",
-      imageData: "",
-      imageName: ""
-    } : {
-      description: Sortick.normalizeText(activityDescriptionInput.value).slice(0, 180),
-      date: activityDateInput.value || "",
-      note: Sortick.normalizeText(activityNoteInput.value).slice(0, 180),
-      imageData: activityCreateImageData,
-      imageName: activityCreateImageNameValue
-    }
-  };
-
-  if (type === "names" || type === "roulette") {
-    options.selectionMode = ["single", "multiple", "order"].includes(selectionModeInput.value)
-      ? selectionModeInput.value
-      : "single";
-    options.selectionCount = Sortick.clampNumber(selectionCountInput.value, 2, 100);
-    options.noRepeat = Boolean(noRepeatInput.checked);
-    options.roundDrawnIds = [];
-  }
-
-  if (type === "bingo") {
-    options.totalNumbers = Sortick.clampNumber(bingoTotalNumbersInput.value, 2, 500);
-    options.bingoDrawnNumbers = [];
-    options.bingoAllowRepeats = false;
-  }
-
-  if (type === "groups") {
-    options.groupCount = Sortick.clampNumber(groupCountInput.value, 2, 50);
-    options.groupNames = parseGroupNames(groupNamesInput.value, options.groupCount);
-  }
-
-  if (type === "quick") {
-    const quickType = ["coin", "dice", "random"].includes(quickTypeInput.value)
-      ? quickTypeInput.value
-      : "coin";
-
-    const minimum = Number.parseInt(quickMinInput.value, 10);
-    const maximum = Number.parseInt(quickMaxInput.value, 10);
-
-    options.quickType = quickType;
-    const validSides = [4, 6, 8, 10, 12, 20];
-    const initialSides = Number.parseInt(quickDiceSidesInput.value, 10);
-    options.diceSides = validSides.includes(initialSides) ? initialSides : 6;
-    options.diceTray = quickType === "dice" ? [{ id: Sortick.createId("die"), sides: options.diceSides, value: null }] : [];
-    options.randomMin = Number.isInteger(minimum) ? minimum : 1;
-    options.randomMax = Number.isInteger(maximum) ? maximum : 100;
-    options.randomAllowRepeats = Boolean(quickRandomRepeatInput.checked);
-    options.randomDrawnNumbers = [];
-
-    if (options.randomMin > options.randomMax) {
-      [options.randomMin, options.randomMax] = [options.randomMax, options.randomMin];
-    }
-  }
-
-  const draw = {
-    id: Sortick.createId("draw"),
-    title: title.slice(0, 80),
-    type,
-    mode,
-    options,
-    participants: [],
-    result: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  Sortick.saveDraw(draw);
-
-  if (typeof window.sortickTrack === "function") {
-    window.sortickTrack("create_draw", {
-      draw_type: type,
-      draw_mode: mode
-    });
-  }
-
-  window.location.href = `/sortick-teste/sorteio/?id=${encodeURIComponent(draw.id)}`;
-});
+const requestedType=new URLSearchParams(location.search).get("tipo"); if(requestedType && ["names","roulette","numbers","bingo","groups","quick"].includes(requestedType)) typeInput.value=requestedType;
+syncForm(); renderSavedDraws();

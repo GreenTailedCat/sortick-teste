@@ -121,10 +121,11 @@ if (!draw) {
     ...(draw.options.cartelaInfo || {})
   };
   draw.participants = draw.participants.map(p => ({ ...p, status: p.status || "pending" }));
-  setupDraw();
+  queueMicrotask(() => setupDraw());
 }
 
 function setupDraw() {
+  document.body.dataset.sortickDrawType = draw.type;
   drawTitle.textContent = draw.title;
   drawKind.textContent = Sortick.typeLabel(draw.type);
   drawStatus.textContent = draw.mode === "simple" ? "Modo simples" : "Modo ao vivo";
@@ -3572,3 +3573,19 @@ function render() {
 
 // Force a correct first paint after legacy setup code has finished.
 queueMicrotask(() => render());
+
+
+/* v1.17 — proteção para decisões rápidas: não há painel de participantes. */
+queueMicrotask(() => {
+  if (!draw || draw.type !== "quick") return;
+  document.body.dataset.sortickDrawType = "quick";
+  if (participantPanel) participantPanel.classList.add("hidden");
+  if (participantForm) participantForm.classList.add("hidden");
+  if (bulkAddPanel) bulkAddPanel.classList.add("hidden");
+  if (draw.options.quickType === "dice") {
+    if (drawButton) drawButton.classList.add("hidden");
+    renderDiceGame();
+  } else {
+    renderQuickIdle();
+  }
+});

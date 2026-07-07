@@ -15,3 +15,11 @@
 - Mais layouts para exportações.
 - Opções/perguntas aleatórias para atividades.
 - Sincronização em nuvem apenas quando houver backend e necessidade real.
+
+
+## v1.17 — correção de criação e modo Dado
+
+- Formulário de Nomes, Roleta, Bingo e Grupos usa a mesma estrutura visual de 3 etapas da cartela.
+- Corrigidos botões Continuar, imagem e observação desses modos.
+- Decisões rápidas continuam diretas, sem formulário de atividade.
+- Dado não usa nem exibe participantes.
