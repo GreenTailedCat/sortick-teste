@@ -3018,3 +3018,120 @@ body:fullscreen .draw-stage {
 .coin-game .coin-visual { display:grid; place-items:center; width:156px;height:156px;border:10px solid #ffce47;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fff6bf,#ffdb65 45%,#d99313);box-shadow:inset 0 0 0 7px rgba(126,71,0,.18),0 14px 24px rgba(0,0,0,.2);}.coin-game .coin-visual span{font-size:3.3rem}.coin-game .coin-visual small{font-weight:900;color:#724000;text-transform:uppercase}.coin-game.is-rolling .coin-visual{animation:coinFlip .18s linear infinite alternate}@keyframes coinFlip{from{transform:rotateY(0) translateY(-5px)}to{transform:rotateY(540deg) translateY(7px)}}.random-number-visual{min-width:170px;padding:18px 25px;border-radius:24px;background:#fff;color:#181b34;font:950 clamp(3rem,10vw,5rem) Inter,Arial,sans-serif;line-height:1;box-shadow:0 14px 28px rgba(0,0,0,.22)}.random-game.is-rolling .random-number-visual{animation:numberJitter .14s linear infinite alternate}@keyframes numberJitter{from{transform:translateY(-5px) rotate(-2deg)}to{transform:translateY(6px) rotate(2deg)}}
 
 @media (max-width:720px){.activity-details-row{grid-template-columns:1fr}.cartela-prize-row{grid-template-columns:1fr}.cartela-prize-repeat-option{max-width:none}.bingo-progress-block{grid-template-columns:1fr;gap:6px}.bingo-progress-block small{white-space:normal}.dice-stage{gap:6px 10px;padding:18px 12px 60px}.dice-piece{width:102px;height:102px}.dice-piece text{font-size:34px}.dice-piece small{font-size:11px}.dice-total{right:14px;bottom:13px;font-size:2.5rem}.dice-toolbar{padding:12px}.footer.site-footer,.mode-page-footer{width:min(var(--max),calc(100% - 32px))}.footer.site-footer .footer-links a + a::before,.mode-page-footer .footer-links a + a::before{margin:0 7px}}
+
+
+/* v1.16 — wizard genérico, imagens de atividade e decisões rápidas diretas */
+.activity-create-wizard {
+  display: grid;
+  gap: 14px;
+  margin-top: 2px;
+}
+
+.activity-mode-config-area {
+  display: grid;
+  gap: 14px;
+}
+
+.activity-wizard-back-only {
+  margin-bottom: 2px;
+}
+
+.activity-info-image {
+  display: block;
+  width: 100%;
+  max-height: 176px;
+  margin: 2px 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.activity-editor-image-preview {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface-soft);
+}
+
+.activity-editor-image-preview img {
+  width: 86px;
+  height: 66px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.activity-editor-image-preview strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+/* No modo Dados, a mesa ocupa a área principal diretamente. */
+.draw-page .draw-stage:has(.dice-game) {
+  min-height: 0;
+}
+
+.dice-game {
+  min-height: 430px;
+}
+
+.dice-stage {
+  min-height: 330px;
+}
+
+.dice-piece {
+  width: 154px;
+  height: 154px;
+}
+
+.dice-piece .d-face {
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.dice-piece .d4-a { fill: #23b14d; }
+.dice-piece .d4-b { fill: #15933d; }
+.dice-piece .d4-c { fill: #0d6d2e; }
+.dice-piece .d6-top { fill: #36c6db; }
+.dice-piece .d6-left { fill: #1caec7; }
+.dice-piece .d6-right { fill: #1595b0; }
+.dice-piece .d8-a { fill: #9a4cf0; }
+.dice-piece .d8-b { fill: #7930d2; }
+.dice-piece .d8-c { fill: #6e27c1; }
+.dice-piece .d8-d { fill: #4d138a; }
+.dice-piece .d10-a { fill: #f46a3a; }
+.dice-piece .d10-b { fill: #d94e23; }
+.dice-piece .d10-c { fill: #ba381a; }
+.dice-piece .d12-a { fill: #3b85e7; }
+.dice-piece .d12-b { fill: #2a6ccb; }
+.dice-piece .d12-c { fill: #245cb0; }
+.dice-piece .d12-d { fill: #1e4e96; }
+.dice-piece .d12-e { fill: #163c75; }
+.dice-piece .d20-a { fill: #f04a87; }
+.dice-piece .d20-b { fill: #d73374; }
+.dice-piece .d20-c { fill: #b92461; }
+.dice-piece .d20-d { fill: #9c1b51; }
+.dice-piece .d20-e { fill: #79133e; }
+
+.dice-picker button {
+  min-width: 42px;
+}
+
+@media (max-width: 720px) {
+  .activity-editor-image-preview {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+  .activity-editor-image-preview img {
+    width: 72px;
+    height: 58px;
+  }
+  .dice-game { min-height: 388px; }
+  .dice-stage { min-height: 286px; }
+  .dice-piece { width: 124px; height: 124px; }
+}

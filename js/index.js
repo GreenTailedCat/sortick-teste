@@ -70,14 +70,28 @@ const quickRandomFields = document.querySelector("#quickRandomFields");
 const quickMinInput = document.querySelector("#quickMinInput");
 const quickMaxInput = document.querySelector("#quickMaxInput");
 const quickRandomRepeatInput = document.querySelector("#quickRandomRepeatInput");
-const activityDetailsFields = document.querySelector("#activityDetailsFields");
+const activityCreateWizard = document.querySelector("#activityCreateWizard");
+const activityModeConfigArea = document.querySelector("#activityModeConfigArea");
 const activityDescriptionInput = document.querySelector("#activityDescription");
 const activityDateInput = document.querySelector("#activityDate");
 const activityNoteInput = document.querySelector("#activityNote");
+const activityCreateImage = document.querySelector("#activityCreateImage");
+const activityCreateImagePreview = document.querySelector("#activityCreateImagePreview");
+const activityCreateImagePreviewImage = document.querySelector("#activityCreateImagePreviewImage");
+const activityCreateImageName = document.querySelector("#activityCreateImageName");
+const activityCreateImageStatus = document.querySelector("#activityCreateImageStatus");
+const activityCreateRemoveImage = document.querySelector("#activityCreateRemoveImage");
+const activityWizardNext1 = document.querySelector("#activityWizardNext1");
+const activityWizardBack2 = document.querySelector("#activityWizardBack2");
+const activityWizardNext2 = document.querySelector("#activityWizardNext2");
+const activityWizardBack3 = document.querySelector("#activityWizardBack3");
 
 let cartelaWizardStep = 1;
+let activityWizardStep = 1;
 let cartelaCreateImageData = "";
-let cartelaCreateImageNameValue = ""; 
+let cartelaCreateImageNameValue = "";
+let activityCreateImageData = "";
+let activityCreateImageNameValue = "";
 
 function setCartelaWizardStep(step) {
   cartelaWizardStep = Math.max(1, Math.min(3, Number(step) || 1));
@@ -180,6 +194,50 @@ function parseGroupNames(value, groupCount) {
   return names;
 }
 
+function setActivityWizardStep(step) {
+  activityWizardStep = Math.max(1, Math.min(3, Number(step) || 1));
+  document.querySelectorAll("[data-activity-step]").forEach(section => {
+    section.classList.toggle("hidden", Number(section.dataset.activityStep) !== activityWizardStep);
+  });
+  document.querySelectorAll("[data-activity-step-indicator]").forEach(indicator => {
+    const indicatorStep = Number(indicator.dataset.activityStepIndicator);
+    indicator.classList.toggle("is-active", indicatorStep === activityWizardStep);
+    indicator.classList.toggle("is-complete", indicatorStep < activityWizardStep);
+  });
+
+  const type = typeInput.value;
+  const usesGenericWizard = type !== "numbers" && type !== "quick";
+  if (activityModeConfigArea) {
+    activityModeConfigArea.classList.toggle("hidden", !usesGenericWizard || activityWizardStep !== 3);
+  }
+}
+
+function updateActivityCreateImagePreview() {
+  const hasImage = Boolean(activityCreateImageData);
+  if (!activityCreateImagePreview) return;
+  activityCreateImagePreview.classList.toggle("hidden", !hasImage);
+  if (!hasImage) {
+    activityCreateImagePreviewImage.removeAttribute("src");
+    activityCreateImageName.textContent = "Imagem selecionada";
+    return;
+  }
+  activityCreateImagePreviewImage.src = activityCreateImageData;
+  activityCreateImageName.textContent = activityCreateImageNameValue || "Imagem selecionada";
+}
+
+function setActivityCreateImageStatus(message = "") {
+  if (activityCreateImageStatus) activityCreateImageStatus.textContent = message;
+}
+
+function validateActivityWizardStepOne() {
+  const title = Sortick.normalizeText(titleInput.value);
+  if (!title) {
+    titleInput.focus();
+    return false;
+  }
+  return true;
+}
+
 function syncSelectionCreation() {
   const isMultiple = selectionModeInput.value === "multiple";
   selectionCountField.classList.toggle("hidden", !isMultiple);
@@ -199,29 +257,30 @@ function syncTypeSettings() {
   const isSelection = type === "names" || type === "roulette";
   const isGroups = type === "groups";
   const isQuick = type === "quick";
+  const usesGenericWizard = !isCartela && !isQuick;
 
   numberQuantityField.classList.add("hidden");
   totalNumbersInput.required = false;
-
   bingoQuantityField.classList.toggle("hidden", type !== "bingo");
   bingoTotalNumbersInput.required = type === "bingo";
-
   groupQuantityField.classList.toggle("hidden", !isGroups);
   groupCountInput.required = isGroups;
-
   selectionCreationField.classList.toggle("hidden", !isSelection);
   groupNamesCreationField.classList.toggle("hidden", !isGroups);
   quickCreationField.classList.toggle("hidden", !isQuick);
-
-  activityDetailsFields.classList.toggle("hidden", isCartela);
-  drawTitleField.classList.toggle("hidden", isCartela);
   drawModeField.classList.toggle("hidden", isCartela || isQuick);
   createSubmitButton.classList.toggle("hidden", isCartela);
   cartelaCreateWizard.classList.toggle("hidden", !isCartela);
-  titleInput.required = !isCartela && !isQuick;
+  activityCreateWizard.classList.toggle("hidden", !usesGenericWizard);
+  titleInput.required = usesGenericWizard;
 
   if (isCartela) {
     setCartelaWizardStep(cartelaWizardStep);
+    if (activityModeConfigArea) activityModeConfigArea.classList.add("hidden");
+  } else if (isQuick) {
+    if (activityModeConfigArea) activityModeConfigArea.classList.remove("hidden");
+  } else {
+    setActivityWizardStep(activityWizardStep);
   }
 
   syncSelectionCreation();
@@ -522,7 +581,46 @@ async function renameSavedDraw(savedDraw) {
     updatedAt: new Date().toISOString()
   }));
 
-  renderSavedDraws();
+  if (activityWizardNext1) {
+  activityWizardNext1.addEventListener("click", () => {
+    if (validateActivityWizardStepOne()) setActivityWizardStep(2);
+  });
+}
+if (activityWizardBack2) activityWizardBack2.addEventListener("click", () => setActivityWizardStep(1));
+if (activityWizardNext2) activityWizardNext2.addEventListener("click", () => setActivityWizardStep(3));
+if (activityWizardBack3) activityWizardBack3.addEventListener("click", () => setActivityWizardStep(2));
+
+if (activityCreateImage) {
+  activityCreateImage.addEventListener("change", async () => {
+    const file = activityCreateImage.files && activityCreateImage.files[0];
+    if (!file) return;
+    setActivityCreateImageStatus("Preparando imagem...");
+    try {
+      const prepared = await Sortick.prepareImageFile(file);
+      activityCreateImageData = prepared.dataUrl;
+      activityCreateImageNameValue = prepared.name;
+      updateActivityCreateImagePreview();
+      setActivityCreateImageStatus("Imagem pronta.");
+    } catch (error) {
+      activityCreateImage.value = "";
+      activityCreateImageData = "";
+      activityCreateImageNameValue = "";
+      updateActivityCreateImagePreview();
+      setActivityCreateImageStatus(error && error.message ? error.message : "Não foi possível usar esta imagem.");
+    }
+  });
+}
+if (activityCreateRemoveImage) {
+  activityCreateRemoveImage.addEventListener("click", () => {
+    activityCreateImage.value = "";
+    activityCreateImageData = "";
+    activityCreateImageNameValue = "";
+    updateActivityCreateImagePreview();
+    setActivityCreateImageStatus("Imagem removida.");
+  });
+}
+
+renderSavedDraws();
 }
 
 function createTransferControls(savedDraw, item) {
@@ -713,10 +811,18 @@ form.addEventListener("submit", (event) => {
     confirmedOnly: false,
     removeWinnerAfterDraw: false,
     soundEnabled: false,
-    activityInfo: {
+    activityInfo: type === "quick" ? {
+      description: "",
+      date: "",
+      note: "",
+      imageData: "",
+      imageName: ""
+    } : {
       description: Sortick.normalizeText(activityDescriptionInput.value).slice(0, 180),
       date: activityDateInput.value || "",
-      note: Sortick.normalizeText(activityNoteInput.value).slice(0, 180)
+      note: Sortick.normalizeText(activityNoteInput.value).slice(0, 180),
+      imageData: activityCreateImageData,
+      imageName: activityCreateImageNameValue
     }
   };
 

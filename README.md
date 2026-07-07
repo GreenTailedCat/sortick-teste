@@ -1,4 +1,4 @@
-# Sortick Teste v1.15 — pacote final completo
+# Sortick Teste v1.16 — formulários e dados
 
 Esta versão é a entrega consolidada para o repositório de testes.
 
@@ -21,3 +21,12 @@ Esta versão é a entrega consolidada para o repositório de testes.
 ## Decisão técnica do modo Dados
 
 O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou serviço externo. A escolha evita tornar um site estático dependente de build npm, assets externos ou disponibilidade de terceiros. A interação é inspirada na experiência de mesas de dados: seletor de D4 a D20, até 10 dados, resultado em cada dado e total.
+
+
+## v1.16 — formulários e dados
+
+- Nomes, Roleta, Bingo e Grupos usam um assistente em três etapas: atividade, imagem e configuração.
+- Decisões rápidas permanecem diretas: sem nome, descrição, data ou imagem obrigatórios.
+- Imagem opcional disponível para Nomes, Roleta, Bingo e Grupos; também pode ser editada depois.
+- Correção do primeiro desenho do modo Dados: a mesa aparece diretamente, sem painel de participantes e sem estado genérico.
+- Dados mantêm limite de 10 unidades por rodada, resultado em cada dado, total, rolar e limpar.

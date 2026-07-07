@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1150" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1160" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -220,36 +220,7 @@
         </div>
 
         <form id="createForm" class="form">
-          <section id="activityDetailsFields" class="activity-details-fields">
-            <div class="activity-form-heading">
-              <span>1</span>
-              <div><strong>Identifique a atividade</strong><small>Esses detalhes podem ser editados depois.</small></div>
-            </div>
-            <label id="drawTitleField">
-              Nome do sorteio
-              <input id="drawTitle" type="text" placeholder="Ex: Ordem das apresentações" maxlength="80" required />
-            </label>
-            <label>
-              Descrição <span class="optional-inline">Opcional</span>
-              <textarea id="activityDescription" rows="2" maxlength="180" placeholder="Ex: Escolher a ordem de fala do grupo."></textarea>
-            </label>
-            <div class="activity-details-row">
-              <label>
-                Data <span class="optional-inline">Opcional</span>
-                <input id="activityDate" type="date" />
-              </label>
-              <label>
-                Observação <span class="optional-inline">Opcional</span>
-                <input id="activityNote" type="text" maxlength="180" placeholder="Ex: Resultado ao vivo." />
-              </label>
-            </div>
-          </section>
-
-          <div id="modeConfigHeading" class="activity-form-heading activity-form-heading-config">
-            <span>2</span>
-            <div><strong>Configure o modo</strong><small>Escolha como a atividade deve funcionar.</small></div>
-          </div>
-          <label>
+          <label class="draw-type-field">
             Tipo
             <select id="drawType" required>
               <option value="names">Sorteio por nomes</option>
@@ -260,6 +231,67 @@
               <option value="quick">Decisões rápidas</option>
             </select>
           </label>
+
+          <section id="activityCreateWizard" class="activity-create-wizard" aria-label="Criar atividade">
+            <div class="cartela-wizard-progress" aria-label="Etapas da atividade">
+              <span class="is-active" data-activity-step-indicator="1">1. Atividade</span>
+              <span data-activity-step-indicator="2">2. Imagem</span>
+              <span data-activity-step-indicator="3">3. Configurar</span>
+            </div>
+
+            <section class="cartela-wizard-step" data-activity-step="1">
+              <p class="eyebrow">Etapa 1 de 3</p>
+              <h3>Identifique a atividade</h3>
+              <p class="subtle">Nome, descrição e data ajudam a encontrar este sorteio depois. Você poderá editar tudo mais tarde.</p>
+              <label id="drawTitleField">
+                Nome do sorteio
+                <input id="drawTitle" type="text" placeholder="Ex: Ordem das apresentações" maxlength="80" required />
+              </label>
+              <label>
+                Descrição <span class="optional-inline">Opcional</span>
+                <textarea id="activityDescription" rows="2" maxlength="180" placeholder="Ex: Escolher a ordem de fala do grupo."></textarea>
+              </label>
+              <label>
+                Data <span class="optional-inline">Opcional</span>
+                <input id="activityDate" type="date" />
+              </label>
+              <div class="cartela-wizard-actions">
+                <button id="activityWizardNext1" class="btn btn-primary" type="button">Continuar</button>
+              </div>
+            </section>
+
+            <section class="cartela-wizard-step hidden" data-activity-step="2">
+              <p class="eyebrow">Etapa 2 de 3</p>
+              <h3>Adicionar imagem</h3>
+              <p class="subtle">Opcional. A imagem aparece nos detalhes da atividade e pode ser alterada depois.</p>
+              <label class="cartela-image-upload">
+                <span>Imagem da atividade <small>Opcional</small></span>
+                <input id="activityCreateImage" type="file" accept="image/png,image/jpeg,image/webp" />
+                <span class="field-hint">PNG, JPG ou WEBP.</span>
+              </label>
+              <div id="activityCreateImagePreview" class="cartela-image-preview hidden">
+                <img id="activityCreateImagePreviewImage" alt="Prévia da imagem da atividade" />
+                <div>
+                  <strong id="activityCreateImageName">Imagem selecionada</strong>
+                  <button id="activityCreateRemoveImage" class="link-button danger-text" type="button">Remover imagem</button>
+                </div>
+              </div>
+              <p id="activityCreateImageStatus" class="cartela-image-status" aria-live="polite"></p>
+              <div class="cartela-wizard-actions">
+                <button id="activityWizardBack2" class="btn btn-ghost light" type="button">Voltar</button>
+                <button id="activityWizardNext2" class="btn btn-primary" type="button">Continuar</button>
+              </div>
+            </section>
+
+            <section class="cartela-wizard-step hidden" data-activity-step="3">
+              <p class="eyebrow">Etapa 3 de 3</p>
+              <h3>Configurar o modo</h3>
+              <p class="subtle">Defina as opções do modo e crie a atividade.</p>
+              <div class="cartela-wizard-actions activity-wizard-back-only">
+                <button id="activityWizardBack3" class="btn btn-ghost light" type="button">Voltar</button>
+              </div>
+            </section>
+          </section>
 
           <label id="numberQuantityField" class="hidden">
             Quantidade de números da cartela
@@ -366,7 +398,7 @@
             </section>
           </section>
 
-
+          <section id="activityModeConfigArea" class="activity-mode-config-area hidden">
           <label id="bingoQuantityField" class="hidden">
             Números do bingo
             <input id="bingoTotalNumbers" type="number" min="2" max="500" value="75" />
@@ -459,6 +491,7 @@
           </label>
 
           <button id="createSubmitButton" class="btn btn-primary full" type="submit">Criar sorteio</button>
+          </section>
         </form>
 
         <section class="saved-draws-card" aria-labelledby="savedDrawsTitle">
@@ -496,7 +529,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1150"></script>
-  <script src="/sortick-teste/js/index.js?v=1150"></script>
+  <script src="/sortick-teste/js/utils.js?v=1160"></script>
+  <script src="/sortick-teste/js/index.js?v=1160"></script>
 </body>
 </html>

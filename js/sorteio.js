@@ -3334,3 +3334,241 @@ function openCartelaEditor() {
   form.addEventListener("submit",event=>{event.preventDefault();const title=Sortick.normalizeText(form.elements.title.value).slice(0,80);if(!title){form.elements.title.focus();return;}const normalized=prizes.map(item=>({id:item.id||Sortick.createId("prize"),name:Sortick.normalizeText(item.name).slice(0,100),repeatable:Boolean(item.repeatable)})).filter(item=>item.name);const updated=getCartelaInfo();updated.description=Sortick.normalizeText(form.elements.description.value).slice(0,180);updated.prizes=normalized;updated.prize=normalized[0]?normalized[0].name:"";updated.imageData=pendingImageData;updated.imageName=pendingImageName;updated.value=Sortick.normalizeText(form.elements.value.value).slice(0,30);updated.drawDate=form.elements.drawDate.value||"";updated.note=Sortick.normalizeText(form.elements.note.value).slice(0,180);draw.title=title;draw.options.cartelaInfo=updated;drawTitle.textContent=title;persist();render();setValidation("Detalhes da cartela atualizados.");close();});
   form.elements.title.focus();
 }
+
+
+/* v1.16 — final overrides: generic activity wizard and direct quick modes */
+function getActivityInfo() {
+  draw.options.activityInfo = {
+    description: "",
+    date: "",
+    note: "",
+    imageData: "",
+    imageName: "",
+    ...(draw.options.activityInfo || {})
+  };
+  return draw.options.activityInfo;
+}
+
+function renderActivityInfoPanel() {
+  if (!activityInfoPanel) return;
+  if (draw.type === "numbers" || draw.type === "quick") {
+    activityInfoPanel.classList.add("hidden");
+    return;
+  }
+
+  activityInfoPanel.classList.remove("hidden");
+  const info = getActivityInfo();
+  const details = [];
+  if (info.imageData) {
+    details.push(`<img class="activity-info-image" src="${info.imageData}" alt="Imagem da atividade ${Sortick.escapeHTML(draw.title)}" />`);
+  }
+  if (info.description) details.push(`<p>${Sortick.escapeHTML(info.description)}</p>`);
+  if (info.date) details.push(`<p><strong>Data:</strong> ${Sortick.escapeHTML(info.date.split("-").reverse().join("/"))}</p>`);
+  if (info.note) details.push(`<p><strong>Observação:</strong> ${Sortick.escapeHTML(info.note)}</p>`);
+
+  activityInfoPanel.innerHTML = `
+    <div class="activity-info-heading">
+      <div><p class="eyebrow">DETALHES</p><h3>Sobre esta atividade</h3></div>
+      <button id="editActivityInfoButton" class="link-button" type="button">Editar</button>
+    </div>
+    <div class="activity-info-content">${details.length ? details.join("") : '<p class="subtle">Sem descrição, imagem, data ou observação adicionada.</p>'}</div>`;
+
+  const button = activityInfoPanel.querySelector("#editActivityInfoButton");
+  if (button) button.addEventListener("click", openActivityInfoEditor);
+}
+
+function openActivityInfoEditor() {
+  if (draw.type === "quick" || draw.type === "numbers") return;
+  const previousFocus = document.activeElement;
+  const info = getActivityInfo();
+  let pendingImageData = info.imageData || "";
+  let pendingImageName = info.imageName || "";
+  const overlay = document.createElement("div");
+  const panel = document.createElement("section");
+  overlay.className = "cartela-editor-backdrop";
+  panel.className = "activity-editor-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  panel.innerHTML = `
+    <header class="cartela-editor-header">
+      <div><p class="eyebrow">EDITAR ATIVIDADE</p><h2>Detalhes da atividade</h2><p>Edite nome, imagem e informações sem alterar participantes ou resultados.</p></div>
+      <button class="cartela-preview-close" type="button" aria-label="Fechar edição">×</button>
+    </header>
+    <form class="activity-editor-form">
+      <label>Nome<input name="title" type="text" maxlength="80" value="${Sortick.escapeHTML(draw.title)}" /></label>
+      <label>Descrição <small>Opcional</small><textarea name="description" rows="3" maxlength="180">${Sortick.escapeHTML(info.description || "")}</textarea></label>
+      <label class="cartela-image-upload"><span>Imagem da atividade <small>Opcional</small></span><input name="image" type="file" accept="image/png,image/jpeg,image/webp" /><span class="field-hint">PNG, JPG ou WEBP.</span></label>
+      <div class="activity-editor-image-preview ${pendingImageData ? "" : "hidden"}"><img alt="Prévia da imagem" ${pendingImageData ? `src="${pendingImageData}"` : ""}/><div><strong>${Sortick.escapeHTML(pendingImageName || "Imagem selecionada")}</strong><button class="link-button danger-text activity-editor-remove-image" type="button">Remover imagem</button></div></div>
+      <p class="activity-editor-image-status" aria-live="polite"></p>
+      <label>Data <small>Opcional</small><input name="date" type="date" value="${Sortick.escapeHTML(info.date || "")}" /></label>
+      <label>Observação <small>Opcional</small><textarea name="note" rows="3" maxlength="180">${Sortick.escapeHTML(info.note || "")}</textarea></label>
+      <div class="cartela-editor-actions"><button class="btn btn-ghost light" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar detalhes</button></div>
+    </form>`;
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  document.body.classList.add("sortick-modal-open");
+
+  const form = panel.querySelector("form");
+  const imageInput = form.elements.image;
+  const preview = panel.querySelector(".activity-editor-image-preview");
+  const imageStatus = panel.querySelector(".activity-editor-image-status");
+  const close = () => {
+    overlay.remove();
+    document.body.classList.remove("sortick-modal-open");
+    if (previousFocus && previousFocus.focus) previousFocus.focus();
+  };
+  const renderImage = () => {
+    preview.classList.toggle("hidden", !pendingImageData);
+    const image = preview.querySelector("img");
+    const name = preview.querySelector("strong");
+    if (pendingImageData) image.src = pendingImageData;
+    else image.removeAttribute("src");
+    name.textContent = pendingImageName || "Imagem selecionada";
+  };
+
+  panel.querySelector(".cartela-preview-close").addEventListener("click", close);
+  panel.querySelector(".btn-ghost").addEventListener("click", close);
+  overlay.addEventListener("mousedown", event => { if (event.target === overlay) close(); });
+  panel.querySelector(".activity-editor-remove-image").addEventListener("click", () => {
+    pendingImageData = "";
+    pendingImageName = "";
+    imageInput.value = "";
+    renderImage();
+    imageStatus.textContent = "Imagem removida.";
+  });
+  imageInput.addEventListener("change", async () => {
+    const file = imageInput.files && imageInput.files[0];
+    if (!file) return;
+    imageStatus.textContent = "Preparando imagem...";
+    try {
+      const prepared = await Sortick.prepareImageFile(file);
+      pendingImageData = prepared.dataUrl;
+      pendingImageName = prepared.name;
+      renderImage();
+      imageStatus.textContent = "Imagem pronta.";
+    } catch (error) {
+      imageInput.value = "";
+      imageStatus.textContent = error && error.message ? error.message : "Não foi possível usar esta imagem.";
+    }
+  });
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const title = Sortick.normalizeText(form.elements.title.value).slice(0, 80);
+    if (!title) { form.elements.title.focus(); return; }
+    draw.title = title;
+    draw.options.activityInfo = {
+      description: Sortick.normalizeText(form.elements.description.value).slice(0, 180),
+      date: form.elements.date.value || "",
+      note: Sortick.normalizeText(form.elements.note.value).slice(0, 180),
+      imageData: pendingImageData,
+      imageName: pendingImageName
+    };
+    persist();
+    render();
+    setValidation("Detalhes da atividade atualizados.");
+    close();
+  });
+  form.elements.title.focus();
+}
+
+function setupSimpleCorePanels() {
+  const isSelection = draw.type === "names" || draw.type === "roulette";
+  const isGroups = draw.type === "groups";
+  const isQuick = draw.type === "quick";
+  const isDice = isQuick && draw.options.quickType === "dice";
+  const isRandom = isQuick && draw.options.quickType === "random";
+
+  if (selectionOptionsPanel) selectionOptionsPanel.classList.toggle("hidden", !isSelection);
+  if (groupSettingsPanel) groupSettingsPanel.classList.toggle("hidden", !isGroups);
+  if (quickSettingsPanel) quickSettingsPanel.classList.toggle("hidden", !isQuick);
+  if (participantPanel) participantPanel.classList.toggle("hidden", isQuick);
+  if (removeWinnerToggle && removeWinnerToggle.closest("label")) removeWinnerToggle.closest("label").classList.add("hidden");
+  if (randomRepeatOption) randomRepeatOption.classList.toggle("hidden", !isRandom);
+  if (randomRepeatToggle) randomRepeatToggle.checked = Boolean(draw.options.randomAllowRepeats);
+
+  drawButton.classList.toggle("hidden", isDice);
+  resetButton.classList.add("hidden");
+  const resetHint = document.querySelector("#resetHint");
+  if (resetHint) resetHint.classList.add("hidden");
+
+  if (isSelection) {
+    selectionModeControl.value = draw.options.selectionMode;
+    selectionCountControl.value = draw.options.selectionCount;
+    noRepeatToggle.checked = Boolean(draw.options.noRepeat);
+    selectionCountControlField.classList.toggle("hidden", draw.options.selectionMode !== "multiple");
+    resetRoundButton.classList.toggle("hidden", !(draw.options.noRepeat && draw.options.roundDrawnIds.length));
+    drawButton.textContent = draw.options.selectionMode === "order" ? "Gerar ordem" : draw.type === "roulette" ? "Girar roleta" : "Sortear";
+    participantHelp.textContent = draw.type === "roulette" ? "Adicione nomes ou opções para a roleta." : "Adicione nomes ou opções para sortear.";
+  }
+
+  if (isGroups) {
+    groupNamesControl.value = getGroupNames().join("\n");
+    drawButton.textContent = draw.result?.groups ? "Gerar novamente" : "Gerar grupos";
+    participantHelp.textContent = `Adicione nomes e distribua em ${draw.options.groupCount} grupo(s) equilibrados.`;
+  }
+
+  if (isQuick) {
+    if (quickSettingsText) quickSettingsText.textContent = getQuickDescription();
+    if (isDice) {
+      quickSettingsText.textContent = "Adicione até 10 dados, role e veja o resultado dentro de cada dado.";
+    } else {
+      drawButton.textContent = "Decidir";
+      if (isRandom && !draw.options.randomAllowRepeats) {
+        resetButton.textContent = "Reiniciar sequência";
+        resetButton.classList.remove("hidden");
+        if (resetHint) {
+          resetHint.textContent = "Libera novamente os números já sorteados.";
+          resetHint.classList.remove("hidden");
+        }
+      }
+    }
+  }
+}
+
+function renderAnimationIdle() {
+  if (draw.type === "quick") {
+    if (draw.options.quickType === "dice") return renderDiceGame();
+    if (draw.options.quickType === "coin") return renderCoinGame(draw.result?.quickResult || null);
+    return renderRandomGame(draw.result?.quickResult || null);
+  }
+  if (draw.type === "numbers") return renderNumberBoard();
+  if (draw.type === "bingo") return renderBingoBoard();
+  if (draw.type === "groups") return renderGroupsIdle();
+  if (draw.result?.participants && draw.result.participants.length > 1) {
+    const heading = draw.options.selectionMode === "order" ? "Ordem definida" : "Sorteados";
+    animationArea.innerHTML = renderSelectionBoard(draw.result.participants, heading);
+    return;
+  }
+  if (draw.type === "roulette") return renderRouletteCanvas(draw.result?.wheelRotation || 0, draw.result?.participantIndex ?? null);
+  if (draw.result) {
+    animationArea.innerHTML = `<div class="rolling-name">${Sortick.escapeHTML(getParticipantDisplay(draw.result.participant))}</div>`;
+    return;
+  }
+  const eligible = getEligibleParticipants();
+  animationArea.innerHTML = `<div class="empty-state"><span class="empty-icon">✨</span><strong>${eligible.length >= getMinimumParticipants() ? "Pronto para sortear" : "Faltam participantes elegíveis"}</strong><p>${eligible.length} participante(s) pronto(s) para o sorteio.</p></div>`;
+}
+
+function render() {
+  setupSimpleCorePanels();
+  renderActivityInfoPanel();
+  renderStatusSummary();
+  if (draw.type !== "quick") renderParticipants();
+  else {
+    participantList.innerHTML = "";
+    bulkAddPanel.classList.add("hidden");
+  }
+  renderAnimationIdle();
+  renderResult();
+
+  let canDraw = getEligibleParticipants().length >= getMinimumParticipants();
+  if (draw.type === "bingo") canDraw = draw.options.bingoAllowRepeats || getRemainingBingoNumbers().length > 0;
+  if (draw.type === "quick") canDraw = draw.options.quickType !== "random" || draw.options.randomAllowRepeats || getRandomRemaining() > 0;
+  drawButton.disabled = !canDraw || isDrawing;
+  copyButton.disabled = !draw.result;
+  shareButton.disabled = !draw.result;
+  downloadButton.disabled = !draw.result;
+  setRuleOptionsLocked(isDrawing);
+}
+
+// Force a correct first paint after legacy setup code has finished.
+queueMicrotask(() => render());

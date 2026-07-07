@@ -1,17 +1,17 @@
-# Estado e decisões do Sortick v1.15
+# Estado do Sortick — v1.16
 
-## Concluído
-- Nomes, Roleta, Cartela, Bingo, Grupos, Dados, Cara ou Coroa e Número Aleatório.
-- Detalhes editáveis para atividades e cartelas.
-- Prêmios múltiplos na cartela: até 10, únicos ou repetíveis.
-- Conteúdo explicativo básico e páginas institucionais.
+## Entregue
 
-## Depois da aprovação da versão estável
-- Modal horizontal mais amplo de cartela.
-- Mais formatos de imagem exportada.
-- Sincronização em nuvem somente com login, backend e política de privacidade própria.
-- Salas ao vivo somente com necessidade real e moderação definida.
+- Nomes, Roleta, Cartela, Bingo, Grupos e Decisões rápidas.
+- Formulário em três etapas para Nomes, Roleta, Bingo e Grupos: atividade, imagem e configuração.
+- Cartela mantém o fluxo especializado de três etapas, prêmios e imagem de destaque.
+- Decisões rápidas continuam diretas, sem formulário de atividade.
+- Dados: D4, D6, D8, D10, D12 e D20; até 10 por rodada; total, rolar, limpar e remoção individual.
+- Número aleatório com ou sem repetição; cara ou coroa com resultado visual.
 
-## Fora do escopo atual
-- Pagamentos, venda de números, administração de prêmios ou sorteios públicos.
-- Dependência de serviços externos para o modo Dados.
+## Depois de uma publicação estável
+
+- Modal horizontal de cartela.
+- Mais layouts para exportações.
+- Opções/perguntas aleatórias para atividades.
+- Sincronização em nuvem apenas quando houver backend e necessidade real.

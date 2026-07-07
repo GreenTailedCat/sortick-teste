@@ -22,3 +22,8 @@ Depois de validar a v1.12 em computador e celular, preparar uma cópia específi
 6. Publicar uma única atualização no repositório oficial e testar `sortick.com.br`.
 
 A versão pode ser publicada no site padrão depois desse processo e de uma revisão final de compatibilidade.
+
+
+## v1.16
+
+Este pacote é exclusivo do repositório de testes. A cópia de produção deve trocar caminhos `/sortick-teste/`, remover `noindex`, preservar a chave de dados do domínio oficial e atualizar Analytics/PWA apenas depois da aprovação geral.
