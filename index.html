@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1170" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1180" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -362,18 +362,12 @@
               </select>
             </label>
 
-            <label id="quickDiceField">
-              Dado inicial
-              <select id="quickDiceSidesInput">
-                <option value="4">D4</option>
-                <option value="6">D6</option>
-                <option value="8">D8</option>
-                <option value="10">D10</option>
-                <option value="12">D12</option>
-                <option value="20">D20</option>
-              </select>
-              <span class="field-hint">Na mesa você poderá adicionar até 10 dados, inclusive de tipos diferentes.</span>
-            </label>
+            <div id="quickDiceField" class="quick-dice-intro hidden">
+              <strong>Mesa de dados</strong>
+              <span>Abra a mesa e escolha D4, D6, D8, D10, D12 ou D20 diretamente nela.</span>
+            </div>
+
+            <select id="quickDiceSidesInput" class="hidden" aria-hidden="true" tabindex="-1"><option value="6" selected>D6</option></select>
 
             <div id="quickRandomFields" class="quick-random-row hidden">
               <label>
@@ -496,100 +490,6 @@
             </section>
           </section>
 
-          <section id="activityModeConfigArea" class="activity-mode-config-area hidden">
-          <label id="bingoQuantityField" class="hidden">
-            Números do bingo
-            <input id="bingoTotalNumbers" type="number" min="2" max="500" value="75" />
-            <span class="field-hint">Exemplo: 75 cria um bingo de 1 a 75.</span>
-          </label>
-
-          <label id="groupQuantityField" class="hidden">
-            Quantidade de grupos/times
-            <input id="groupCount" type="number" min="2" max="50" value="2" />
-            <span class="field-hint">Exemplo: 2 divide a lista em dois grupos.</span>
-          </label>
-
-          <section id="selectionCreationField" class="simple-create-options hidden" aria-label="Opções de sorteio">
-            <p class="eyebrow">Resultado</p>
-            <label>
-              Formato
-              <select id="selectionModeInput">
-                <option value="single">Um sorteado</option>
-                <option value="multiple">Vários sorteados</option>
-                <option value="order">Ordem completa</option>
-              </select>
-            </label>
-
-            <label id="selectionCountField" class="hidden">
-              Quantos sorteados
-              <input id="selectionCountInput" type="number" min="2" max="100" value="2" />
-            </label>
-
-            <label class="inline-option">
-              <input id="noRepeatInput" type="checkbox" />
-              Não repetir sorteados nesta rodada
-            </label>
-          </section>
-
-          <section id="groupNamesCreationField" class="simple-create-options hidden" aria-label="Nomes dos grupos">
-            <p class="eyebrow">Nomes dos grupos</p>
-            <label>
-              Personalizar grupos <span class="optional-inline">Opcional</span>
-              <textarea id="groupNamesInput" rows="3" maxlength="240" placeholder="Um por linha ou separados por vírgula&#10;Ex: Grupo Azul, Grupo Verde, Grupo Amarelo"></textarea>
-              <span class="field-hint">Quando não preencher, o Sortick usa Grupo 1, Grupo 2 e assim por diante.</span>
-            </label>
-          </section>
-
-          <section id="quickCreationField" class="simple-create-options hidden" aria-label="Decisões rápidas">
-            <p class="eyebrow">Decisão rápida</p>
-            <label>
-              Tipo
-              <select id="quickTypeInput">
-                <option value="coin">Cara ou coroa</option>
-                <option value="dice">Dado</option>
-                <option value="random">Número aleatório</option>
-              </select>
-            </label>
-
-            <label id="quickDiceField">
-              Lados do dado
-              <select id="quickDiceSidesInput">
-                <option value="4">4 lados</option>
-                <option value="6">6 lados</option>
-                <option value="8">8 lados</option>
-                <option value="10">10 lados</option>
-                <option value="12">12 lados</option>
-                <option value="20">20 lados</option>
-              </select>
-            </label>
-
-            <div id="quickRandomFields" class="quick-random-row hidden">
-              <label>
-                Mínimo
-                <input id="quickMinInput" type="number" value="1" min="-999999" max="999999" />
-              </label>
-              <label>
-                Máximo
-                <input id="quickMaxInput" type="number" value="100" min="-999999" max="999999" />
-              </label>
-              <label class="inline-option quick-random-repeat-option">
-                <input id="quickRandomRepeatInput" type="checkbox" checked />
-                Permitir números repetidos
-              </label>
-            </div>
-          </section>
-
-
-          <label id="drawModeField">
-            Modo
-            <select id="drawMode" required>
-              <option value="simple">Simples — dono adiciona e sorteia</option>
-              <option value="live" disabled>Ao vivo — em breve</option>
-            </select>
-          </label>
-
-          <button id="createSubmitButton" class="btn btn-primary full" type="submit">Criar sorteio</button>
-          </section>
         </form>
 
         <section class="saved-draws-card" aria-labelledby="savedDrawsTitle">
@@ -627,7 +527,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1170"></script>
-  <script src="/sortick-teste/js/index.js?v=1170"></script>
+  <script src="/sortick-teste/js/utils.js?v=1180"></script>
+  <script src="/sortick-teste/js/index.js?v=1180"></script>
 </body>
 </html>

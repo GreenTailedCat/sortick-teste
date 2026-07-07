@@ -31,3 +31,14 @@
 - Corrigidos botões Continuar, imagem e observação desses modos.
 - Decisões rápidas continuam diretas, sem formulário de atividade.
 - Dado não usa nem exibe participantes.
+
+
+## v1.18 — teste de Dados
+
+- [ ] Escolher Decisões rápidas > Dado não mostra seletor de dado inicial.
+- [ ] Ao abrir Dado, a área mostra imediatamente a mesa “Jogar os dados”.
+- [ ] Nenhuma mensagem ou painel de participantes aparece.
+- [ ] A mesa começa vazia.
+- [ ] Adicionar D4, D6 e D20 funciona.
+- [ ] Rolar mostra resultado em cada dado e total.
+- [ ] Limpar volta a deixar a mesa vazia.

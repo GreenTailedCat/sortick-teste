@@ -1,4 +1,4 @@
-# Sortick Teste v1.16 — formulários e dados
+# Sortick Teste v1.18 — dados direto
 
 Esta versão é a entrega consolidada para o repositório de testes.
 
@@ -38,3 +38,12 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - Corrigidos botões Continuar, imagem e observação desses modos.
 - Decisões rápidas continuam diretas, sem formulário de atividade.
 - Dado não usa nem exibe participantes.
+
+
+## v1.18 — dados direto
+
+- O modo Dado não pede mais um dado inicial.
+- Ao escolher Dado e abrir, a mesa aparece vazia.
+- D4, D6, D8, D10, D12 e D20 são adicionados apenas pelos controles da mesa.
+- Abertura do modo Dados ignora totalmente painel, lista e formulário de participantes.
+- Removida uma cópia duplicada de campos de criação da página inicial.

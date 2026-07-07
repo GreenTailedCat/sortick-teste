@@ -211,7 +211,7 @@ function createGenericOrQuick() {
     const selected = ["coin","dice","random"].includes(quickType.value) ? quickType.value : "coin";
     const sides = Number.parseInt(quickDiceSides.value,10);
     const min = Number.parseInt(quickMin.value,10), max=Number.parseInt(quickMax.value,10);
-    options.quickType=selected; options.diceSides=[4,6,8,10,12,20].includes(sides)?sides:6; options.diceTray=selected === "dice" ? [{id:Sortick.createId("die"),sides:options.diceSides,value:null}] : []; options.randomMin=Number.isInteger(min)?min:1; options.randomMax=Number.isInteger(max)?max:100; if(options.randomMin>options.randomMax)[options.randomMin,options.randomMax]=[options.randomMax,options.randomMin]; options.randomAllowRepeats=Boolean(quickRepeat.checked); options.randomDrawnNumbers=[];
+    options.quickType=selected; options.diceSides=[4,6,8,10,12,20].includes(sides)?sides:6; options.diceTray=[]; options.randomMin=Number.isInteger(min)?min:1; options.randomMax=Number.isInteger(max)?max:100; if(options.randomMin>options.randomMax)[options.randomMin,options.randomMax]=[options.randomMax,options.randomMin]; options.randomAllowRepeats=Boolean(quickRepeat.checked); options.randomDrawnNumbers=[];
   }
   const draw={id:Sortick.createId("draw"),title,type,mode:"simple",options,participants:[],result:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
   Sortick.saveDraw(draw); window.location.href=`/sortick-teste/sorteio/?id=${encodeURIComponent(draw.id)}`;

@@ -1,4 +1,4 @@
-const CACHE_NAME = "sortick-teste-v1-17-formulario-estavel-cache";
+const CACHE_NAME = "sortick-teste-v1-18-dados-direto-cache";
 
 const APP_SHELL = [
   "/",

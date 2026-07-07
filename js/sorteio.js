@@ -92,8 +92,9 @@ if (!draw) {
   draw.options.diceTray = Array.isArray(draw.options.diceTray)
     ? draw.options.diceTray.filter(die => supportedDiceSides.includes(Number(die && die.sides))).slice(0, 10)
     : [];
-  if (draw.options.quickType === "dice" && !draw.options.diceTray.length) {
-    draw.options.diceTray = [{ id: Sortick.createId("die"), sides: draw.options.diceSides, value: null }];
+  // A mesa de dados começa vazia. O usuário escolhe cada D4/D6/D8/D10/D12/D20 nela.
+  if (draw.options.quickType === "dice" && !Array.isArray(draw.options.diceTray)) {
+    draw.options.diceTray = [];
   }
   draw.options.randomMin = Number.isInteger(draw.options.randomMin) ? draw.options.randomMin : 1;
   draw.options.randomMax = Number.isInteger(draw.options.randomMax) ? draw.options.randomMax : 100;
@@ -3589,3 +3590,36 @@ queueMicrotask(() => {
     renderQuickIdle();
   }
 });
+
+
+/* v1.18 — abertura direta da mesa de dados.
+   Mantém o modo Dados isolado da lógica de participantes, inclusive em cópias
+   antigas de sorteios criadas antes desta versão. */
+function forceDirectDiceTable() {
+  if (!draw || draw.type !== "quick" || draw.options.quickType !== "dice") return;
+
+  document.body.dataset.sortickDrawType = "quick-dice";
+  if (participantPanel) participantPanel.classList.add("hidden");
+  if (participantForm) participantForm.classList.add("hidden");
+  if (bulkAddPanel) bulkAddPanel.classList.add("hidden");
+  if (participantList) participantList.innerHTML = "";
+  if (quickSettingsPanel) quickSettingsPanel.classList.remove("hidden");
+  if (quickSettingsText) quickSettingsText.textContent = "Escolha os dados na mesa, adicione até 10 e role quando quiser.";
+  if (drawButton) drawButton.classList.add("hidden");
+  if (resetButton) resetButton.classList.add("hidden");
+  if (activityInfoPanel) activityInfoPanel.classList.add("hidden");
+
+  draw.options.diceTray = Array.isArray(draw.options.diceTray)
+    ? draw.options.diceTray.filter(die => die && SORTICK_SUPPORTED_DICE.includes(Number(die.sides))).slice(0, 10)
+    : [];
+
+  renderStatusSummary();
+  renderDiceGame(draw.options.diceTray, false);
+  winnerCard.classList.add("hidden");
+  copyButton.disabled = !draw.result;
+  shareButton.disabled = !draw.result;
+  downloadButton.disabled = !draw.result;
+}
+
+queueMicrotask(forceDirectDiceTable);
+window.addEventListener("pageshow", forceDirectDiceTable);
