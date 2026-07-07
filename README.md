@@ -47,3 +47,7 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - D4, D6, D8, D10, D12 e D20 são adicionados apenas pelos controles da mesa.
 - Abertura do modo Dados ignora totalmente painel, lista e formulário de participantes.
 - Removida uma cópia duplicada de campos de criação da página inicial.
+
+
+## v1.19 — mesa de dados isolada
+- Adicionado controlador independente para o modo Dado, sem lógica de participantes e sem depender do código legado de decisões rápidas.

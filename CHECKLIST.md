@@ -42,3 +42,7 @@
 - [ ] Adicionar D4, D6 e D20 funciona.
 - [ ] Rolar mostra resultado em cada dado e total.
 - [ ] Limpar volta a deixar a mesa vazia.
+
+
+## v1.19 — mesa de dados isolada
+- Adicionado controlador independente para o modo Dado, sem lógica de participantes e sem depender do código legado de decisões rápidas.

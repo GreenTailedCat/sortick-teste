@@ -3185,3 +3185,44 @@ body[data-sortick-draw-type="quick-dice"] #participantForm {
 body[data-sortick-draw-type="quick-dice"] .draw-stage {
   min-height: 0;
 }
+
+
+/* v1.19 — mesa de dados isolada da lógica antiga de participantes */
+.sortick-direct-dice #participantPanel,
+.sortick-direct-dice #participantForm,
+.sortick-direct-dice #bulkAddPanel,
+.sortick-direct-dice #activityInfoPanel,
+.sortick-direct-dice #winnerCard,
+.sortick-direct-dice #drawButton,
+.sortick-direct-dice #resetButton { display: none !important; }
+
+.direct-dice-game { display:grid; gap:16px; width:min(100%, 860px); }
+.direct-dice-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; color:#fff; }
+.direct-dice-header h2 { margin:0; font-size:clamp(1.35rem, 3vw, 2rem); }
+.direct-dice-header p { margin:5px 0 0; color:rgba(255,255,255,.75); }
+.direct-dice-header > span { padding:8px 10px; border-radius:999px; background:rgba(255,255,255,.16); font-size:.82rem; font-weight:900; white-space:nowrap; }
+.direct-dice-stage { position:relative; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:18px; min-height:245px; padding:22px; border-radius:24px; background:linear-gradient(135deg, rgba(85,66,255,.95), rgba(22,177,204,.96)); overflow:hidden; }
+.direct-dice-empty { color:#fff; font-weight:850; text-align:center; }
+.direct-die { position:relative; width:138px; height:138px; filter:drop-shadow(0 14px 20px rgba(5,10,45,.25)); transition:transform .18s ease; }
+.direct-die svg { width:100%; height:100%; overflow:visible; }
+.direct-die .dd-face { stroke:rgba(255,255,255,.76); stroke-width:3; stroke-linejoin:round; }
+.direct-d4 .dd4a { fill:#48d1e4; }.direct-d4 .dd4b { fill:#1fa5d8; }.direct-d4 .dd4c { fill:#1582c9; }
+.direct-d6 .dd6top { fill:#d9f6ff; }.direct-d6 .dd6left { fill:#54c6ef; }.direct-d6 .dd6right { fill:#25a9d9; }
+.direct-d8 .dd8a { fill:#d4f6ff; }.direct-d8 .dd8b { fill:#79dcf5; }.direct-d8 .dd8c { fill:#25b6db; }.direct-d8 .dd8d { fill:#198cc9; }
+.direct-d10 .dd10a { fill:#9edfff; }.direct-d10 .dd10b { fill:#4fb8f0; }.direct-d10 .dd10c { fill:#258fd8; }
+.direct-d12 .dd12a { fill:#bcecff; }.direct-d12 .dd12b { fill:#5ec3f2; }.direct-d12 .dd12c { fill:#479cdb; }.direct-d12 .dd12d { fill:#2a7ec5; }.direct-d12 .dd12e { fill:#1667ad; }
+.direct-d20 .dd20a { fill:#b7e9ff; }.direct-d20 .dd20b { fill:#76cdf3; }.direct-d20 .dd20c { fill:#2ca3d4; }.direct-d20 .dd20d { fill:#187cc1; }.direct-d20 .dd20e { fill:#1264a9; }
+.direct-die .dd-kind { fill:rgba(4,40,90,.76); font-family:Inter,Arial,sans-serif; font-size:18px; font-weight:900; text-anchor:middle; }
+.direct-die .dd-value { fill:#092d72; font-family:Inter,Arial,sans-serif; font-size:56px; font-weight:950; text-anchor:middle; dominant-baseline:middle; }
+.direct-die-remove { position:absolute; top:-6px; right:-6px; display:grid; width:29px; height:29px; place-items:center; border:0; border-radius:999px; background:rgba(11,13,45,.76); color:#fff; cursor:pointer; font:900 1.1rem/1 Arial,sans-serif; }
+.direct-dice-game.is-rolling .direct-die { animation:direct-dice-shake .17s ease-in-out infinite alternate; }
+@keyframes direct-dice-shake { from{ transform:rotate(-5deg) translateY(-3px) scale(.96); } to{ transform:rotate(5deg) translateY(5px) scale(1.04); } }
+.direct-dice-total { display:grid; min-width:92px; min-height:92px; place-items:center; align-content:center; padding:10px; border-radius:20px; background:rgba(255,255,255,.94); color:#17224d; font-size:2.65rem; line-height:1; box-shadow:0 14px 30px rgba(0,0,0,.18); }
+.direct-dice-total small { display:block; margin-bottom:4px; color:#57617f; font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+.direct-dice-toolbar { display:grid; gap:12px; }
+.direct-dice-picker { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+.direct-dice-picker button { min-width:48px; min-height:38px; border:0; border-radius:12px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer; font:900 .88rem/1 Inter,Arial,sans-serif; }
+.direct-dice-picker button:hover:not(:disabled) { background:rgba(255,255,255,.28); transform:translateY(-1px); }
+.direct-dice-picker button:disabled { opacity:.46; cursor:not-allowed; }
+.direct-dice-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+@media (max-width:600px) { .direct-dice-header{align-items:flex-start}.direct-dice-stage{min-height:225px;gap:10px;padding:15px}.direct-die{width:108px;height:108px}.direct-die .dd-value{font-size:46px}.direct-die .dd-kind{font-size:15px}.direct-dice-total{min-width:76px;min-height:76px;font-size:2.2rem}.direct-dice-picker button{min-width:44px}.direct-dice-header p{font-size:.86rem;} }

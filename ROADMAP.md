@@ -23,3 +23,7 @@
 - Corrigidos botões Continuar, imagem e observação desses modos.
 - Decisões rápidas continuam diretas, sem formulário de atividade.
 - Dado não usa nem exibe participantes.
+
+
+## v1.19 — mesa de dados isolada
+- Adicionado controlador independente para o modo Dado, sem lógica de participantes e sem depender do código legado de decisões rápidas.
