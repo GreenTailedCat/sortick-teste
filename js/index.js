@@ -70,7 +70,10 @@ const quickRandomFields = document.querySelector("#quickRandomFields");
 const quickMinInput = document.querySelector("#quickMinInput");
 const quickMaxInput = document.querySelector("#quickMaxInput");
 const quickRandomRepeatInput = document.querySelector("#quickRandomRepeatInput");
-const QUICK_DICE_SIDES = [4, 6, 8, 10, 12, 20];
+const activityDetailsFields = document.querySelector("#activityDetailsFields");
+const activityDescriptionInput = document.querySelector("#activityDescription");
+const activityDateInput = document.querySelector("#activityDate");
+const activityNoteInput = document.querySelector("#activityNote");
 
 let cartelaWizardStep = 1;
 let cartelaCreateImageData = "";
@@ -109,58 +112,57 @@ function setCartelaCreateImageStatus(message = "") {
   cartelaCreateImageStatus.textContent = message;
 }
 
-function createPrizeId() {
+function createCartelaPrizeId() {
   return Sortick.createId("prize");
 }
 
-function addCartelaCreatePrizeRow(prize = {}, { focus = false } = {}) {
+function addCartelaCreatePrizeRow(prize = {}, shouldFocus = false) {
   if (!cartelaCreatePrizeList) return;
+  if (cartelaCreatePrizeList.children.length >= 10) {
+    setCartelaCreateImageStatus("Você pode adicionar no máximo 10 prêmios.");
+    return;
+  }
 
   const row = document.createElement("div");
   row.className = "cartela-prize-row";
-  row.dataset.prizeId = prize.id || createPrizeId();
+  row.dataset.prizeId = prize.id || createCartelaPrizeId();
   row.innerHTML = `
     <label>
       Prêmio
-      <input data-cartela-prize-name type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name || "")}" placeholder="Ex: Cesta de chocolates" />
+      <input data-prize-name type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name || "")}" placeholder="Ex: Cesta de chocolates" />
     </label>
     <label class="inline-option cartela-prize-repeat-option">
-      <input data-cartela-prize-repeat type="checkbox" ${prize.repeatable ? "checked" : ""} />
+      <input data-prize-repeat type="checkbox" ${prize.repeatable ? "checked" : ""} />
       Pode repetir este prêmio
     </label>
-    <button class="link-button danger-text cartela-remove-prize" type="button" aria-label="Remover prêmio">Remover</button>`;
+    <button class="link-button danger-text" type="button">Remover</button>`;
 
-  const removeButton = row.querySelector(".cartela-remove-prize");
-  removeButton.addEventListener("click", () => {
-    const rows = cartelaCreatePrizeList.querySelectorAll(".cartela-prize-row");
-    if (rows.length <= 1) {
-      row.querySelector("[data-cartela-prize-name]").value = "";
-      row.querySelector("[data-cartela-prize-repeat]").checked = false;
+  row.querySelector("button").addEventListener("click", () => {
+    if (cartelaCreatePrizeList.children.length === 1) {
+      row.querySelector("[data-prize-name]").value = "";
+      row.querySelector("[data-prize-repeat]").checked = false;
       return;
     }
     row.remove();
   });
 
   cartelaCreatePrizeList.appendChild(row);
-  if (focus) row.querySelector("[data-cartela-prize-name]").focus();
+  if (shouldFocus) row.querySelector("[data-prize-name]").focus();
 }
 
 function getCartelaCreatePrizes() {
   if (!cartelaCreatePrizeList) return [];
-
   return Array.from(cartelaCreatePrizeList.querySelectorAll(".cartela-prize-row"))
     .map(row => ({
-      id: row.dataset.prizeId || createPrizeId(),
-      name: Sortick.normalizeText(row.querySelector("[data-cartela-prize-name]").value).slice(0, 100),
-      repeatable: Boolean(row.querySelector("[data-cartela-prize-repeat]").checked)
+      id: row.dataset.prizeId || createCartelaPrizeId(),
+      name: Sortick.normalizeText(row.querySelector("[data-prize-name]").value).slice(0, 100),
+      repeatable: Boolean(row.querySelector("[data-prize-repeat]").checked)
     }))
     .filter(prize => prize.name);
 }
 
 function ensureCartelaCreatePrizeRow() {
-  if (cartelaCreatePrizeList && !cartelaCreatePrizeList.children.length) {
-    addCartelaCreatePrizeRow();
-  }
+  if (cartelaCreatePrizeList && !cartelaCreatePrizeList.children.length) addCartelaCreatePrizeRow();
 }
 
 function parseGroupNames(value, groupCount) {
@@ -211,7 +213,8 @@ function syncTypeSettings() {
   groupNamesCreationField.classList.toggle("hidden", !isGroups);
   quickCreationField.classList.toggle("hidden", !isQuick);
 
-  drawTitleField.classList.toggle("hidden", isCartela || isQuick);
+  activityDetailsFields.classList.toggle("hidden", isCartela);
+  drawTitleField.classList.toggle("hidden", isCartela);
   drawModeField.classList.toggle("hidden", isCartela || isQuick);
   createSubmitButton.classList.toggle("hidden", isCartela);
   cartelaCreateWizard.classList.toggle("hidden", !isCartela);
@@ -335,7 +338,7 @@ if (cartelaWizardCreate) cartelaWizardCreate.addEventListener("click", createCar
 
 ensureCartelaCreatePrizeRow();
 if (cartelaCreateAddPrize) {
-  cartelaCreateAddPrize.addEventListener("click", () => addCartelaCreatePrizeRow({}, { focus: true }));
+  cartelaCreateAddPrize.addEventListener("click", () => addCartelaCreatePrizeRow({}, true));
 }
 
 if (cartelaCreateImage) {
@@ -464,8 +467,6 @@ function getCopyOptions(type, sourceOptions = {}) {
     options.diceSides = Sortick.clampNumber(sourceOptions.diceSides || 6, 2, 100);
     options.randomMin = Number.isInteger(sourceOptions.randomMin) ? sourceOptions.randomMin : 1;
     options.randomMax = Number.isInteger(sourceOptions.randomMax) ? sourceOptions.randomMax : 100;
-    options.randomAllowRepeats = sourceOptions.randomAllowRepeats !== false;
-    options.randomDrawnNumbers = [];
   }
 
   return options;
@@ -711,7 +712,12 @@ form.addEventListener("submit", (event) => {
   const options = {
     confirmedOnly: false,
     removeWinnerAfterDraw: false,
-    soundEnabled: false
+    soundEnabled: false,
+    activityInfo: {
+      description: Sortick.normalizeText(activityDescriptionInput.value).slice(0, 180),
+      date: activityDateInput.value || "",
+      note: Sortick.normalizeText(activityNoteInput.value).slice(0, 180)
+    }
   };
 
   if (type === "names" || type === "roulette") {
@@ -743,11 +749,13 @@ form.addEventListener("submit", (event) => {
     const maximum = Number.parseInt(quickMaxInput.value, 10);
 
     options.quickType = quickType;
-    const selectedSides = Number.parseInt(quickDiceSidesInput.value, 10);
-    options.diceSides = QUICK_DICE_SIDES.includes(selectedSides) ? selectedSides : 6;
+    const validSides = [4, 6, 8, 10, 12, 20];
+    const initialSides = Number.parseInt(quickDiceSidesInput.value, 10);
+    options.diceSides = validSides.includes(initialSides) ? initialSides : 6;
+    options.diceTray = quickType === "dice" ? [{ id: Sortick.createId("die"), sides: options.diceSides, value: null }] : [];
     options.randomMin = Number.isInteger(minimum) ? minimum : 1;
     options.randomMax = Number.isInteger(maximum) ? maximum : 100;
-    options.randomAllowRepeats = Boolean(quickRandomRepeatInput && quickRandomRepeatInput.checked);
+    options.randomAllowRepeats = Boolean(quickRandomRepeatInput.checked);
     options.randomDrawnNumbers = [];
 
     if (options.randomMin > options.randomMax) {

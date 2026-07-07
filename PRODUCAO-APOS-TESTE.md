@@ -22,27 +22,3 @@ Depois de validar a v1.12 em computador e celular, preparar uma cópia específi
 6. Publicar uma única atualização no repositório oficial e testar `sortick.com.br`.
 
 A versão pode ser publicada no site padrão depois desse processo e de uma revisão final de compatibilidade.
-
-
-## Incluir na futura cópia de produção
-
-Aplicar também:
-
-- regras finais de carrossel sem barra horizontal;
-- regras finais de rodapé para páginas de modos e institucionais;
-- atualização de cache CSS/JS;
-- documentação organizada de cartela e preenchimento.
-
-A captura com URL `sortick.com.br/...` representa a versão oficial, não o ambiente de testes. Essas correções entram quando for criado o pacote de produção.
-
-
-## v1.14
-
-Esta é uma cópia exclusiva para o repositório de testes. Após a aprovação final, gerar um pacote de produção separado com:
-
-- caminhos sem `/sortick-teste/`;
-- remoção de `noindex`;
-- robots e sitemap de produção;
-- chave de armazenamento de produção preservando os sorteios existentes;
-- Analytics/PWA configurados para o domínio oficial;
-- revisão final de canônicos e `ads.txt`.

@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1140" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1150" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -29,9 +29,9 @@
       overflow-y: hidden;
       scroll-snap-type: x proximity;
       scroll-behavior: smooth;
-      padding: 4px 8px 0;
+      padding: 4px 8px 2px;
       scrollbar-width: none !important;
-      -ms-overflow-style: none;
+      -ms-overflow-style: none !important;
     }
 
     #modos .mode-carousel-track.mode-grid::-webkit-scrollbar {
@@ -111,9 +111,6 @@
 
     <nav class="nav">
       <a href="/sortick-teste/#modos">Modos</a>
-      <a href="/sortick-teste/como-funciona/">Como funciona</a>
-      <a href="/sortick-teste/ideias-de-uso/">Ideias de uso</a>
-      <a href="/sortick-teste/perguntas-frequentes/">Perguntas frequentes</a>
       <a href="/sortick-teste/sobre/">Sobre</a>
       <a href="/sortick-teste/#criar">Criar</a>
     </nav>
@@ -163,7 +160,6 @@
       <div class="section-heading">
         <p class="eyebrow">Modos disponíveis</p>
         <h2>Comece pelo essencial.</h2>
-      </div>
       <div class="mode-carousel" aria-label="Modos disponíveis">
         <button class="carousel-button carousel-button-prev" type="button" aria-label="Ver modos anteriores">‹</button>
 
@@ -206,8 +202,8 @@
           <article class="mode-card">
             <div class="icon">✦</div>
             <h3>Decisões rápidas</h3>
-            <p>Use cara ou coroa, dado ou número aleatório para resolver escolhas em segundos.</p>
-            <a class="mode-more-link" href="/sortick-teste/?tipo=quick#criar">Abrir decisões rápidas</a>
+            <p>Use dados, cara ou coroa e números aleatórios em uma atividade visual.</p>
+            <a class="mode-more-link" href="/sortick-teste/?tipo=quick#criar">Abrir modo</a>
           </article>
         </div>
 
@@ -215,34 +211,6 @@
       </div>
     </section>
 
-
-    <section class="section guide-overview-section">
-      <div class="section-heading">
-        <p class="eyebrow">GUIAS E EXEMPLOS</p>
-        <h2>Mais do que apertar um botão.</h2>
-        <p class="section-description">Entenda onde os dados ficam, escolha o modo certo e encontre ideias para grupos, eventos, equipes, turmas e atividades.</p>
-      </div>
-      <div class="guide-overview-grid">
-        <article class="guide-overview-card">
-          <span class="guide-overview-number">01</span>
-          <h3>Entenda como funciona</h3>
-          <p>Crie, use, salve no navegador e compartilhe resultados de forma clara.</p>
-          <a href="/sortick-teste/como-funciona/">Ler como funciona</a>
-        </article>
-        <article class="guide-overview-card">
-          <span class="guide-overview-number">02</span>
-          <h3>Encontre uma ideia</h3>
-          <p>Use o Sortick para escolhas, ordens, grupos, atividades e momentos em comunidade.</p>
-          <a href="/sortick-teste/ideias-de-uso/">Ver ideias de uso</a>
-        </article>
-        <article class="guide-overview-card">
-          <span class="guide-overview-number">03</span>
-          <h3>Tire dúvidas importantes</h3>
-          <p>Veja o que fica salvo, como usar no celular e o que o Sortick não faz.</p>
-          <a href="/sortick-teste/perguntas-frequentes/">Abrir perguntas frequentes</a>
-        </article>
-      </div>
-    </section>
     <section id="criar" class="section create-section">
       <div class="create-panel">
         <div>
@@ -252,11 +220,35 @@
         </div>
 
         <form id="createForm" class="form">
-          <label id="drawTitleField">
-            Nome do sorteio
-            <input id="drawTitle" type="text" placeholder="Ex: Rifa da cesta, sorteio da turma..." maxlength="80" required />
-          </label>
+          <section id="activityDetailsFields" class="activity-details-fields">
+            <div class="activity-form-heading">
+              <span>1</span>
+              <div><strong>Identifique a atividade</strong><small>Esses detalhes podem ser editados depois.</small></div>
+            </div>
+            <label id="drawTitleField">
+              Nome do sorteio
+              <input id="drawTitle" type="text" placeholder="Ex: Ordem das apresentações" maxlength="80" required />
+            </label>
+            <label>
+              Descrição <span class="optional-inline">Opcional</span>
+              <textarea id="activityDescription" rows="2" maxlength="180" placeholder="Ex: Escolher a ordem de fala do grupo."></textarea>
+            </label>
+            <div class="activity-details-row">
+              <label>
+                Data <span class="optional-inline">Opcional</span>
+                <input id="activityDate" type="date" />
+              </label>
+              <label>
+                Observação <span class="optional-inline">Opcional</span>
+                <input id="activityNote" type="text" maxlength="180" placeholder="Ex: Resultado ao vivo." />
+              </label>
+            </div>
+          </section>
 
+          <div id="modeConfigHeading" class="activity-form-heading activity-form-heading-config">
+            <span>2</span>
+            <div><strong>Configure o modo</strong><small>Escolha como a atividade deve funcionar.</small></div>
+          </div>
           <label>
             Tipo
             <select id="drawType" required>
@@ -294,7 +286,7 @@
 
               <label>
                 Descrição <span class="optional-inline">Opcional</span>
-                <textarea id="cartelaCreateDescription" rows="2" maxlength="180" placeholder="Ex: Cartela para uma atividade, evento ou arrecadação."></textarea>
+                <textarea id="cartelaCreateDescription" rows="2" maxlength="180" placeholder="Ex: Atividade para o grupo ou evento."></textarea>
               </label>
 
               <div class="cartela-wizard-row">
@@ -303,7 +295,6 @@
                   <input id="cartelaCreateTotal" type="number" min="2" max="500" value="100" />
                   <span class="field-hint">Essa quantidade fica definida após criar a cartela.</span>
                 </label>
-
                 <label>
                   Data do sorteio <span class="optional-inline">Opcional</span>
                   <input id="cartelaCreateDate" type="date" />
@@ -320,15 +311,15 @@
               <h3>Qual é o prêmio?</h3>
               <p class="subtle">Adicione um ou mais prêmios. A imagem de destaque aparece na cartela e na exportação.</p>
 
-              <section class="cartela-prize-section" aria-label="Prêmios da cartela">
+              <section class="cartela-prize-section" aria-label="Prêmios">
                 <div class="cartela-prize-section-heading">
                   <div>
                     <h4>Prêmios</h4>
-                    <p class="field-hint">Adicione um ou mais. Um prêmio único sai da lista depois de ser sorteado; um repetível pode sair novamente.</p>
+                    <p class="field-hint">Adicione até 10 prêmios. Um prêmio único sai da lista após ser sorteado; um repetível pode sair mais de uma vez.</p>
                   </div>
                 </div>
                 <div id="cartelaCreatePrizeList" class="cartela-prize-list"></div>
-                <button id="cartelaCreateAddPrize" class="btn btn-ghost light cartela-add-prize" type="button">Adicionar outro prêmio</button>
+                <button id="cartelaCreateAddPrize" class="btn btn-ghost light cartela-add-prize" type="button">Adicionar prêmio</button>
               </section>
 
               <label class="cartela-image-upload">
@@ -495,6 +486,9 @@
       Sortick é uma ferramenta de organização e transparência. Não vende bilhetes, não processa pagamentos e não administra premiações.
     </p>
     <div class="footer-links">
+      <a href="/sortick-teste/como-funciona/">Como funciona</a>
+      <a href="/sortick-teste/ideias-de-uso/">Ideias de uso</a>
+      <a href="/sortick-teste/perguntas-frequentes/">Perguntas frequentes</a>
       <a href="/sortick-teste/sobre/">Sobre</a>
       <a href="/sortick-teste/privacidade/">Privacidade</a>
       <a href="/sortick-teste/termos/">Termos</a>
@@ -502,7 +496,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1140"></script>
-  <script src="/sortick-teste/js/index.js?v=1140"></script>
+  <script src="/sortick-teste/js/utils.js?v=1150"></script>
+  <script src="/sortick-teste/js/index.js?v=1150"></script>
 </body>
 </html>

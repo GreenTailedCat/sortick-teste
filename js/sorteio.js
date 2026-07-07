@@ -7,7 +7,6 @@ let currentWheelRotation = 0;
 let isCartelaExpanded = false;
 
 const WHEEL_COLORS = ["#6c4dff", "#00c2a8", "#ff4b6e", "#ffca3a", "#2f80ed", "#9b51e0", "#f2994a", "#27ae60", "#eb5757", "#56ccf2"];
-const QUICK_DICE_SIDES = [4, 6, 8, 10, 12, 20];
 
 const drawTitle = document.querySelector("#drawTitle");
 const drawKind = document.querySelector("#drawKind");
@@ -61,6 +60,7 @@ const quickSettingsPanel = document.querySelector("#quickSettingsPanel");
 const quickSettingsText = document.querySelector("#quickSettingsText");
 const randomRepeatToggle = document.querySelector("#randomRepeatToggle");
 const randomRepeatOption = document.querySelector("#randomRepeatOption");
+const activityInfoPanel = document.querySelector("#activityInfoPanel");
 
 
 if (!draw) {
@@ -87,15 +87,26 @@ if (!draw) {
   draw.options.roundDrawnIds = Array.isArray(draw.options.roundDrawnIds) ? draw.options.roundDrawnIds : [];
   draw.options.groupNames = Array.isArray(draw.options.groupNames) ? draw.options.groupNames : [];
   draw.options.quickType = ["coin", "dice", "random"].includes(draw.options.quickType) ? draw.options.quickType : "coin";
-  draw.options.diceSides = QUICK_DICE_SIDES.includes(Number(draw.options.diceSides))
-    ? Number(draw.options.diceSides)
-    : 6;
+  const supportedDiceSides = [4, 6, 8, 10, 12, 20];
+  draw.options.diceSides = supportedDiceSides.includes(Number(draw.options.diceSides)) ? Number(draw.options.diceSides) : 6;
+  draw.options.diceTray = Array.isArray(draw.options.diceTray)
+    ? draw.options.diceTray.filter(die => supportedDiceSides.includes(Number(die && die.sides))).slice(0, 10)
+    : [];
+  if (draw.options.quickType === "dice" && !draw.options.diceTray.length) {
+    draw.options.diceTray = [{ id: Sortick.createId("die"), sides: draw.options.diceSides, value: null }];
+  }
   draw.options.randomMin = Number.isInteger(draw.options.randomMin) ? draw.options.randomMin : 1;
   draw.options.randomMax = Number.isInteger(draw.options.randomMax) ? draw.options.randomMax : 100;
   draw.options.randomAllowRepeats = draw.options.randomAllowRepeats !== false;
   draw.options.randomDrawnNumbers = Array.isArray(draw.options.randomDrawnNumbers)
     ? draw.options.randomDrawnNumbers.map(Number).filter(Number.isInteger)
     : [];
+  draw.options.activityInfo = {
+    description: "",
+    date: "",
+    note: "",
+    ...(draw.options.activityInfo || {})
+  };
   if (draw.options.randomMin > draw.options.randomMax) {
     [draw.options.randomMin, draw.options.randomMax] = [draw.options.randomMax, draw.options.randomMin];
   }
@@ -170,46 +181,20 @@ function setupDraw() {
 }
 
 function getTotalNumbers() { return Sortick.clampNumber(draw.options.totalNumbers || 50, 2, 500); }
-function normalizeCartelaInfo(source = {}) {
-  const input = source && typeof source === "object" ? source : {};
-  const sourcePrizes = Array.isArray(input.prizes) ? input.prizes : [];
-  const prizes = sourcePrizes
-    .map((prize, index) => ({
-      id: String(prize && prize.id ? prize.id : `prize-${index + 1}`),
-      name: Sortick.normalizeText(prize && prize.name).slice(0, 100),
-      repeatable: Boolean(prize && prize.repeatable)
-    }))
-    .filter(prize => prize.name);
-
-  if (!prizes.length && Sortick.normalizeText(input.prize)) {
-    prizes.push({ id: "prize-legacy", name: Sortick.normalizeText(input.prize).slice(0, 100), repeatable: false });
-  }
-
-  const prizeDrawHistory = Array.isArray(input.prizeDrawHistory)
-    ? input.prizeDrawHistory.filter(item => item && item.prizeId && item.winnerId)
-    : [];
-
-  return {
-    description: "",
-    prize: prizes[0] ? prizes[0].name : "",
-    prizes,
-    prizeDrawHistory,
+function getCartelaInfo() {
+  draw.options.cartelaInfo = {
+    prize: "",
     value: "",
     drawDate: "",
     note: "",
     imageData: "",
     imageName: "",
     exportShowNames: false,
-    ...input,
-    prize: prizes[0] ? prizes[0].name : "",
-    prizes,
-    prizeDrawHistory
+    ...(draw.options.cartelaInfo || {})
   };
-}
 
-function getCartelaInfo() {
-  draw.options.cartelaInfo = normalizeCartelaInfo(draw.options.cartelaInfo);
   delete draw.options.cartelaInfo.markerStyle;
+
   return draw.options.cartelaInfo;
 }
 
@@ -242,8 +227,7 @@ function getCartelaDetailParts() {
   const info = getCartelaInfo();
   const details = [];
 
-  if (info.prizes.length === 1) details.push(`Prêmio: ${info.prizes[0].name}`);
-  if (info.prizes.length > 1) details.push(`${info.prizes.length} prêmios`);
+  if (info.prize) details.push(`Prêmio: ${info.prize}`);
   if (info.value) details.push(`${info.value} por número`);
   if (info.drawDate) details.push(`Sorteio: ${formatCartelaDate(info.drawDate)}`);
 
@@ -257,7 +241,6 @@ function setRuleOptionsLocked(locked) {
   document.body.classList.toggle("drawing-locked", locked);
   confirmedOnlyToggle.disabled = locked;
   removeWinnerToggle.disabled = locked;
-  if (randomRepeatToggle) randomRepeatToggle.disabled = locked;
 }
 function getMinimumParticipants() { return draw.type === "numbers" ? 1 : 2; }
 function getEligibleParticipants() { return draw.options.confirmedOnly ? draw.participants.filter(p => p.status === "confirmed") : draw.participants; }
@@ -505,11 +488,6 @@ function renderBingoBoard(highlightNumber = null) {
         <small>${draw.options.bingoDrawnNumbers.length} sorteados · ${draw.options.bingoAllowRepeats ? "repetição permitida" : `${total - uniqueDrawn} restantes`}</small>
       </div>
 
-      <div class="bingo-progress-block" aria-label="${Math.round((uniqueDrawn / total) * 100)}% do bingo concluído">
-        <div class="bingo-progress-track"><span style="width: ${Math.round((uniqueDrawn / total) * 100)}%"></span></div>
-        <small>${uniqueDrawn} de ${total} números únicos · ${Math.round((uniqueDrawn / total) * 100)}%</small>
-      </div>
-
       <div class="bingo-latest">
         ${latest ? `<small>Último número</small><strong>${Sortick.escapeHTML(latest)}</strong>` : `<small>Nenhum número sorteado</small><strong>--</strong>`}
       </div>
@@ -716,125 +694,6 @@ function buildCartelaGrid({ interactive = true, showNames = true, extraClass = "
   return `<div class="number-board ${cellClass} ${extraClass}">${cells}</div>`;
 }
 
-function getAvailableCartelaPrizes() {
-  const info = getCartelaInfo();
-  const usedPrizeIds = new Set(info.prizeDrawHistory.map(item => item.prizeId));
-  return info.prizes.filter(prize => prize.repeatable || !usedPrizeIds.has(prize.id));
-}
-
-function getCartelaPrizeCandidates() {
-  return draw.options.confirmedOnly
-    ? draw.participants.filter(participant => participant.status === "confirmed")
-    : draw.participants.slice();
-}
-
-function getCartelaPrizePanelMarkup() {
-  const info = getCartelaInfo();
-  const availablePrizes = getAvailableCartelaPrizes();
-  const candidates = getCartelaPrizeCandidates();
-  const history = info.prizeDrawHistory.slice(-4).reverse();
-
-  if (!info.prizes.length) {
-    return `
-      <section class="cartela-prize-draw-panel is-empty">
-        <div>
-          <p class="eyebrow">PRÊMIOS</p>
-          <h3>Adicione um prêmio para sortear</h3>
-          <p>Use “Editar detalhes” para cadastrar um ou mais prêmios nesta cartela.</p>
-        </div>
-      </section>`;
-  }
-
-  const disabled = !availablePrizes.length || !candidates.length;
-  const historyMarkup = history.length
-    ? `<ol class="cartela-prize-history">${history.map(item => `<li><strong>${Sortick.escapeHTML(item.prizeName)}</strong><span>Nº ${Sortick.escapeHTML(item.winnerNumber)} · ${Sortick.escapeHTML(item.winnerName)}</span></li>`).join("")}</ol>`
-    : '<p class="cartela-prize-history-empty">Nenhum prêmio foi sorteado nesta cartela.</p>';
-
-  return `
-    <section class="cartela-prize-draw-panel">
-      <div class="cartela-prize-draw-heading">
-        <div>
-          <p class="eyebrow">SORTEIO DE PRÊMIOS</p>
-          <h3>Escolha o próximo prêmio</h3>
-          <p>${candidates.length} número(s) elegível(is). ${draw.options.confirmedOnly ? "Apenas confirmados entram no sorteio." : "Todos os números ocupados entram no sorteio."}</p>
-        </div>
-        <div class="cartela-prize-draw-actions">
-          <select id="cartelaPrizeSelect" aria-label="Escolher prêmio" ${disabled ? "disabled" : ""}>
-            ${availablePrizes.map(prize => `<option value="${Sortick.escapeHTML(prize.id)}">${Sortick.escapeHTML(prize.name)}${prize.repeatable ? " · pode repetir" : ""}</option>`).join("") || '<option>Nenhum prêmio disponível</option>'}
-          </select>
-          <button id="drawCartelaPrizeButton" class="btn btn-primary" type="button" ${disabled ? "disabled" : ""}>Sortear prêmio</button>
-        </div>
-      </div>
-      <div class="cartela-prize-history-wrap">
-        <strong>Histórico de prêmios</strong>
-        ${historyMarkup}
-      </div>
-    </section>`;
-}
-
-async function drawCartelaPrize(prizeId) {
-  if (draw.type !== "numbers" || isDrawing) return;
-  const info = getCartelaInfo();
-  const prize = getAvailableCartelaPrizes().find(item => item.id === prizeId);
-  const candidates = getCartelaPrizeCandidates();
-
-  if (!prize) {
-    setValidation("Escolha um prêmio disponível.");
-    return;
-  }
-  if (!candidates.length) {
-    setValidation("Não há números elegíveis para este sorteio de prêmio.");
-    return;
-  }
-
-  isDrawing = true;
-  render();
-  winnerCard.classList.add("hidden");
-  const winner = candidates[Sortick.secureRandomIndex(candidates.length)];
-  const started = performance.now();
-  let lastTick = 0;
-
-  await new Promise(resolve => {
-    function frame(now) {
-      const progress = Math.min((now - started) / 1050, 1);
-      if (now - lastTick > 70 + progress * 110) {
-        lastTick = now;
-        const preview = candidates[Sortick.secureRandomIndex(candidates.length)];
-        renderNumberBoard(preview.number);
-        playTickSound();
-      }
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        resolve();
-      }
-    }
-    requestAnimationFrame(frame);
-  });
-
-  info.prizeDrawHistory.push({
-    id: Sortick.createId("prizedraw"),
-    prizeId: prize.id,
-    prizeName: prize.name,
-    winnerId: winner.id,
-    winnerName: winner.name,
-    winnerNumber: String(winner.number),
-    createdAt: new Date().toISOString()
-  });
-
-  draw.result = {
-    participant: winner,
-    createdAt: new Date().toISOString(),
-    participantCount: candidates.length,
-    prizeDraw: { id: prize.id, name: prize.name, repeatable: prize.repeatable }
-  };
-  persist();
-  isDrawing = false;
-  render();
-  playSuccessSound();
-  launchConfetti();
-}
-
 function renderNumberBoard(highlightNumber = null) {
   const info = getCartelaInfo();
   const stats = getCartelaStats();
@@ -858,7 +717,6 @@ function renderNumberBoard(highlightNumber = null) {
           <div class="cartela-title-block">
             <span>${Sortick.escapeHTML(draw.title)}</span>
             ${details.length ? `<small>${Sortick.escapeHTML(details.join(" · "))}</small>` : ""}
-            ${info.description ? `<small class="cartela-description">${Sortick.escapeHTML(info.description)}</small>` : ""}
             ${info.note ? `<small class="cartela-note">${Sortick.escapeHTML(info.note)}</small>` : ""}
           </div>
         </div>
@@ -886,8 +744,6 @@ function renderNumberBoard(highlightNumber = null) {
           <button id="exportCartelaButton" class="btn btn-primary" type="button">Exportar imagem</button>
         </div>
       </div>
-
-      ${getCartelaPrizePanelMarkup()}
     </div>`;
 
   const previewStageButton = animationArea.querySelector("#previewCartelaStageButton");
@@ -914,12 +770,6 @@ function renderNumberBoard(highlightNumber = null) {
         setValidation("Não foi possível gerar a imagem da cartela agora.");
       }
     });
-  }
-
-  const drawCartelaPrizeButton = animationArea.querySelector("#drawCartelaPrizeButton");
-  const cartelaPrizeSelect = animationArea.querySelector("#cartelaPrizeSelect");
-  if (drawCartelaPrizeButton && cartelaPrizeSelect) {
-    drawCartelaPrizeButton.addEventListener("click", () => drawCartelaPrize(cartelaPrizeSelect.value));
   }
 
   animationArea.querySelectorAll(".number-cell[data-number]").forEach(button => {
@@ -978,29 +828,18 @@ function openCartelaEditor() {
         <input name="title" type="text" maxlength="80" value="${Sortick.escapeHTML(draw.title)}" />
       </label>
 
-      <label>
-        Descrição <small>Opcional</small>
-        <textarea name="description" rows="2" maxlength="180" placeholder="Ex: Cartela para uma atividade, evento ou arrecadação.">${Sortick.escapeHTML(info.description || "")}</textarea>
-      </label>
-
       <div class="cartela-editor-locked">
         <strong>Cartela de 1 a ${getTotalNumbers()}</strong>
         <span>A quantidade de números é definida na criação e não pode ser alterada depois.</span>
       </div>
 
-      <section class="cartela-editor-prize-section" aria-label="Prêmios">
-        <div class="cartela-prize-section-heading">
-          <div>
-            <h3>Prêmios</h3>
-            <p class="field-hint">Prêmios únicos deixam de aparecer depois de sorteados. Prêmios repetíveis podem sair novamente.</p>
-          </div>
-        </div>
-        <div class="cartela-editor-prize-list"></div>
-        <button class="btn btn-ghost light cartela-editor-add-prize" type="button">Adicionar outro prêmio</button>
-      </section>
+      <label>
+        Prêmio
+        <input name="prize" type="text" maxlength="100" value="${Sortick.escapeHTML(info.prize || "")}" placeholder="Ex: Cesta de chocolates" />
+      </label>
 
       <label class="cartela-image-upload">
-        <span>Imagem de destaque <small>Opcional</small></span>
+        <span>Imagem do prêmio <small>Opcional</small></span>
         <input name="image" type="file" accept="image/png,image/jpeg,image/webp" />
         <span class="field-hint">PNG, JPG ou WEBP.</span>
       </label>
@@ -1046,63 +885,6 @@ function openCartelaEditor() {
   const imagePreviewName = imagePreview.querySelector("strong");
   const imageStatus = panel.querySelector(".cartela-editor-image-status");
   const removeImageButton = panel.querySelector(".cartela-editor-remove-image");
-  const editorPrizeList = panel.querySelector(".cartela-editor-prize-list");
-  const editorAddPrizeButton = panel.querySelector(".cartela-editor-add-prize");
-  let editorPrizes = info.prizes.map(prize => ({ ...prize }));
-
-  function renderEditorPrizeRows() {
-    editorPrizeList.innerHTML = "";
-    if (!editorPrizes.length) editorPrizes = [{ id: Sortick.createId("prize"), name: "", repeatable: false }];
-
-    editorPrizes.forEach((prize, index) => {
-      const row = document.createElement("div");
-      row.className = "cartela-prize-row";
-      row.innerHTML = `
-        <label>
-          Prêmio
-          <input class="editor-prize-name" type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name || "")}" placeholder="Ex: Cesta de chocolates" />
-        </label>
-        <label class="inline-option cartela-prize-repeat-option">
-          <input class="editor-prize-repeat" type="checkbox" ${prize.repeatable ? "checked" : ""} />
-          Pode repetir este prêmio
-        </label>
-        <button class="link-button danger-text" type="button">Remover</button>`;
-
-      const nameInput = row.querySelector(".editor-prize-name");
-      const repeatInput = row.querySelector(".editor-prize-repeat");
-      nameInput.addEventListener("input", () => { editorPrizes[index].name = nameInput.value; });
-      repeatInput.addEventListener("change", () => { editorPrizes[index].repeatable = repeatInput.checked; });
-      row.querySelector("button").addEventListener("click", () => {
-        if (editorPrizes.length <= 1) {
-          editorPrizes[0] = { ...editorPrizes[0], name: "", repeatable: false };
-        } else {
-          editorPrizes.splice(index, 1);
-        }
-        renderEditorPrizeRows();
-      });
-      editorPrizeList.appendChild(row);
-    });
-  }
-
-  function collectEditorPrizes() {
-    return editorPrizes
-      .map(prize => ({
-        id: prize.id || Sortick.createId("prize"),
-        name: Sortick.normalizeText(prize.name).slice(0, 100),
-        repeatable: Boolean(prize.repeatable)
-      }))
-      .filter(prize => prize.name);
-  }
-
-  if (editorAddPrizeButton) {
-    editorAddPrizeButton.addEventListener("click", () => {
-      editorPrizes.push({ id: Sortick.createId("prize"), name: "", repeatable: false });
-      renderEditorPrizeRows();
-      const fields = editorPrizeList.querySelectorAll(".editor-prize-name");
-      fields[fields.length - 1].focus();
-    });
-  }
-  renderEditorPrizeRows();
 
   function renderImagePreview() {
     imagePreview.classList.toggle("hidden", !pendingImageData);
@@ -1170,9 +952,7 @@ function openCartelaEditor() {
     }
 
     const updatedInfo = getCartelaInfo();
-    updatedInfo.description = Sortick.normalizeText(form.elements.description.value).slice(0, 180);
-    updatedInfo.prizes = collectEditorPrizes();
-    updatedInfo.prize = updatedInfo.prizes[0] ? updatedInfo.prizes[0].name : "";
+    updatedInfo.prize = Sortick.normalizeText(form.elements.prize.value).slice(0, 100);
     updatedInfo.imageData = pendingImageData;
     updatedInfo.imageName = pendingImageName;
     updatedInfo.value = Sortick.normalizeText(form.elements.value.value).slice(0, 30);
@@ -1230,7 +1010,6 @@ function openCartelaPreview() {
           <p class="eyebrow">Visualização da cartela</p>
           <h2 id="${headingId}">${Sortick.escapeHTML(draw.title)}</h2>
           ${details.length ? `<p>${Sortick.escapeHTML(details.join(" · "))}</p>` : ""}
-          ${info.description ? `<p>${Sortick.escapeHTML(info.description)}</p>` : ""}
           ${info.note ? `<p>${Sortick.escapeHTML(info.note)}</p>` : ""}
         </div>
       </div>
@@ -1541,12 +1320,6 @@ async function downloadCartelaImage() {
   ctx.font = "700 24px Inter, Arial, sans-serif";
   if (detailLines.length) {
     y = wrapCanvasText(ctx, detailLines.join(" · "), padding, y, contentRight - padding, 32);
-  }
-
-  if (info.description) {
-    y += 8;
-    ctx.font = "700 22px Inter, Arial, sans-serif";
-    y = wrapCanvasText(ctx, info.description, padding, y, contentRight - padding, 30);
   }
 
   if (info.note) {
@@ -2068,17 +1841,6 @@ if (soundToggle) {
   });
 }
 
-if (randomRepeatToggle) {
-  randomRepeatToggle.addEventListener("change", () => {
-    draw.options.randomAllowRepeats = Boolean(randomRepeatToggle.checked);
-    persist();
-    render();
-    setValidation(draw.options.randomAllowRepeats
-      ? "Números repetidos permitidos."
-      : "Números repetidos bloqueados nesta sequência.");
-  });
-}
-
 participantFilter.addEventListener("change", renderParticipants);
 
 copyButton.addEventListener("click", async () => {
@@ -2137,25 +1899,18 @@ downloadButton.addEventListener("click", () => {
 });
 
 resetButton.addEventListener("click", async () => {
-  if (isDrawing) return;
-
-  const isBingo = draw.type === "bingo";
-  const isRandomSequence = draw.type === "quick" && draw.options.quickType === "random" && !draw.options.randomAllowRepeats;
-  if (!isBingo && !isRandomSequence) return;
+  if (isDrawing || draw.type !== "bingo") return;
 
   const response = await Sortick.askForConfirmation({
-    title: isBingo ? "Reiniciar bingo?" : "Reiniciar sequência?",
-    message: isBingo
-      ? "O histórico de números sorteados será limpo e a próxima rodada começará do início."
-      : "Os números já usados voltarão a ficar disponíveis neste intervalo.",
-    confirmText: isBingo ? "Reiniciar bingo" : "Reiniciar sequência",
+    title: "Reiniciar bingo?",
+    message: "O histórico de números sorteados será limpo e a próxima rodada começará do início.",
+    confirmText: "Reiniciar bingo",
     tone: "danger"
   });
 
   if (!response.confirmed) return;
 
-  if (isBingo) draw.options.bingoDrawnNumbers = [];
-  if (isRandomSequence) draw.options.randomDrawnNumbers = [];
+  draw.options.bingoDrawnNumbers = [];
   draw.result = null;
   persist();
   render();
@@ -2380,47 +2135,14 @@ function parseCoreGroupNames(value) {
 
 function getQuickDescription() {
   if (draw.options.quickType === "dice") {
-    return `Dado D${draw.options.diceSides}`;
+    return `Dado de ${draw.options.diceSides} lados`;
   }
 
   if (draw.options.quickType === "random") {
-    const suffix = draw.options.randomAllowRepeats ? "com repetição" : "sem repetição";
-    return `Número aleatório de ${draw.options.randomMin} a ${draw.options.randomMax} · ${suffix}`;
+    return `Número aleatório de ${draw.options.randomMin} a ${draw.options.randomMax}`;
   }
 
   return "Cara ou coroa";
-}
-
-function getRandomSpan() {
-  return draw.options.randomMax - draw.options.randomMin + 1;
-}
-
-function getRemainingRandomNumberCount() {
-  if (draw.options.randomAllowRepeats) return getRandomSpan();
-  const used = new Set(draw.options.randomDrawnNumbers);
-  return Math.max(0, getRandomSpan() - used.size);
-}
-
-function getRandomAvailableValue() {
-  const min = draw.options.randomMin;
-  const max = draw.options.randomMax;
-  const span = getRandomSpan();
-  if (span <= 0) return null;
-  if (draw.options.randomAllowRepeats) return min + Sortick.secureRandomIndex(span);
-
-  const used = new Set(draw.options.randomDrawnNumbers);
-  if (used.size >= span) return null;
-
-  for (let attempt = 0; attempt < 64; attempt += 1) {
-    const value = min + Sortick.secureRandomIndex(span);
-    if (!used.has(value)) return value;
-  }
-
-  for (let value = min; value <= max; value += 1) {
-    if (!used.has(value)) return value;
-  }
-
-  return null;
 }
 
 function setupSimpleCorePanels() {
@@ -2473,24 +2195,8 @@ function setupSimpleCorePanels() {
   }
 
   if (isQuick) {
-    const isRandom = draw.options.quickType === "random";
     drawButton.textContent = "Decidir";
-    resetButton.classList.add("hidden");
-    const resetHint = document.querySelector("#resetHint");
-    if (resetHint) resetHint.classList.add("hidden");
     if (quickSettingsText) quickSettingsText.textContent = getQuickDescription();
-    if (randomRepeatOption) randomRepeatOption.classList.toggle("hidden", !isRandom);
-    if (randomRepeatToggle) randomRepeatToggle.checked = Boolean(draw.options.randomAllowRepeats);
-
-    if (isRandom && !draw.options.randomAllowRepeats) {
-      resetButton.textContent = "Reiniciar sequência";
-      resetButton.classList.remove("hidden");
-      const resetHint = document.querySelector("#resetHint");
-      if (resetHint) {
-        resetHint.textContent = "Libera novamente todos os números deste intervalo.";
-        resetHint.classList.remove("hidden");
-      }
-    }
   }
 }
 
@@ -2528,12 +2234,8 @@ function getSelectionCount(eligible) {
 
 function renderStatusSummary() {
   if (draw.type === "quick") {
-    const randomMeta = draw.options.quickType === "random"
-      ? `<span>${draw.options.randomAllowRepeats ? "Repetição permitida" : `${getRemainingRandomNumberCount()} restante(s)`}</span>`
-      : "";
     statusSummary.innerHTML = `
       <span>Modo: ${Sortick.escapeHTML(getQuickDescription())}</span>
-      ${randomMeta}
       <span>Sem lista de participantes</span>
     `;
     return;
@@ -2590,109 +2292,16 @@ function renderSelectionBoard(participants, heading = "") {
     </div>`;
 }
 
-function regularPolygonPoints(sides, radius = 88, startAngle = -90) {
-  const points = [];
-  for (let index = 0; index < sides; index += 1) {
-    const angle = ((startAngle + index * 360 / sides) * Math.PI) / 180;
-    points.push(`${(100 + Math.cos(angle) * radius).toFixed(1)},${(100 + Math.sin(angle) * radius).toFixed(1)}`);
-  }
-  return points.join(" ");
-}
-
-function getDiceSvgMarkup(sides, value) {
-  const safeValue = Sortick.escapeHTML(value || "?");
-  const base = {
-    4: { points: "100,12 188,182 12,182", facets: '<path d="M100 12 L100 182 M12 182 L188 182" />' },
-    6: { points: "28,28 172,28 172,172 28,172", facets: '<path d="M28 28 L172 172 M172 28 L28 172" />' },
-    8: { points: "100,10 190,100 100,190 10,100", facets: '<path d="M100 10 L100 190 M10 100 L190 100 M100 10 L190 100 M190 100 L100 190 M100 190 L10 100 M10 100 L100 10" />' },
-    10: { points: regularPolygonPoints(10, 88, -90), facets: '<path d="M100 12 L100 188 M30 56 L170 144 M170 56 L30 144" />' },
-    12: { points: regularPolygonPoints(12, 88, -90), facets: '<path d="M100 12 L100 188 M24 56 L176 144 M176 56 L24 144 M12 100 L188 100" />' },
-    20: { points: "100,10 181,69 150,174 50,174 19,69", facets: '<path d="M100 10 L100 174 M19 69 L150 174 M181 69 L50 174 M19 69 L181 69 M50 174 L150 174" />' }
-  }[sides] || { points: "28,28 172,28 172,172 28,172", facets: "" };
-
-  return `
-    <div class="quick-dice-shell quick-dice-shell-d${sides}" aria-hidden="true">
-      <svg class="quick-dice-svg" viewBox="0 0 200 200" role="img">
-        <polygon class="quick-dice-face" points="${base.points}"></polygon>
-        <g class="quick-dice-facets">${base.facets}</g>
-        <text class="quick-dice-kind" x="100" y="58" text-anchor="middle">D${sides}</text>
-        <text class="quick-dice-value" x="100" y="132" text-anchor="middle">${safeValue}</text>
-      </svg>
-    </div>`;
-}
-
-function getQuickVisualMarkup(result = null, { isAnimating = false } = {}) {
-  const quickType = draw.options.quickType;
-  const resultValue = result ? String(result.value) : "";
-  const resultLabel = result ? result.label : getQuickDescription();
-
-  if (quickType === "coin") {
-    const face = !result ? "?" : resultValue === "Cara" ? "🙂" : "👑";
-    return `
-      <div class="quick-visual quick-coin ${isAnimating ? "is-animating" : ""}" aria-hidden="true">
-        <span class="quick-coin-face">${face}</span>
-        <small>${isAnimating ? "girando" : result ? resultValue.toLowerCase() : "cara ou coroa"}</small>
-      </div>
-      <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
-  }
-
-  if (quickType === "dice") {
-    const value = resultValue || "?";
-    return `
-      <div class="quick-visual ${isAnimating ? "is-animating" : ""}">${getDiceSvgMarkup(draw.options.diceSides, value)}</div>
-      <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
-  }
-
-  const value = resultValue || "?";
-  return `
-    <div class="quick-visual quick-number-display ${isAnimating ? "is-animating" : ""}" aria-hidden="true">${Sortick.escapeHTML(value)}</div>
-    <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
-}
-
-function renderQuickDecision(result = null, { isAnimating = false } = {}) {
-  const history = draw.options.quickType === "random" && !draw.options.randomAllowRepeats
-    ? `<small class="quick-history-note">${draw.options.randomDrawnNumbers.length} número(s) já usado(s) nesta sequência</small>`
-    : "";
-  animationArea.innerHTML = `
-    <div class="quick-decision-card ${isAnimating ? "quick-is-rolling" : ""}">
-      ${getQuickVisualMarkup(result, { isAnimating })}
-      <p>${isAnimating ? "Sorteando..." : result ? "Decisão registrada. Você pode decidir novamente quando quiser." : "Clique em Decidir para gerar um resultado."}</p>
-      ${history}
-    </div>`;
-}
-
 function renderQuickIdle() {
-  renderQuickDecision(draw.result?.quickResult || null);
-}
+  const result = draw.result?.quickResult || null;
+  const icon = draw.options.quickType === "coin" ? "🪙" : draw.options.quickType === "dice" ? "🎲" : "🔢";
 
-function runQuickAnimation(finalResult) {
-  const duration = 1050;
-  const start = performance.now();
-  let lastTick = 0;
-
-  return new Promise(resolve => {
-    function frame(now) {
-      const progress = Math.min((now - start) / duration, 1);
-      const delay = 55 + progress * 125;
-
-      if (now - lastTick > delay) {
-        lastTick = now;
-        renderQuickDecision(makeQuickResult({ preview: true }) || finalResult, { isAnimating: true });
-        playTickSound();
-      }
-
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-        return;
-      }
-
-      renderQuickDecision(finalResult);
-      playSuccessSound();
-      setTimeout(resolve, 280);
-    }
-
-    requestAnimationFrame(frame);
-  });
+  animationArea.innerHTML = `
+    <div class="quick-decision-card">
+      <span class="empty-icon">${icon}</span>
+      <strong>${result ? Sortick.escapeHTML(result.label) : Sortick.escapeHTML(getQuickDescription())}</strong>
+      <p>${result ? "Última decisão registrada." : "Clique em Decidir para gerar um resultado."}</p>
+    </div>`;
 }
 
 function renderAnimationIdle() {
@@ -2816,9 +2425,7 @@ function renderResult() {
     winnerMeta.textContent = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
   } else {
     winnerMeta.textContent = draw.type === "numbers"
-      ? draw.result.prizeDraw
-        ? `Prêmio: ${draw.result.prizeDraw.name} · Nº ${participant.number} · ${participant.name}`
-        : `Associado a: ${participant.name} · ${Sortick.statusLabel(participant.status)}`
+      ? `Associado a: ${participant.name} · ${Sortick.statusLabel(participant.status)}`
       : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(participant.status)}`;
   }
 
@@ -2851,10 +2458,6 @@ function createProofText() {
 
   if (draw.type === "quick") {
     header.push(`Resultado: ${draw.result.quickResult.label}`);
-    if (draw.options.quickType === "random") {
-      header.push(`Intervalo: ${draw.options.randomMin} a ${draw.options.randomMax}`);
-      header.push(`Repetição: ${draw.options.randomAllowRepeats ? "permitida" : "não permitida"}`);
-    }
     header.push(`Data: ${Sortick.formatDateTime(draw.result.createdAt)}`);
     header.push("Feito no Sortick");
     return header.join("\n");
@@ -2879,7 +2482,6 @@ function createProofText() {
   header.push(`Resultado: ${getParticipantDisplay(participant)}`);
 
   if (draw.type === "numbers") {
-    if (draw.result.prizeDraw) header.push(`Prêmio: ${draw.result.prizeDraw.name}`);
     header.push(`Associado a: ${participant.name}`);
     header.push(`Cartela: 1 a ${getTotalNumbers()}`);
     header.push(`Status: ${Sortick.statusLabel(participant.status)}`);
@@ -2915,9 +2517,7 @@ function render() {
   }
 
   if (draw.type === "quick") {
-    canDraw = draw.options.quickType !== "random"
-      || draw.options.randomAllowRepeats
-      || getRemainingRandomNumberCount() > 0;
+    canDraw = true;
   }
 
   drawButton.disabled = !canDraw || isDrawing;
@@ -2927,18 +2527,15 @@ function render() {
   setRuleOptionsLocked(isDrawing);
 }
 
-function makeQuickResult({ preview = false, consume = false } = {}) {
+function makeQuickResult() {
   if (draw.options.quickType === "dice") {
     const value = Sortick.secureRandomIndex(draw.options.diceSides) + 1;
-    return { label: `D${draw.options.diceSides}: ${value}`, value: String(value) };
+    return { label: `Dado: ${value}`, value: String(value) };
   }
 
   if (draw.options.quickType === "random") {
-    const value = getRandomAvailableValue();
-    if (value === null) return null;
-    if (consume && !preview && !draw.options.randomAllowRepeats) {
-      draw.options.randomDrawnNumbers.push(value);
-    }
+    const span = draw.options.randomMax - draw.options.randomMin + 1;
+    const value = draw.options.randomMin + Sortick.secureRandomIndex(span);
     return { label: `Número: ${value}`, value: String(value) };
   }
 
@@ -2984,20 +2581,15 @@ async function performCoreDraw() {
     };
     playSuccessSound();
   } else if (draw.type === "quick") {
-    const quickResult = makeQuickResult({ consume: true });
-    if (!quickResult) {
-      isDrawing = false;
-      render();
-      setValidation("Todos os números deste intervalo já foram usados. Reinicie a sequência ou permita repetição.");
-      return;
-    }
-    await runQuickAnimation(quickResult);
+    await runCountdown();
+    const quickResult = makeQuickResult();
     draw.result = {
       participant: { id: Sortick.createId("q"), name: quickResult.label, status: "confirmed" },
       quickResult,
       createdAt: new Date().toISOString(),
       participantCount: 0
     };
+    playSuccessSound();
   } else {
     const selected = getCoreSelectionResult(eligible);
     const first = selected[0];
@@ -3236,3 +2828,509 @@ function installSimpleCoreControls() {
 
 installSimpleCoreControls();
 render();
+
+
+/* v1.15 — decisões interativas, detalhes de atividade e prêmios de cartela */
+const SORTICK_SUPPORTED_DICE = [4, 6, 8, 10, 12, 20];
+
+function getActivityInfo() {
+  draw.options.activityInfo = {
+    description: "",
+    date: "",
+    note: "",
+    ...(draw.options.activityInfo || {})
+  };
+  return draw.options.activityInfo;
+}
+
+function normalizeCartelaInfo(source) {
+  const data = source && typeof source === "object" ? source : {};
+  const incomingPrizes = Array.isArray(data.prizes) ? data.prizes : [];
+  const prizes = incomingPrizes
+    .map((prize, index) => ({
+      id: String(prize && prize.id ? prize.id : `prize-${index + 1}`),
+      name: Sortick.normalizeText(prize && prize.name).slice(0, 100),
+      repeatable: Boolean(prize && prize.repeatable)
+    }))
+    .filter(prize => prize.name);
+
+  if (!prizes.length && Sortick.normalizeText(data.prize)) {
+    prizes.push({ id: "prize-legacy", name: Sortick.normalizeText(data.prize).slice(0, 100), repeatable: false });
+  }
+
+  return {
+    description: "",
+    prize: prizes[0] ? prizes[0].name : "",
+    prizes,
+    prizeDrawHistory: Array.isArray(data.prizeDrawHistory) ? data.prizeDrawHistory.filter(Boolean) : [],
+    value: "",
+    drawDate: "",
+    note: "",
+    imageData: "",
+    imageName: "",
+    exportShowNames: false,
+    ...data,
+    prize: prizes[0] ? prizes[0].name : "",
+    prizes
+  };
+}
+
+function getCartelaInfo() {
+  draw.options.cartelaInfo = normalizeCartelaInfo(draw.options.cartelaInfo);
+  delete draw.options.cartelaInfo.markerStyle;
+  return draw.options.cartelaInfo;
+}
+
+function renderActivityInfoPanel() {
+  if (!activityInfoPanel) return;
+  if (draw.type === "numbers") {
+    activityInfoPanel.classList.add("hidden");
+    return;
+  }
+
+  activityInfoPanel.classList.remove("hidden");
+  const info = getActivityInfo();
+  const details = [];
+  if (info.description) details.push(`<p>${Sortick.escapeHTML(info.description)}</p>`);
+  if (info.date) details.push(`<p><strong>Data:</strong> ${Sortick.escapeHTML(info.date.split("-").reverse().join("/"))}</p>`);
+  if (info.note) details.push(`<p><strong>Observação:</strong> ${Sortick.escapeHTML(info.note)}</p>`);
+
+  activityInfoPanel.innerHTML = `
+    <div class="activity-info-heading">
+      <div><p class="eyebrow">DETALHES</p><h3>Sobre esta atividade</h3></div>
+      <button id="editActivityInfoButton" class="link-button" type="button">Editar</button>
+    </div>
+    <div class="activity-info-content">${details.length ? details.join("") : '<p class="subtle">Sem descrição, data ou observação adicionada.</p>'}</div>`;
+
+  const button = activityInfoPanel.querySelector("#editActivityInfoButton");
+  if (button) button.addEventListener("click", openActivityInfoEditor);
+}
+
+function openActivityInfoEditor() {
+  const info = getActivityInfo();
+  const overlay = document.createElement("div");
+  const panel = document.createElement("section");
+  overlay.className = "cartela-editor-backdrop";
+  panel.className = "activity-editor-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  panel.innerHTML = `
+    <header class="cartela-editor-header">
+      <div><p class="eyebrow">EDITAR ATIVIDADE</p><h2>Detalhes do sorteio</h2><p>Essas informações ajudam a identificar a atividade sem alterar participantes ou resultados.</p></div>
+      <button class="cartela-preview-close" type="button" aria-label="Fechar edição">×</button>
+    </header>
+    <form class="activity-editor-form">
+      <label>Nome<input name="title" type="text" maxlength="80" value="${Sortick.escapeHTML(draw.title)}" /></label>
+      <label>Descrição <small>Opcional</small><textarea name="description" rows="3" maxlength="180">${Sortick.escapeHTML(info.description || "")}</textarea></label>
+      <label>Data <small>Opcional</small><input name="date" type="date" value="${Sortick.escapeHTML(info.date || "")}" /></label>
+      <label>Observação <small>Opcional</small><textarea name="note" rows="3" maxlength="180">${Sortick.escapeHTML(info.note || "")}</textarea></label>
+      <div class="cartela-editor-actions"><button class="btn btn-ghost light" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar detalhes</button></div>
+    </form>`;
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  document.body.classList.add("sortick-modal-open");
+
+  const close = () => { overlay.remove(); document.body.classList.remove("sortick-modal-open"); };
+  panel.querySelector(".cartela-preview-close").addEventListener("click", close);
+  panel.querySelector(".btn-ghost").addEventListener("click", close);
+  overlay.addEventListener("mousedown", event => { if (event.target === overlay) close(); });
+  panel.querySelector("form").addEventListener("submit", event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const title = Sortick.normalizeText(form.elements.title.value).slice(0, 80);
+    if (!title) { form.elements.title.focus(); return; }
+    draw.title = title;
+    draw.options.activityInfo = {
+      description: Sortick.normalizeText(form.elements.description.value).slice(0, 180),
+      date: form.elements.date.value || "",
+      note: Sortick.normalizeText(form.elements.note.value).slice(0, 180)
+    };
+    persist();
+    render();
+    setValidation("Detalhes da atividade atualizados.");
+    close();
+  });
+  panel.querySelector("input[name=title]").focus();
+}
+
+function getRandomSpan() {
+  return draw.options.randomMax - draw.options.randomMin + 1;
+}
+
+function getRandomRemaining() {
+  if (draw.options.randomAllowRepeats) return getRandomSpan();
+  const seen = new Set(draw.options.randomDrawnNumbers);
+  return Math.max(0, getRandomSpan() - seen.size);
+}
+
+function chooseRandomNumber() {
+  const min = draw.options.randomMin;
+  const max = draw.options.randomMax;
+  const span = getRandomSpan();
+  if (span <= 0) return null;
+  if (draw.options.randomAllowRepeats) return min + Sortick.secureRandomIndex(span);
+  const seen = new Set(draw.options.randomDrawnNumbers);
+  if (seen.size >= span) return null;
+  for (let index = 0; index < 60; index += 1) {
+    const value = min + Sortick.secureRandomIndex(span);
+    if (!seen.has(value)) return value;
+  }
+  for (let value = min; value <= max; value += 1) if (!seen.has(value)) return value;
+  return null;
+}
+
+function getDiceTray() {
+  if (!Array.isArray(draw.options.diceTray)) draw.options.diceTray = [];
+  draw.options.diceTray = draw.options.diceTray
+    .filter(die => die && SORTICK_SUPPORTED_DICE.includes(Number(die.sides)))
+    .slice(0, 10)
+    .map(die => ({ id: die.id || Sortick.createId("die"), sides: Number(die.sides), value: Number.isInteger(die.value) ? die.value : null }));
+  return draw.options.diceTray;
+}
+
+function diceShapeMarkup(die, rolling = false) {
+  const value = die.value || "?";
+  const shape = {
+    4: `<svg viewBox="0 0 180 180" aria-hidden="true"><polygon class="d-face d4-a" points="90,13 166,159 90,137"/><polygon class="d-face d4-b" points="90,13 90,137 14,159"/><polygon class="d-face d4-c" points="14,159 90,137 166,159"/><text x="90" y="125">${value}</text><small x="90" y="52">D4</small></svg>`,
+    6: `<svg viewBox="0 0 180 180" aria-hidden="true"><polygon class="d-face d6-top" points="52,35 119,17 158,52 90,72"/><polygon class="d-face d6-left" points="52,35 90,72 90,151 25,112"/><polygon class="d-face d6-right" points="90,72 158,52 158,128 90,151"/><text x="122" y="112">${value}</text><small x="112" y="49">D6</small></svg>`,
+    8: `<svg viewBox="0 0 180 180" aria-hidden="true"><polygon class="d-face d8-a" points="90,10 163,90 90,90"/><polygon class="d-face d8-b" points="90,10 90,90 17,90"/><polygon class="d-face d8-c" points="17,90 90,90 90,170"/><polygon class="d-face d8-d" points="90,90 163,90 90,170"/><text x="90" y="111">${value}</text><small x="90" y="56">D8</small></svg>`,
+    10: `<svg viewBox="0 0 180 180" aria-hidden="true"><polygon class="d-face d10-a" points="90,10 150,52 132,145 90,170"/><polygon class="d-face d10-b" points="90,10 30,52 48,145 90,170"/><polygon class="d-face d10-c" points="30,52 90,86 150,52 132,145 90,170 48,145"/><text x="90" y="120">${value}</text><small x="90" y="54">D10</small></svg>`,
+    12: `<svg viewBox="0 0 180 180" aria-hidden="true"><polygon class="d-face d12-a" points="90,26 122,49 110,86 70,86 58,49"/><polygon class="d-face d12-b" points="58,49 70,86 50,121 18,98 26,61"/><polygon class="d-face d12-c" points="122,49 154,61 162,98 130,121 110,86"/><polygon class="d-face d12-d" points="70,86 110,86 130,121 105,153 75,153 50,121"/><polygon class="d-face d12-e" points="75,153 105,153 90,171"/><text x="90" y="125">${value}</text><small x="90" y="65">D12</small></svg>`,
+    20: `<svg viewBox="0 0 180 180" aria-hidden="true"><polygon class="d-face d20-a" points="90,8 151,60 90,90"/><polygon class="d-face d20-b" points="90,8 29,60 90,90"/><polygon class="d-face d20-c" points="29,60 90,90 52,158"/><polygon class="d-face d20-d" points="151,60 128,158 90,90"/><polygon class="d-face d20-e" points="52,158 90,90 128,158 90,173"/><text x="90" y="119">${value}</text><small x="90" y="58">D20</small></svg>`
+  }[die.sides];
+  return `<div class="dice-piece dice-d${die.sides} ${rolling ? "is-rolling" : ""}" data-die-id="${Sortick.escapeHTML(die.id)}">${shape}<button type="button" class="dice-remove" data-remove-die="${Sortick.escapeHTML(die.id)}" aria-label="Remover D${die.sides}">×</button></div>`;
+}
+
+function renderDiceGame(tray = getDiceTray(), rolling = false) {
+  const total = tray.reduce((sum, die) => sum + (Number.isInteger(die.value) ? die.value : 0), 0);
+  const resultsReady = tray.length > 0 && tray.every(die => Number.isInteger(die.value));
+  animationArea.innerHTML = `
+    <section class="dice-game" aria-label="Jogar os dados">
+      <header class="dice-game-header"><h2>Jogar os dados</h2><span>${tray.length}/10 dados</span></header>
+      <div class="dice-stage ${rolling ? "is-rolling" : ""}">
+        ${tray.map(die => diceShapeMarkup(die, rolling)).join("")}
+        ${tray.length > 1 && resultsReady ? `<strong class="dice-total"><small>Total</small>${total}</strong>` : ""}
+        ${!tray.length ? '<p class="dice-empty">Escolha um dado abaixo para começar.</p>' : ""}
+      </div>
+      <div class="dice-toolbar">
+        <div class="dice-picker" aria-label="Adicionar dado">${SORTICK_SUPPORTED_DICE.map(sides => `<button type="button" data-add-die="${sides}">D${sides}</button>`).join("")}</div>
+        <div class="dice-actions"><button id="diceRollButton" class="btn btn-primary" type="button" ${!tray.length || rolling ? "disabled" : ""}>Rolar</button><button id="diceClearButton" class="btn btn-ghost" type="button" ${!tray.length || rolling ? "disabled" : ""}>Limpar</button></div>
+      </div>
+    </section>`;
+
+  animationArea.querySelectorAll("[data-add-die]").forEach(button => button.addEventListener("click", () => {
+    const current = getDiceTray();
+    if (current.length >= 10) { setValidation("O limite desta rodada é de 10 dados."); return; }
+    current.push({ id: Sortick.createId("die"), sides: Number(button.dataset.addDie), value: null });
+    draw.options.diceTray = current;
+    draw.result = null;
+    persist();
+    render();
+  }));
+  animationArea.querySelectorAll("[data-remove-die]").forEach(button => button.addEventListener("click", () => {
+    draw.options.diceTray = getDiceTray().filter(die => die.id !== button.dataset.removeDie);
+    draw.result = null;
+    persist();
+    render();
+  }));
+  const roll = animationArea.querySelector("#diceRollButton");
+  if (roll) roll.addEventListener("click", rollDiceGame);
+  const clear = animationArea.querySelector("#diceClearButton");
+  if (clear) clear.addEventListener("click", () => {
+    draw.options.diceTray = [];
+    draw.result = null;
+    persist();
+    render();
+  });
+}
+
+async function rollDiceGame() {
+  if (isDrawing) return;
+  const tray = getDiceTray();
+  if (!tray.length) return;
+  isDrawing = true;
+  const finalTray = tray.map(die => ({ ...die, value: Sortick.secureRandomIndex(die.sides) + 1 }));
+  const started = performance.now();
+  let lastFrame = 0;
+  await new Promise(resolve => {
+    function frame(now) {
+      const progress = Math.min((now - started) / 980, 1);
+      if (now - lastFrame > 80 + progress * 100) {
+        lastFrame = now;
+        const preview = tray.map(die => ({ ...die, value: Sortick.secureRandomIndex(die.sides) + 1 }));
+        renderDiceGame(preview, true);
+        playTickSound();
+      }
+      if (progress < 1) requestAnimationFrame(frame); else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+  draw.options.diceTray = finalTray;
+  const total = finalTray.reduce((sum, die) => sum + die.value, 0);
+  draw.result = {
+    participant: { id: Sortick.createId("dice"), name: finalTray.map(die => `D${die.sides}: ${die.value}`).join(" + "), status: "confirmed" },
+    quickResult: { label: finalTray.length > 1 ? `Total: ${total}` : `D${finalTray[0].sides}: ${finalTray[0].value}`, value: String(total), dice: finalTray.map(die => ({ sides: die.sides, value: die.value })), total },
+    createdAt: new Date().toISOString(), participantCount: 0
+  };
+  persist();
+  isDrawing = false;
+  playSuccessSound();
+  render();
+}
+
+function renderCoinGame(result = null, rolling = false) {
+  const face = result ? (result.value === "Cara" ? "🙂" : "👑") : "?";
+  animationArea.innerHTML = `<div class="quick-decision-card coin-game ${rolling ? "is-rolling" : ""}"><div class="coin-visual"><span>${face}</span><small>${result ? Sortick.escapeHTML(result.value) : "cara ou coroa"}</small></div><strong>${result ? Sortick.escapeHTML(result.label) : "Pronto para decidir"}</strong><p>Clique em Decidir para jogar a moeda.</p></div>`;
+}
+
+function renderRandomGame(result = null, rolling = false) {
+  const remaining = getRandomRemaining();
+  const value = result ? result.value : "?";
+  animationArea.innerHTML = `<div class="quick-decision-card random-game ${rolling ? "is-rolling" : ""}"><div class="random-number-visual">${Sortick.escapeHTML(value)}</div><strong>${result ? Sortick.escapeHTML(result.label) : "Número aleatório"}</strong><p>${draw.options.randomAllowRepeats ? "Repetição permitida." : `${remaining} número(s) disponível(is) nesta sequência.`}</p></div>`;
+}
+
+function renderQuickIdle() {
+  if (draw.options.quickType === "dice") return renderDiceGame();
+  if (draw.options.quickType === "coin") return renderCoinGame(draw.result?.quickResult || null);
+  return renderRandomGame(draw.result?.quickResult || null);
+}
+
+function getQuickDescription() {
+  if (draw.options.quickType === "dice") return "Mesa de dados interativa";
+  if (draw.options.quickType === "random") return `Número aleatório de ${draw.options.randomMin} a ${draw.options.randomMax}${draw.options.randomAllowRepeats ? " · com repetição" : " · sem repetição"}`;
+  return "Cara ou coroa";
+}
+
+function setupSimpleCorePanels() {
+  const isSelection = draw.type === "names" || draw.type === "roulette";
+  const isGroups = draw.type === "groups";
+  const isQuick = draw.type === "quick";
+  const isDice = isQuick && draw.options.quickType === "dice";
+  const isRandom = isQuick && draw.options.quickType === "random";
+  if (selectionOptionsPanel) selectionOptionsPanel.classList.toggle("hidden", !isSelection);
+  if (groupSettingsPanel) groupSettingsPanel.classList.toggle("hidden", !isGroups);
+  if (quickSettingsPanel) quickSettingsPanel.classList.toggle("hidden", !isQuick);
+  if (participantPanel) participantPanel.classList.toggle("hidden", isQuick);
+  if (removeWinnerToggle && removeWinnerToggle.closest("label")) removeWinnerToggle.closest("label").classList.add("hidden");
+  if (randomRepeatOption) randomRepeatOption.classList.toggle("hidden", !isRandom);
+  if (randomRepeatToggle) randomRepeatToggle.checked = Boolean(draw.options.randomAllowRepeats);
+
+  drawButton.classList.toggle("hidden", isDice);
+  resetButton.classList.add("hidden");
+  const resetHint = document.querySelector("#resetHint");
+  if (resetHint) resetHint.classList.add("hidden");
+
+  if (isSelection) {
+    selectionModeControl.value = draw.options.selectionMode;
+    selectionCountControl.value = draw.options.selectionCount;
+    noRepeatToggle.checked = Boolean(draw.options.noRepeat);
+    selectionCountControlField.classList.toggle("hidden", draw.options.selectionMode !== "multiple");
+    resetRoundButton.classList.toggle("hidden", !(draw.options.noRepeat && draw.options.roundDrawnIds.length));
+    drawButton.textContent = draw.options.selectionMode === "order" ? "Gerar ordem" : draw.type === "roulette" ? "Girar roleta" : "Sortear";
+    participantHelp.textContent = draw.type === "roulette" ? "Adicione nomes ou opções para a roleta." : "Adicione nomes ou opções para sortear.";
+  }
+  if (isGroups) {
+    groupNamesControl.value = getGroupNames().join("\n");
+    drawButton.textContent = draw.result?.groups ? "Gerar novamente" : "Gerar grupos";
+    participantHelp.textContent = `Adicione nomes e distribua em ${draw.options.groupCount} grupo(s) equilibrados.`;
+  }
+  if (isQuick) {
+    if (quickSettingsText) quickSettingsText.textContent = getQuickDescription();
+    if (isDice) {
+      quickSettingsText.textContent = "Adicione até 10 dados, role e veja cada resultado na mesa.";
+    } else {
+      drawButton.textContent = "Decidir";
+      if (isRandom && !draw.options.randomAllowRepeats) {
+        resetButton.textContent = "Reiniciar sequência";
+        resetButton.classList.remove("hidden");
+        if (resetHint) { resetHint.textContent = "Libera novamente os números já sorteados."; resetHint.classList.remove("hidden"); }
+      }
+    }
+  }
+}
+
+function renderStatusSummary() {
+  if (draw.type === "quick") {
+    const extra = draw.options.quickType === "dice" ? `${getDiceTray().length} dado(s) na mesa` : draw.options.quickType === "random" && !draw.options.randomAllowRepeats ? `${getRandomRemaining()} restante(s)` : "Sem lista de participantes";
+    statusSummary.innerHTML = `<span>Modo: ${Sortick.escapeHTML(getQuickDescription())}</span><span>${Sortick.escapeHTML(extra)}</span>`;
+    return;
+  }
+  if (draw.type === "bingo") {
+    const drawn = draw.options.bingoDrawnNumbers.length;
+    const unique = new Set(draw.options.bingoDrawnNumbers.map(String)).size;
+    const total = getTotalNumbers();
+    statusSummary.innerHTML = `<span>Total: ${total}</span><span>Sorteados: ${drawn}</span><span>${draw.options.bingoAllowRepeats ? "Repetição: sim" : `Restantes: ${total - unique}`}</span>`;
+    return;
+  }
+  if (draw.type === "groups") {
+    statusSummary.innerHTML = `<span>Participantes: ${draw.participants.length}</span><span>Grupos: ${getGroupNames().length}</span><span>Distribuição equilibrada</span>`;
+    return;
+  }
+  const counts = getStatusCounts();
+  statusSummary.innerHTML = `<span>Total: ${counts.total}</span><span>Confirmados: ${counts.confirmed}</span><span>Pendentes: ${counts.pending}</span>${draw.type === "numbers" ? `<span>Disponíveis: ${getTotalNumbers() - counts.total}</span>` : ""}`;
+}
+
+function renderBingoBoard(highlightNumber = null) {
+  const total = getTotalNumbers();
+  const drawn = new Set(draw.options.bingoDrawnNumbers.map(String));
+  const unique = drawn.size;
+  const latest = highlightNumber || draw.options.bingoDrawnNumbers.at(-1) || null;
+  const progress = Math.round((unique / total) * 100);
+  let cells = "";
+  for (let number = 1; number <= total; number += 1) {
+    const isDrawn = drawn.has(String(number));
+    const isLatest = String(latest) === String(number);
+    cells += `<button class="number-cell ${isDrawn ? "taken" : "available"} ${isLatest ? "winner" : ""}" type="button" disabled><span>${number}</span></button>`;
+  }
+  animationArea.innerHTML = `<div class="number-board-wrap bingo-wrap"><div class="number-board-header"><span>Bingo de 1 a ${total}</span><small>${draw.options.bingoDrawnNumbers.length} sorteados · ${draw.options.bingoAllowRepeats ? "repetição permitida" : `${total - unique} restantes`}</small></div><div class="bingo-progress-block"><div class="bingo-progress-track"><span style="width:${progress}%"></span></div><small>${unique} de ${total} números únicos · ${progress}%</small></div><div class="bingo-latest">${latest ? `<small>Último número</small><strong>${Sortick.escapeHTML(latest)}</strong>` : '<small>Nenhum número sorteado</small><strong>--</strong>'}</div><div class="number-board cartela-board ${total <= 100 ? "cartela-board-compact" : "cartela-board-scroll"}">${cells}</div></div>`;
+}
+
+function getAvailablePrizes() {
+  const info = getCartelaInfo();
+  const used = new Set(info.prizeDrawHistory.map(entry => entry.prizeId));
+  return info.prizes.filter(prize => prize.repeatable || !used.has(prize.id));
+}
+
+function getPrizeCandidates() {
+  return draw.options.confirmedOnly ? draw.participants.filter(participant => participant.status === "confirmed") : draw.participants.slice();
+}
+
+function renderPrizePanel() {
+  const info = getCartelaInfo();
+  const available = getAvailablePrizes();
+  const candidates = getPrizeCandidates();
+  if (!info.prizes.length) return `<section class="cartela-prize-draw-panel is-empty"><div><p class="eyebrow">PRÊMIOS</p><h3>Adicione prêmios quando precisar</h3><p>Use Editar detalhes para incluir um ou mais prêmios nesta cartela.</p></div></section>`;
+  const history = info.prizeDrawHistory.slice(-5).reverse();
+  return `<section class="cartela-prize-draw-panel"><div class="cartela-prize-draw-heading"><div><p class="eyebrow">SORTEIO DE PRÊMIOS</p><h3>Escolha o próximo prêmio</h3><p>${candidates.length} número(s) elegível(is). ${draw.options.confirmedOnly ? "Apenas confirmados participam." : "Todos os números ocupados participam."}</p></div><div class="cartela-prize-draw-actions"><select id="prizeSelect" ${!available.length || !candidates.length ? "disabled" : ""}>${available.length ? available.map(prize => `<option value="${Sortick.escapeHTML(prize.id)}">${Sortick.escapeHTML(prize.name)}${prize.repeatable ? " · repetível" : ""}</option>`).join("") : '<option>Nenhum prêmio disponível</option>'}</select><button id="drawPrizeButton" class="btn btn-primary" type="button" ${!available.length || !candidates.length ? "disabled" : ""}>Sortear prêmio</button></div></div><div class="cartela-prize-history-wrap"><strong>Histórico</strong>${history.length ? `<ol class="cartela-prize-history">${history.map(item => `<li><strong>${Sortick.escapeHTML(item.prizeName)}</strong><span>Nº ${Sortick.escapeHTML(item.winnerNumber)} · ${Sortick.escapeHTML(item.winnerName)}</span></li>`).join("")}</ol>` : '<p class="cartela-prize-history-empty">Nenhum prêmio sorteado ainda.</p>'}</div></section>`;
+}
+
+async function drawCartelaPrize(prizeId) {
+  if (isDrawing) return;
+  const info = getCartelaInfo();
+  const prize = getAvailablePrizes().find(item => item.id === prizeId);
+  const candidates = getPrizeCandidates();
+  if (!prize || !candidates.length) return;
+  isDrawing = true;
+  const winner = candidates[Sortick.secureRandomIndex(candidates.length)];
+  const start = performance.now(); let last = 0;
+  await new Promise(resolve => { function frame(now) { const progress = Math.min((now-start)/1050,1); if(now-last>70+progress*110){last=now; renderNumberBoard(candidates[Sortick.secureRandomIndex(candidates.length)].number); playTickSound();} if(progress<1) requestAnimationFrame(frame); else resolve();} requestAnimationFrame(frame); });
+  info.prizeDrawHistory.push({ id: Sortick.createId("prizeDraw"), prizeId: prize.id, prizeName: prize.name, winnerId: winner.id, winnerName: winner.name, winnerNumber: String(winner.number), createdAt: new Date().toISOString() });
+  draw.result = { participant: winner, participantCount: candidates.length, createdAt: new Date().toISOString(), prizeDraw: { name: prize.name, id: prize.id } };
+  persist(); isDrawing = false; playSuccessSound(); launchConfetti(); render();
+}
+
+function renderNumberBoard(highlightNumber = null) {
+  const info = getCartelaInfo(); const stats = getCartelaStats(); const details = getCartelaDetailParts();
+  const taken = new Map(draw.participants.map(item => [String(item.number), item]));
+  const winnerNumber = highlightNumber ? String(highlightNumber) : draw.result?.participant ? String(draw.result.participant.number) : null;
+  let cells = "";
+  for(let n=1;n<=stats.total;n+=1){ const participant=taken.get(String(n)); cells += buildCartelaCellMarkup(n, participant, String(n)===winnerNumber, {interactive:true,showNames:true}); }
+  const prizeDetails = info.prizes.length === 1 ? `Prêmio: ${info.prizes[0].name}` : info.prizes.length > 1 ? `${info.prizes.length} prêmios` : "";
+  const allDetails = [...details.filter(item => !item.startsWith("Prêmio:")), prizeDetails].filter(Boolean);
+  animationArea.innerHTML = `<div class="number-board-wrap"><div class="number-board-header cartela-header"><div class="cartela-title-with-image">${getCartelaImageMarkup()}<div class="cartela-title-block"><span>${Sortick.escapeHTML(draw.title)}</span>${allDetails.length ? `<small>${Sortick.escapeHTML(allDetails.join(" · "))}</small>` : ""}${info.description ? `<small class="cartela-description">${Sortick.escapeHTML(info.description)}</small>` : ""}${info.note ? `<small class="cartela-note">${Sortick.escapeHTML(info.note)}</small>` : ""}</div></div><div class="cartela-header-actions"><small>${stats.available} disponíveis · ${stats.occupied} ocupados · ${stats.confirmed} confirmados</small><button id="editCartelaButton" class="cartela-expand-button" type="button">Editar detalhes</button></div></div><div class="cartela-progress-block"><div class="cartela-progress-track"><span style="width:${stats.progress}%"></span></div><small>${stats.progress}% preenchida</small></div><div class="number-board ${stats.total<=100?"cartela-board-compact":"cartela-board-scroll"}">${cells}</div><div class="cartela-board-actions"><label class="inline-option cartela-export-option"><input id="cartelaShowNamesToggle" type="checkbox" ${info.exportShowNames?"checked":""}/>Mostrar nomes na imagem</label><div class="cartela-board-action-buttons"><button id="previewCartelaStageButton" class="btn btn-ghost light" type="button">Visualizar cartela</button><button id="exportCartelaButton" class="btn btn-primary" type="button">Exportar imagem</button></div></div>${renderPrizePanel()}</div>`;
+  const preview = animationArea.querySelector("#previewCartelaStageButton"); if(preview) preview.addEventListener("click", openCartelaPreview);
+  const edit = animationArea.querySelector("#editCartelaButton"); if(edit) edit.addEventListener("click", openCartelaEditor);
+  const exportButton=animationArea.querySelector("#exportCartelaButton"); if(exportButton) exportButton.addEventListener("click", downloadCartelaImage);
+  const names=animationArea.querySelector("#cartelaShowNamesToggle"); if(names) names.addEventListener("change",()=>{info.exportShowNames=names.checked;persist();});
+  const prizeButton=animationArea.querySelector("#drawPrizeButton"), select=animationArea.querySelector("#prizeSelect"); if(prizeButton&&select) prizeButton.addEventListener("click",()=>drawCartelaPrize(select.value));
+  animationArea.querySelectorAll(".number-cell[data-number]").forEach(button=>button.addEventListener("click",()=>openNumberEntry(button.dataset.number)));
+}
+
+function makeQuickResult() {
+  if (draw.options.quickType === "dice") return null;
+  if (draw.options.quickType === "random") {
+    const value = chooseRandomNumber();
+    if (value === null) return null;
+    if (!draw.options.randomAllowRepeats) draw.options.randomDrawnNumbers.push(value);
+    return { label: `Número: ${value}`, value: String(value) };
+  }
+  const face = Sortick.secureRandomIndex(2) === 0 ? "Cara" : "Coroa";
+  return { label: face, value: face };
+}
+
+async function performCoreDraw() {
+  if (draw.type === "quick" && draw.options.quickType === "dice") return rollDiceGame();
+  const eligible = getEligibleParticipants();
+  if (draw.type !== "quick" && draw.type !== "groups" && eligible.length < getMinimumParticipants()) return;
+  if (draw.type !== "quick" && draw.type !== "groups" && !eligible.length) { setValidation("Não há participantes disponíveis nesta rodada."); return; }
+  if (draw.type === "quick" && draw.options.quickType === "random" && !draw.options.randomAllowRepeats && getRandomRemaining() <= 0) { setValidation("Todos os números deste intervalo já foram usados. Reinicie a sequência para começar de novo."); return; }
+  isDrawing = true; render(); winnerCard.classList.add("hidden");
+  if (draw.type === "groups") { const groups=generateGroups(); draw.result={groups,participant:{id:Sortick.createId("g"),name:"Grupos gerados",status:"confirmed"},createdAt:new Date().toISOString(),participantCount:draw.participants.length}; playSuccessSound(); }
+  else if (draw.type === "quick") {
+    const quickResult=makeQuickResult();
+    await new Promise(resolve=>{const start=performance.now(); let last=0; function frame(now){const p=Math.min((now-start)/900,1);if(now-last>65+p*120){last=now;const preview=draw.options.quickType==="coin"?{label:Sortick.secureRandomIndex(2)?"Coroa":"Cara",value:Sortick.secureRandomIndex(2)?"Coroa":"Cara"}:{label:"Número",value:String(draw.options.randomMin+Sortick.secureRandomIndex(getRandomSpan()))}; draw.options.quickType==="coin"?renderCoinGame(preview,true):renderRandomGame(preview,true);playTickSound();}if(p<1)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
+    draw.result={participant:{id:Sortick.createId("q"),name:quickResult.label,status:"confirmed"},quickResult,createdAt:new Date().toISOString(),participantCount:0}; playSuccessSound();
+  } else {
+    const selected=getCoreSelectionResult(eligible); const first=selected[0]; const firstIndex=eligible.findIndex(p=>p.id===first.id);
+    if(draw.options.selectionMode!=="order"){await runCountdown();await runAnimation(first,firstIndex,eligible);} if(draw.options.noRepeat){const ids=new Set(draw.options.roundDrawnIds);selected.forEach(p=>ids.add(p.id));draw.options.roundDrawnIds=Array.from(ids);} draw.result={participant:first,participants:selected,participantIndex:firstIndex,createdAt:new Date().toISOString(),participantCount:eligible.length,rouletteParticipants:draw.type==="roulette"?eligible.map(p=>({...p})):null,selectionMode:draw.options.selectionMode,wheelRotation:draw.type==="roulette"?currentWheelRotation:null};playSuccessSound();
+  }
+  persist(); isDrawing=false; render(); launchConfetti();
+}
+
+function renderResult() {
+  if (!draw.result) { winnerCard.classList.add("hidden"); return; }
+  winnerCard.classList.remove("hidden");
+  if(draw.type==="quick") { winnerName.textContent=draw.result.quickResult.label; winnerMeta.textContent=draw.options.quickType==="dice"?draw.result.quickResult.dice.map(d=>`D${d.sides}: ${d.value}`).join(" · "):getQuickDescription(); proofText.textContent=createProofText(); return; }
+  if(draw.type==="groups") { winnerName.textContent="Grupos gerados"; winnerMeta.textContent=`${draw.result.groups.length} grupo(s)`; proofText.textContent=createProofText(); return; }
+  const participant=draw.result.participant;
+  winnerName.textContent=getParticipantDisplay(participant);
+  if(draw.type==="numbers" && draw.result.prizeDraw) winnerMeta.textContent=`Prêmio: ${draw.result.prizeDraw.name} · Nº ${participant.number} · ${participant.name}`;
+  else winnerMeta.textContent=draw.type==="bingo"?`Bingo de 1 a ${getTotalNumbers()}`:`${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(participant.status)}`;
+  proofText.textContent=createProofText();
+}
+
+function render() {
+  setupSimpleCorePanels(); renderActivityInfoPanel(); renderStatusSummary(); renderParticipants(); renderAnimationIdle(); renderResult();
+  let canDraw=getEligibleParticipants().length>=getMinimumParticipants();
+  if(draw.type==="bingo") canDraw=draw.options.bingoAllowRepeats||getRemainingBingoNumbers().length>0;
+  if(draw.type==="quick") canDraw=draw.options.quickType!=="random"||draw.options.randomAllowRepeats||getRandomRemaining()>0;
+  drawButton.disabled=!canDraw||isDrawing; copyButton.disabled=!draw.result; shareButton.disabled=!draw.result; downloadButton.disabled=!draw.result; setRuleOptionsLocked(isDrawing);
+}
+
+if (randomRepeatToggle) randomRepeatToggle.addEventListener("change", () => { draw.options.randomAllowRepeats=Boolean(randomRepeatToggle.checked); if(draw.options.randomAllowRepeats) draw.options.randomDrawnNumbers=[]; persist(); render(); });
+
+
+function openCartelaEditor() {
+  if (draw.type !== "numbers") return;
+  const previousFocus = document.activeElement;
+  const info = getCartelaInfo();
+  let pendingImageData = info.imageData || "";
+  let pendingImageName = info.imageName || "";
+  let prizes = info.prizes.map(prize => ({ ...prize }));
+  if (!prizes.length) prizes = [{ id: Sortick.createId("prize"), name: "", repeatable: false }];
+  const overlay = document.createElement("div");
+  const panel = document.createElement("section");
+  overlay.className = "cartela-editor-backdrop";
+  panel.className = "cartela-editor-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  panel.innerHTML = `
+    <header class="cartela-editor-header"><div><p class="eyebrow">EDITAR CARTELA</p><h2>Detalhes e prêmios</h2><p>Edite as informações da cartela e os prêmios sem alterar os números ocupados.</p></div><button class="cartela-preview-close" type="button" aria-label="Fechar edição">×</button></header>
+    <form class="cartela-editor-form">
+      <label>Nome da cartela<input name="title" type="text" maxlength="80" value="${Sortick.escapeHTML(draw.title)}" /></label>
+      <label>Descrição <small>Opcional</small><textarea name="description" rows="2" maxlength="180">${Sortick.escapeHTML(info.description || "")}</textarea></label>
+      <div class="cartela-editor-locked"><strong>Cartela de 1 a ${getTotalNumbers()}</strong><span>A quantidade de números não pode ser alterada depois da criação.</span></div>
+      <section class="cartela-editor-prize-section"><div class="cartela-prize-section-heading"><div><h3>Prêmios</h3><p class="field-hint">Até 10 prêmios. Itens únicos deixam a lista após serem sorteados; repetíveis continuam disponíveis.</p></div></div><div class="cartela-editor-prize-list"></div><button class="btn btn-ghost light cartela-editor-add-prize" type="button">Adicionar prêmio</button></section>
+      <label class="cartela-image-upload"><span>Imagem de destaque <small>Opcional</small></span><input name="image" type="file" accept="image/png,image/jpeg,image/webp" /><span class="field-hint">PNG, JPG ou WEBP.</span></label>
+      <div class="cartela-editor-image-preview ${pendingImageData ? "" : "hidden"}"><img alt="Prévia da imagem" ${pendingImageData ? `src="${pendingImageData}"` : ""}/><div><strong>${Sortick.escapeHTML(pendingImageName || "Imagem selecionada")}</strong><button class="link-button danger-text cartela-editor-remove-image" type="button">Remover imagem</button></div></div>
+      <p class="cartela-editor-image-status" aria-live="polite"></p>
+      <div class="cartela-editor-row"><label>Valor por número<input name="value" type="text" maxlength="30" value="${Sortick.escapeHTML(info.value || "")}" placeholder="Ex: R$ 5,00" /></label><label>Data do sorteio<input name="drawDate" type="date" value="${Sortick.escapeHTML(info.drawDate || "")}" /></label></div>
+      <label>Condição ou observação<textarea name="note" rows="3" maxlength="180">${Sortick.escapeHTML(info.note || "")}</textarea></label>
+      <div class="cartela-editor-actions"><button class="btn btn-ghost light cartela-editor-cancel" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar alterações</button></div>
+    </form>`;
+  overlay.appendChild(panel); document.body.appendChild(overlay); document.body.classList.add("sortick-modal-open");
+  const form=panel.querySelector("form"), list=panel.querySelector(".cartela-editor-prize-list"), imageInput=form.elements.image, imagePreview=panel.querySelector(".cartela-editor-image-preview"), imageStatus=panel.querySelector(".cartela-editor-image-status");
+  const close=()=>{overlay.remove();document.body.classList.remove("sortick-modal-open");if(previousFocus&&previousFocus.focus)previousFocus.focus();};
+  function renderImage(){ imagePreview.classList.toggle("hidden",!pendingImageData); const img=imagePreview.querySelector("img"),name=imagePreview.querySelector("strong"); if(pendingImageData)img.src=pendingImageData; else img.removeAttribute("src");name.textContent=pendingImageName||"Imagem selecionada"; }
+  function renderPrizes(){
+    list.innerHTML="";
+    prizes.forEach((prize,index)=>{ const row=document.createElement("div");row.className="cartela-prize-row";row.innerHTML=`<label>Prêmio<input data-name type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name||"")}" placeholder="Ex: Cesta de chocolates" /></label><label class="inline-option cartela-prize-repeat-option"><input data-repeat type="checkbox" ${prize.repeatable?"checked":""}/>Pode repetir este prêmio</label><button class="link-button danger-text" type="button">Remover</button>`;row.querySelector("[data-name]").addEventListener("input",e=>{prizes[index].name=e.target.value;});row.querySelector("[data-repeat]").addEventListener("change",e=>{prizes[index].repeatable=e.target.checked;});row.querySelector("button").addEventListener("click",()=>{if(prizes.length===1)prizes[0]={...prizes[0],name:"",repeatable:false};else prizes.splice(index,1);renderPrizes();});list.appendChild(row);});
+  }
+  renderPrizes();
+  panel.querySelector(".cartela-editor-add-prize").addEventListener("click",()=>{if(prizes.length>=10){imageStatus.textContent="O limite é de 10 prêmios.";return;}prizes.push({id:Sortick.createId("prize"),name:"",repeatable:false});renderPrizes();list.querySelectorAll("[data-name]").item(prizes.length-1).focus();});
+  imageInput.addEventListener("change",async()=>{const file=imageInput.files&&imageInput.files[0];if(!file)return;imageStatus.textContent="Preparando imagem...";try{const prepared=await Sortick.prepareImageFile(file);pendingImageData=prepared.dataUrl;pendingImageName=prepared.name;renderImage();imageStatus.textContent="Imagem pronta.";}catch(error){imageInput.value="";imageStatus.textContent=error&&error.message?error.message:"Não foi possível usar esta imagem.";}});
+  panel.querySelector(".cartela-editor-remove-image").addEventListener("click",()=>{pendingImageData="";pendingImageName="";imageInput.value="";renderImage();imageStatus.textContent="Imagem removida.";});
+  panel.querySelector(".cartela-preview-close").addEventListener("click",close);panel.querySelector(".cartela-editor-cancel").addEventListener("click",close);overlay.addEventListener("mousedown",e=>{if(e.target===overlay)close();});
+  form.addEventListener("submit",event=>{event.preventDefault();const title=Sortick.normalizeText(form.elements.title.value).slice(0,80);if(!title){form.elements.title.focus();return;}const normalized=prizes.map(item=>({id:item.id||Sortick.createId("prize"),name:Sortick.normalizeText(item.name).slice(0,100),repeatable:Boolean(item.repeatable)})).filter(item=>item.name);const updated=getCartelaInfo();updated.description=Sortick.normalizeText(form.elements.description.value).slice(0,180);updated.prizes=normalized;updated.prize=normalized[0]?normalized[0].name:"";updated.imageData=pendingImageData;updated.imageName=pendingImageName;updated.value=Sortick.normalizeText(form.elements.value.value).slice(0,30);updated.drawDate=form.elements.drawDate.value||"";updated.note=Sortick.normalizeText(form.elements.note.value).slice(0,180);draw.title=title;draw.options.cartelaInfo=updated;drawTitle.textContent=title;persist();render();setValidation("Detalhes da cartela atualizados.");close();});
+  form.elements.title.focus();
+}
