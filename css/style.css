@@ -3243,3 +3243,421 @@ body:fullscreen .draw-stage {
   .quick-die small { top: 23px; }
   .quick-number-display { min-width: 154px; padding: 17px 22px; }
 }
+
+
+/* v1.13.1 — correção de carrossel e rodapés institucionais */
+
+/* O carrossel continua rolável por setas, toque, trackpad e arraste.
+   A barra nativa não ocupa espaço visual. */
+#modos .mode-carousel-track,
+#modos .mode-carousel-track.mode-grid {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  padding-bottom: 6px !important;
+}
+
+#modos .mode-carousel-track::-webkit-scrollbar,
+#modos .mode-carousel-track.mode-grid::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Rodapé padrão para as páginas abertas pelos links "Saiba mais"
+   e para as páginas institucionais. */
+.footer.site-footer,
+.mode-page-footer {
+  width: min(var(--max), calc(100% - 40px));
+  margin: 0 auto;
+  padding: 30px 0 48px;
+  display: grid !important;
+  gap: 14px;
+}
+
+.footer.site-footer > p,
+.mode-page-footer > p {
+  margin: 0;
+  max-width: 880px;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+
+.footer.site-footer .footer-links,
+.mode-page-footer .footer-links {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 0 !important;
+  margin: 0;
+  font-weight: 800;
+}
+
+.footer.site-footer .footer-links a,
+.mode-page-footer .footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.footer.site-footer .footer-links a + a::before,
+.mode-page-footer .footer-links a + a::before {
+  content: "·";
+  display: inline-block;
+  margin: 0 10px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.footer.site-footer .footer-links a:hover,
+.footer.site-footer .footer-links a:focus-visible,
+.mode-page-footer .footer-links a:hover,
+.mode-page-footer .footer-links a:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+  outline: none;
+}
+
+@media (max-width: 560px) {
+  .footer.site-footer,
+  .mode-page-footer {
+    width: min(var(--max), calc(100% - 32px));
+    padding-bottom: 38px;
+  }
+
+  .footer.site-footer .footer-links,
+  .mode-page-footer .footer-links {
+    gap: 5px 0 !important;
+  }
+
+  .footer.site-footer .footer-links a,
+  .mode-page-footer .footer-links a {
+    font-size: 0.82rem;
+  }
+
+  .footer.site-footer .footer-links a + a::before,
+  .mode-page-footer .footer-links a + a::before {
+    margin: 0 7px;
+  }
+}
+
+
+/* v1.14 — versão completa: decisões visuais, prêmios e progresso */
+
+/* O carrossel mantém navegação por toque, arraste, setas e trackpad,
+   mas não reserva espaço para uma barra horizontal nativa. */
+#modos .mode-carousel {
+  overflow: hidden;
+}
+
+#modos .mode-carousel-track,
+#modos .mode-carousel-track.mode-grid {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  padding-bottom: 2px !important;
+}
+
+#modos .mode-carousel-track::-webkit-scrollbar,
+#modos .mode-carousel-track.mode-grid::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Rodapés institucionais: links sempre com espaçamento visual, mesmo em telas estreitas. */
+.footer.site-footer,
+.mode-page-footer {
+  width: min(var(--max), calc(100% - 40px));
+  margin: 0 auto;
+  padding: 30px 0 48px;
+  display: grid !important;
+  gap: 14px;
+}
+
+.footer.site-footer .footer-links,
+.mode-page-footer .footer-links {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0 !important;
+}
+
+.footer.site-footer .footer-links a,
+.mode-page-footer .footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  white-space: nowrap;
+}
+
+.footer.site-footer .footer-links a + a::before,
+.mode-page-footer .footer-links a + a::before {
+  content: "·";
+  display: inline-block;
+  margin: 0 10px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+/* Cartela: criação e edição de vários prêmios. */
+.cartela-prize-section,
+.cartela-editor-prize-section {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-soft);
+}
+
+.cartela-prize-section-heading h4,
+.cartela-prize-section-heading h3 {
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.cartela-prize-section-heading .field-hint {
+  margin: 0;
+}
+
+.cartela-prize-list,
+.cartela-editor-prize-list {
+  display: grid;
+  gap: 10px;
+}
+
+.cartela-prize-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.cartela-prize-repeat-option {
+  align-self: center;
+  min-height: 44px;
+  max-width: 155px;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.cartela-remove-prize,
+.cartela-prize-row > .link-button {
+  align-self: center;
+  white-space: nowrap;
+}
+
+.cartela-add-prize,
+.cartela-editor-add-prize {
+  justify-self: start;
+}
+
+.cartela-description {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.cartela-prize-draw-panel {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cartela-prize-draw-panel h3 {
+  margin: 2px 0 7px;
+  color: #ffffff;
+}
+
+.cartela-prize-draw-panel p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+}
+
+.cartela-prize-draw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.cartela-prize-draw-actions select {
+  flex: 1 1 230px;
+  min-height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.cartela-prize-history-wrap {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.cartela-prize-history-wrap > strong {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.88rem;
+}
+
+.cartela-prize-history,
+.cartela-prize-history-empty {
+  margin: 0;
+}
+
+.cartela-prize-history {
+  display: grid;
+  gap: 7px;
+  padding: 0;
+  list-style: none;
+}
+
+.cartela-prize-history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+}
+
+.cartela-prize-history li span,
+.cartela-prize-history-empty {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* Bingo: progresso de números únicos. */
+.bingo-progress-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.bingo-progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.bingo-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #50d7ff, #6c4dff);
+  transition: width 0.22s ease;
+}
+
+.bingo-progress-block small {
+  color: rgba(255, 255, 255, 0.84);
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+/* Decisões rápidas: uma moeda simples e dados 2D reconhecíveis. */
+.quick-coin-face {
+  font-size: 3.45rem;
+  letter-spacing: 0;
+}
+
+.quick-dice-shell {
+  width: 190px;
+  height: 190px;
+  filter: drop-shadow(0 16px 24px rgba(7, 15, 46, 0.28));
+}
+
+.quick-dice-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.quick-dice-face {
+  fill: url(#none);
+  fill: #74d6ff;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 7;
+  stroke-linejoin: round;
+}
+
+.quick-dice-shell-d4 .quick-dice-face { fill: #a1ecff; }
+.quick-dice-shell-d6 .quick-dice-face { fill: #87dfff; }
+.quick-dice-shell-d8 .quick-dice-face { fill: #67cef9; }
+.quick-dice-shell-d10 .quick-dice-face { fill: #71c2ff; }
+.quick-dice-shell-d12 .quick-dice-face { fill: #71b0ff; }
+.quick-dice-shell-d20 .quick-dice-face { fill: #68a3ff; }
+
+.quick-dice-facets path {
+  fill: none;
+  stroke: rgba(16, 58, 131, 0.36);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.quick-dice-kind {
+  fill: rgba(13, 56, 130, 0.72);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.quick-dice-value {
+  fill: #102c71;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 61px;
+  font-weight: 950;
+}
+
+.quick-is-rolling .quick-dice-shell {
+  animation: quick-dice-roll 0.22s linear infinite alternate;
+}
+
+@keyframes quick-dice-roll {
+  from { transform: rotate(-7deg) scale(0.96); }
+  to { transform: rotate(7deg) scale(1.05); }
+}
+
+.quick-history-note {
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 800;
+}
+
+.quick-random-repeat-option {
+  align-self: end;
+  min-height: 48px;
+  padding-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .footer.site-footer,
+  .mode-page-footer { width: min(var(--max), calc(100% - 32px)); }
+
+  .footer.site-footer .footer-links a + a::before,
+  .mode-page-footer .footer-links a + a::before { margin: 0 7px; }
+
+  .cartela-prize-row { grid-template-columns: 1fr; }
+  .cartela-prize-repeat-option { max-width: none; min-height: auto; }
+  .cartela-prize-row > .link-button { justify-self: start; }
+
+  .bingo-progress-block { grid-template-columns: 1fr; gap: 6px; }
+  .bingo-progress-block small { white-space: normal; }
+
+  .quick-dice-shell { width: 156px; height: 156px; }
+}

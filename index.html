@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#6c4dff" />
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1130" />
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1140" />
   <script src="/sortick-teste/js/clean-url.js"></script>
   <style id="mode-carousel-critical-css">
     #modos .mode-carousel {
@@ -29,15 +29,15 @@
       overflow-y: hidden;
       scroll-snap-type: x proximity;
       scroll-behavior: smooth;
-      padding: 4px 8px 6px;
-      scrollbar-width: none;
+      padding: 4px 8px 0;
+      scrollbar-width: none !important;
       -ms-overflow-style: none;
     }
 
     #modos .mode-carousel-track.mode-grid::-webkit-scrollbar {
-      display: none;
-      width: 0;
-      height: 0;
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
     }
 
     #modos .mode-carousel-track .mode-card {
@@ -293,10 +293,22 @@
               </label>
 
               <label>
-                Quantidade de números
-                <input id="cartelaCreateTotal" type="number" min="2" max="500" value="100" />
-                <span class="field-hint">Essa quantidade fica definida após criar a cartela.</span>
+                Descrição <span class="optional-inline">Opcional</span>
+                <textarea id="cartelaCreateDescription" rows="2" maxlength="180" placeholder="Ex: Cartela para uma atividade, evento ou arrecadação."></textarea>
               </label>
+
+              <div class="cartela-wizard-row">
+                <label>
+                  Quantidade de números
+                  <input id="cartelaCreateTotal" type="number" min="2" max="500" value="100" />
+                  <span class="field-hint">Essa quantidade fica definida após criar a cartela.</span>
+                </label>
+
+                <label>
+                  Data do sorteio <span class="optional-inline">Opcional</span>
+                  <input id="cartelaCreateDate" type="date" />
+                </label>
+              </div>
 
               <div class="cartela-wizard-actions">
                 <button id="cartelaWizardNext1" class="btn btn-primary" type="button">Continuar</button>
@@ -306,15 +318,21 @@
             <section class="cartela-wizard-step hidden" data-cartela-step="2">
               <p class="eyebrow">Etapa 2 de 3</p>
               <h3>Qual é o prêmio?</h3>
-              <p class="subtle">Você pode informar o prêmio e incluir uma imagem para aparecer na cartela e na exportação.</p>
+              <p class="subtle">Adicione um ou mais prêmios. A imagem de destaque aparece na cartela e na exportação.</p>
 
-              <label>
-                Prêmio
-                <input id="cartelaCreatePrize" type="text" maxlength="100" placeholder="Ex: Cesta de chocolates" />
-              </label>
+              <section class="cartela-prize-section" aria-label="Prêmios da cartela">
+                <div class="cartela-prize-section-heading">
+                  <div>
+                    <h4>Prêmios</h4>
+                    <p class="field-hint">Adicione um ou mais. Um prêmio único sai da lista depois de ser sorteado; um repetível pode sair novamente.</p>
+                  </div>
+                </div>
+                <div id="cartelaCreatePrizeList" class="cartela-prize-list"></div>
+                <button id="cartelaCreateAddPrize" class="btn btn-ghost light cartela-add-prize" type="button">Adicionar outro prêmio</button>
+              </section>
 
               <label class="cartela-image-upload">
-                <span>Imagem do prêmio <small>Opcional</small></span>
+                <span>Imagem de destaque <small>Opcional</small></span>
                 <input id="cartelaCreateImage" type="file" accept="image/png,image/jpeg,image/webp" />
                 <span class="field-hint">PNG, JPG ou WEBP.</span>
               </label>
@@ -340,17 +358,10 @@
               <h3>Detalhes opcionais</h3>
               <p class="subtle">Essas informações podem ser alteradas depois.</p>
 
-              <div class="cartela-wizard-row">
-                <label>
-                  Valor por número
-                  <input id="cartelaCreateValue" type="text" maxlength="30" placeholder="Ex: R$ 5,00" />
-                </label>
-
-                <label>
-                  Data do sorteio
-                  <input id="cartelaCreateDate" type="date" />
-                </label>
-              </div>
+              <label>
+                Valor por número <span class="optional-inline">Opcional</span>
+                <input id="cartelaCreateValue" type="text" maxlength="30" placeholder="Ex: R$ 5,00" />
+              </label>
 
               <label>
                 Condição ou observação
@@ -440,6 +451,10 @@
                 Máximo
                 <input id="quickMaxInput" type="number" value="100" min="-999999" max="999999" />
               </label>
+              <label class="inline-option quick-random-repeat-option">
+                <input id="quickRandomRepeatInput" type="checkbox" checked />
+                Permitir números repetidos
+              </label>
             </div>
           </section>
 
@@ -487,7 +502,7 @@
     </div>
   </footer>
 
-  <script src="/sortick-teste/js/utils.js?v=1130"></script>
-  <script src="/sortick-teste/js/index.js?v=1130"></script>
+  <script src="/sortick-teste/js/utils.js?v=1140"></script>
+  <script src="/sortick-teste/js/index.js?v=1140"></script>
 </body>
 </html>

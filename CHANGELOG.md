@@ -1,5 +1,12 @@
 # Changelog do Sortick
 
+## v1.14 — pacote completo
+- Decisões rápidas reformuladas, prêmios de cartela, progresso do Bingo e correções de interface.
+
+## v1.13.1 — correção e roadmap
+- Corrigido layout do rodapé e reforçada ocultação de barra no carrossel.
+- Organizado roadmap de cartela, prêmios e preenchimento.
+
 ## v1.13-finalizacao
 - Decisões rápidas com animações 2D, D4 e páginas de conteúdo originais.
 - Correções de carrossel e estrutura da home.

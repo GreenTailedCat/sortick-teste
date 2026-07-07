@@ -1,57 +1,25 @@
-# Roadmap do Sortick
+# Estado do Sortick — v1.14
 
-## Atual
+## Entregue nesta versão
 
-- Bingo simples/offline
+- Nomes, roleta, cartela, bingo, grupos e decisões rápidas.
+- Sorteios salvos, duplicação, renomeação e reutilização de listas.
+- Cartela em três etapas: identificação, prêmios e detalhes opcionais.
+- Descrição, data, valor, imagem de destaque, observação, vários prêmios e histórico de prêmios.
+- Barra de preenchimento da cartela e barra de progresso do Bingo.
+- Cara ou coroa, dados 2D e número aleatório com ou sem repetição.
+- Conteúdo público: como funciona, ideias de uso, FAQ e páginas dos modos.
 
-- Modo simples/offline
-- Sorteio por nomes
-- Roleta
-- Cartela de números
-- Confirmado/Pendente
-- Compartilhar resultado
-- Baixar imagem
-- PWA inicial
-- Páginas Sobre, Privacidade e Termos
-- Reportar erro por e-mail
+## Depois da publicação estável
 
-## Próximos passos possíveis
+- Modal horizontal ainda mais amplo para cartela.
+- Mais layouts de imagens exportadas.
+- Ordem de apresentações como atalho para ordem completa.
+- Perguntas ou opções aleatórias para atividades.
+- Login, nuvem e salas ao vivo somente com backend, regras de privacidade e necessidade real.
 
-### Pré-lançamento
-- Testar no GitHub Pages
-- Testar PWA em celular
-- Ajustar pequenos bugs
-- Decidir domínio
+## Fora do escopo atual
 
-### Online
-- Supabase
-- Login para criador de sorteio online
-- Sala com link/código
-- Espectadores acompanhando em tempo real
-- Participantes escolhendo número
-
-### Monetização
-- AdSense
-- Plano Pro mensal
-- Sorteio Pro avulso
-- Remover anúncios para espectadores quando o dono for Pro
-
-### Futuro
-- Bingo ao vivo
-- Histórico de sorteios
-- Android/iOS depois de validação real
-
-
-## Concluído parcialmente
-
-- Sorteios salvos localmente no navegador com painel para continuar/excluir.
-- Salvamento em nuvem permanece como possibilidade futura quando houver contas/login.
-
-
-## Após v1.13
-
-- Modal horizontal de visualização da cartela, separado da visualização atual.
-- Layouts adicionais para imagem exportada.
-- Atalho de ordem de apresentações.
-- Perguntas/opções aleatórias como extensão das decisões rápidas.
-- Sincronização em nuvem somente com autenticação, privacidade e custos definidos.
+- Pagamentos, venda de números e administração de premiações.
+- Personalização excessiva da cartela.
+- Three.js.

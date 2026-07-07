@@ -1,4 +1,4 @@
-# Sortick Teste v1.13-finalizacao
+# Sortick Teste v1.14 — pacote completo
 
 Versão preparada para abertura pública do domínio `sortick.com.br`.
 
@@ -280,3 +280,24 @@ Atualização para fechar o núcleo simples do Sortick sem multiplicar modos par
 - Criadas páginas: Como funciona, Ideias de uso e Perguntas frequentes.
 - Reescritas as páginas dos modos com passos, exemplos e limites específicos.
 - Esta continua sendo uma cópia de testes: sem Analytics, sem AdSense, sem PWA ativo e sem indexação.
+
+
+## v1.13.1 — correção e organização
+
+- Reforçada a ocultação da barra horizontal do carrossel.
+- Corrigido o layout do rodapé em páginas institucionais e páginas dos modos.
+- Atualizada a versão de CSS/JS para evitar cache antigo.
+- Documentado o formulário de cartela em três etapas e a barra de preenchimento como recursos já existentes.
+- Organizado o próximo passo da cartela: descrição, vários prêmios e regras de repetição.
+
+
+## v1.14 — pacote completo
+
+- Carrossel de modos sem barra horizontal visível.
+- Rodapés institucionais revisados.
+- Cara ou coroa com `?` antes do giro e resultado visual `🙂` ou `👑`.
+- Dados 2D redesenhados: D4, D6, D8, D10, D12 e D20, com silhuetas distintas.
+- Número aleatório com repetição opcional, sequência sem repetição e reinício de sequência.
+- Bingo com progresso de números únicos.
+- Cartela com descrição, vários prêmios, prêmios únicos ou repetíveis e histórico de sorteios de prêmios.
+- Mantida a criação de cartela em três etapas, imagem de destaque, valor, data, observação, edição e exportação.

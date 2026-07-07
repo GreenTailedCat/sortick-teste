@@ -229,3 +229,27 @@
 - [ ] Como funciona, Ideias de uso e Perguntas frequentes abrem sem links quebrados.
 - [ ] As cinco páginas de modos têm conteúdo específico.
 - [ ] Testar computador e celular antes de preparar produção.
+
+
+## Testes v1.13.1 — correções visuais
+
+- [ ] A home não mostra barra horizontal abaixo do carrossel.
+- [ ] As setas do carrossel continuam funcionando.
+- [ ] A página de cada modo mostra um rodapé com links separados e espaçados.
+- [ ] Os links Sobre, Privacidade, Termos e Erro/sugestões? continuam acessíveis.
+- [ ] Cartela mantém criação em 3 etapas.
+- [ ] Barra de preenchimento da cartela continua mostrando ocupados, confirmados e porcentagem.
+
+
+## Teste final v1.14
+
+- [ ] Carrossel sem barra horizontal e com setas funcionando.
+- [ ] Rodapés espaçados nas páginas de modo e institucionais.
+- [ ] Cara ou coroa mostra `?`, depois `🙂` ou `👑`.
+- [ ] D4, D6, D8, D10, D12 e D20 têm silhuetas diferentes e resultado correto.
+- [ ] Número aleatório repete quando permitido e bloqueia repetidos quando desativado.
+- [ ] Reiniciar sequência libera novamente os números aleatórios.
+- [ ] Bingo mostra progresso de números únicos.
+- [ ] Cartela cria descrição, data, vários prêmios e detalhes opcionais.
+- [ ] Prêmio único não aparece depois de sorteado; repetível permanece disponível.
+- [ ] Cartela, exportação de imagem e sorteios salvos continuam funcionando.

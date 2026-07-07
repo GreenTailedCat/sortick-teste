@@ -59,6 +59,8 @@ const groupNamesControl = document.querySelector("#groupNamesControl");
 const saveGroupNamesButton = document.querySelector("#saveGroupNamesButton");
 const quickSettingsPanel = document.querySelector("#quickSettingsPanel");
 const quickSettingsText = document.querySelector("#quickSettingsText");
+const randomRepeatToggle = document.querySelector("#randomRepeatToggle");
+const randomRepeatOption = document.querySelector("#randomRepeatOption");
 
 
 if (!draw) {
@@ -90,6 +92,10 @@ if (!draw) {
     : 6;
   draw.options.randomMin = Number.isInteger(draw.options.randomMin) ? draw.options.randomMin : 1;
   draw.options.randomMax = Number.isInteger(draw.options.randomMax) ? draw.options.randomMax : 100;
+  draw.options.randomAllowRepeats = draw.options.randomAllowRepeats !== false;
+  draw.options.randomDrawnNumbers = Array.isArray(draw.options.randomDrawnNumbers)
+    ? draw.options.randomDrawnNumbers.map(Number).filter(Number.isInteger)
+    : [];
   if (draw.options.randomMin > draw.options.randomMax) {
     [draw.options.randomMin, draw.options.randomMax] = [draw.options.randomMax, draw.options.randomMin];
   }
@@ -164,20 +170,46 @@ function setupDraw() {
 }
 
 function getTotalNumbers() { return Sortick.clampNumber(draw.options.totalNumbers || 50, 2, 500); }
-function getCartelaInfo() {
-  draw.options.cartelaInfo = {
-    prize: "",
+function normalizeCartelaInfo(source = {}) {
+  const input = source && typeof source === "object" ? source : {};
+  const sourcePrizes = Array.isArray(input.prizes) ? input.prizes : [];
+  const prizes = sourcePrizes
+    .map((prize, index) => ({
+      id: String(prize && prize.id ? prize.id : `prize-${index + 1}`),
+      name: Sortick.normalizeText(prize && prize.name).slice(0, 100),
+      repeatable: Boolean(prize && prize.repeatable)
+    }))
+    .filter(prize => prize.name);
+
+  if (!prizes.length && Sortick.normalizeText(input.prize)) {
+    prizes.push({ id: "prize-legacy", name: Sortick.normalizeText(input.prize).slice(0, 100), repeatable: false });
+  }
+
+  const prizeDrawHistory = Array.isArray(input.prizeDrawHistory)
+    ? input.prizeDrawHistory.filter(item => item && item.prizeId && item.winnerId)
+    : [];
+
+  return {
+    description: "",
+    prize: prizes[0] ? prizes[0].name : "",
+    prizes,
+    prizeDrawHistory,
     value: "",
     drawDate: "",
     note: "",
     imageData: "",
     imageName: "",
     exportShowNames: false,
-    ...(draw.options.cartelaInfo || {})
+    ...input,
+    prize: prizes[0] ? prizes[0].name : "",
+    prizes,
+    prizeDrawHistory
   };
+}
 
+function getCartelaInfo() {
+  draw.options.cartelaInfo = normalizeCartelaInfo(draw.options.cartelaInfo);
   delete draw.options.cartelaInfo.markerStyle;
-
   return draw.options.cartelaInfo;
 }
 
@@ -210,7 +242,8 @@ function getCartelaDetailParts() {
   const info = getCartelaInfo();
   const details = [];
 
-  if (info.prize) details.push(`Prêmio: ${info.prize}`);
+  if (info.prizes.length === 1) details.push(`Prêmio: ${info.prizes[0].name}`);
+  if (info.prizes.length > 1) details.push(`${info.prizes.length} prêmios`);
   if (info.value) details.push(`${info.value} por número`);
   if (info.drawDate) details.push(`Sorteio: ${formatCartelaDate(info.drawDate)}`);
 
@@ -224,6 +257,7 @@ function setRuleOptionsLocked(locked) {
   document.body.classList.toggle("drawing-locked", locked);
   confirmedOnlyToggle.disabled = locked;
   removeWinnerToggle.disabled = locked;
+  if (randomRepeatToggle) randomRepeatToggle.disabled = locked;
 }
 function getMinimumParticipants() { return draw.type === "numbers" ? 1 : 2; }
 function getEligibleParticipants() { return draw.options.confirmedOnly ? draw.participants.filter(p => p.status === "confirmed") : draw.participants; }
@@ -471,6 +505,11 @@ function renderBingoBoard(highlightNumber = null) {
         <small>${draw.options.bingoDrawnNumbers.length} sorteados · ${draw.options.bingoAllowRepeats ? "repetição permitida" : `${total - uniqueDrawn} restantes`}</small>
       </div>
 
+      <div class="bingo-progress-block" aria-label="${Math.round((uniqueDrawn / total) * 100)}% do bingo concluído">
+        <div class="bingo-progress-track"><span style="width: ${Math.round((uniqueDrawn / total) * 100)}%"></span></div>
+        <small>${uniqueDrawn} de ${total} números únicos · ${Math.round((uniqueDrawn / total) * 100)}%</small>
+      </div>
+
       <div class="bingo-latest">
         ${latest ? `<small>Último número</small><strong>${Sortick.escapeHTML(latest)}</strong>` : `<small>Nenhum número sorteado</small><strong>--</strong>`}
       </div>
@@ -677,6 +716,125 @@ function buildCartelaGrid({ interactive = true, showNames = true, extraClass = "
   return `<div class="number-board ${cellClass} ${extraClass}">${cells}</div>`;
 }
 
+function getAvailableCartelaPrizes() {
+  const info = getCartelaInfo();
+  const usedPrizeIds = new Set(info.prizeDrawHistory.map(item => item.prizeId));
+  return info.prizes.filter(prize => prize.repeatable || !usedPrizeIds.has(prize.id));
+}
+
+function getCartelaPrizeCandidates() {
+  return draw.options.confirmedOnly
+    ? draw.participants.filter(participant => participant.status === "confirmed")
+    : draw.participants.slice();
+}
+
+function getCartelaPrizePanelMarkup() {
+  const info = getCartelaInfo();
+  const availablePrizes = getAvailableCartelaPrizes();
+  const candidates = getCartelaPrizeCandidates();
+  const history = info.prizeDrawHistory.slice(-4).reverse();
+
+  if (!info.prizes.length) {
+    return `
+      <section class="cartela-prize-draw-panel is-empty">
+        <div>
+          <p class="eyebrow">PRÊMIOS</p>
+          <h3>Adicione um prêmio para sortear</h3>
+          <p>Use “Editar detalhes” para cadastrar um ou mais prêmios nesta cartela.</p>
+        </div>
+      </section>`;
+  }
+
+  const disabled = !availablePrizes.length || !candidates.length;
+  const historyMarkup = history.length
+    ? `<ol class="cartela-prize-history">${history.map(item => `<li><strong>${Sortick.escapeHTML(item.prizeName)}</strong><span>Nº ${Sortick.escapeHTML(item.winnerNumber)} · ${Sortick.escapeHTML(item.winnerName)}</span></li>`).join("")}</ol>`
+    : '<p class="cartela-prize-history-empty">Nenhum prêmio foi sorteado nesta cartela.</p>';
+
+  return `
+    <section class="cartela-prize-draw-panel">
+      <div class="cartela-prize-draw-heading">
+        <div>
+          <p class="eyebrow">SORTEIO DE PRÊMIOS</p>
+          <h3>Escolha o próximo prêmio</h3>
+          <p>${candidates.length} número(s) elegível(is). ${draw.options.confirmedOnly ? "Apenas confirmados entram no sorteio." : "Todos os números ocupados entram no sorteio."}</p>
+        </div>
+        <div class="cartela-prize-draw-actions">
+          <select id="cartelaPrizeSelect" aria-label="Escolher prêmio" ${disabled ? "disabled" : ""}>
+            ${availablePrizes.map(prize => `<option value="${Sortick.escapeHTML(prize.id)}">${Sortick.escapeHTML(prize.name)}${prize.repeatable ? " · pode repetir" : ""}</option>`).join("") || '<option>Nenhum prêmio disponível</option>'}
+          </select>
+          <button id="drawCartelaPrizeButton" class="btn btn-primary" type="button" ${disabled ? "disabled" : ""}>Sortear prêmio</button>
+        </div>
+      </div>
+      <div class="cartela-prize-history-wrap">
+        <strong>Histórico de prêmios</strong>
+        ${historyMarkup}
+      </div>
+    </section>`;
+}
+
+async function drawCartelaPrize(prizeId) {
+  if (draw.type !== "numbers" || isDrawing) return;
+  const info = getCartelaInfo();
+  const prize = getAvailableCartelaPrizes().find(item => item.id === prizeId);
+  const candidates = getCartelaPrizeCandidates();
+
+  if (!prize) {
+    setValidation("Escolha um prêmio disponível.");
+    return;
+  }
+  if (!candidates.length) {
+    setValidation("Não há números elegíveis para este sorteio de prêmio.");
+    return;
+  }
+
+  isDrawing = true;
+  render();
+  winnerCard.classList.add("hidden");
+  const winner = candidates[Sortick.secureRandomIndex(candidates.length)];
+  const started = performance.now();
+  let lastTick = 0;
+
+  await new Promise(resolve => {
+    function frame(now) {
+      const progress = Math.min((now - started) / 1050, 1);
+      if (now - lastTick > 70 + progress * 110) {
+        lastTick = now;
+        const preview = candidates[Sortick.secureRandomIndex(candidates.length)];
+        renderNumberBoard(preview.number);
+        playTickSound();
+      }
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        resolve();
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+
+  info.prizeDrawHistory.push({
+    id: Sortick.createId("prizedraw"),
+    prizeId: prize.id,
+    prizeName: prize.name,
+    winnerId: winner.id,
+    winnerName: winner.name,
+    winnerNumber: String(winner.number),
+    createdAt: new Date().toISOString()
+  });
+
+  draw.result = {
+    participant: winner,
+    createdAt: new Date().toISOString(),
+    participantCount: candidates.length,
+    prizeDraw: { id: prize.id, name: prize.name, repeatable: prize.repeatable }
+  };
+  persist();
+  isDrawing = false;
+  render();
+  playSuccessSound();
+  launchConfetti();
+}
+
 function renderNumberBoard(highlightNumber = null) {
   const info = getCartelaInfo();
   const stats = getCartelaStats();
@@ -700,6 +858,7 @@ function renderNumberBoard(highlightNumber = null) {
           <div class="cartela-title-block">
             <span>${Sortick.escapeHTML(draw.title)}</span>
             ${details.length ? `<small>${Sortick.escapeHTML(details.join(" · "))}</small>` : ""}
+            ${info.description ? `<small class="cartela-description">${Sortick.escapeHTML(info.description)}</small>` : ""}
             ${info.note ? `<small class="cartela-note">${Sortick.escapeHTML(info.note)}</small>` : ""}
           </div>
         </div>
@@ -727,6 +886,8 @@ function renderNumberBoard(highlightNumber = null) {
           <button id="exportCartelaButton" class="btn btn-primary" type="button">Exportar imagem</button>
         </div>
       </div>
+
+      ${getCartelaPrizePanelMarkup()}
     </div>`;
 
   const previewStageButton = animationArea.querySelector("#previewCartelaStageButton");
@@ -753,6 +914,12 @@ function renderNumberBoard(highlightNumber = null) {
         setValidation("Não foi possível gerar a imagem da cartela agora.");
       }
     });
+  }
+
+  const drawCartelaPrizeButton = animationArea.querySelector("#drawCartelaPrizeButton");
+  const cartelaPrizeSelect = animationArea.querySelector("#cartelaPrizeSelect");
+  if (drawCartelaPrizeButton && cartelaPrizeSelect) {
+    drawCartelaPrizeButton.addEventListener("click", () => drawCartelaPrize(cartelaPrizeSelect.value));
   }
 
   animationArea.querySelectorAll(".number-cell[data-number]").forEach(button => {
@@ -811,18 +978,29 @@ function openCartelaEditor() {
         <input name="title" type="text" maxlength="80" value="${Sortick.escapeHTML(draw.title)}" />
       </label>
 
+      <label>
+        Descrição <small>Opcional</small>
+        <textarea name="description" rows="2" maxlength="180" placeholder="Ex: Cartela para uma atividade, evento ou arrecadação.">${Sortick.escapeHTML(info.description || "")}</textarea>
+      </label>
+
       <div class="cartela-editor-locked">
         <strong>Cartela de 1 a ${getTotalNumbers()}</strong>
         <span>A quantidade de números é definida na criação e não pode ser alterada depois.</span>
       </div>
 
-      <label>
-        Prêmio
-        <input name="prize" type="text" maxlength="100" value="${Sortick.escapeHTML(info.prize || "")}" placeholder="Ex: Cesta de chocolates" />
-      </label>
+      <section class="cartela-editor-prize-section" aria-label="Prêmios">
+        <div class="cartela-prize-section-heading">
+          <div>
+            <h3>Prêmios</h3>
+            <p class="field-hint">Prêmios únicos deixam de aparecer depois de sorteados. Prêmios repetíveis podem sair novamente.</p>
+          </div>
+        </div>
+        <div class="cartela-editor-prize-list"></div>
+        <button class="btn btn-ghost light cartela-editor-add-prize" type="button">Adicionar outro prêmio</button>
+      </section>
 
       <label class="cartela-image-upload">
-        <span>Imagem do prêmio <small>Opcional</small></span>
+        <span>Imagem de destaque <small>Opcional</small></span>
         <input name="image" type="file" accept="image/png,image/jpeg,image/webp" />
         <span class="field-hint">PNG, JPG ou WEBP.</span>
       </label>
@@ -868,6 +1046,63 @@ function openCartelaEditor() {
   const imagePreviewName = imagePreview.querySelector("strong");
   const imageStatus = panel.querySelector(".cartela-editor-image-status");
   const removeImageButton = panel.querySelector(".cartela-editor-remove-image");
+  const editorPrizeList = panel.querySelector(".cartela-editor-prize-list");
+  const editorAddPrizeButton = panel.querySelector(".cartela-editor-add-prize");
+  let editorPrizes = info.prizes.map(prize => ({ ...prize }));
+
+  function renderEditorPrizeRows() {
+    editorPrizeList.innerHTML = "";
+    if (!editorPrizes.length) editorPrizes = [{ id: Sortick.createId("prize"), name: "", repeatable: false }];
+
+    editorPrizes.forEach((prize, index) => {
+      const row = document.createElement("div");
+      row.className = "cartela-prize-row";
+      row.innerHTML = `
+        <label>
+          Prêmio
+          <input class="editor-prize-name" type="text" maxlength="100" value="${Sortick.escapeHTML(prize.name || "")}" placeholder="Ex: Cesta de chocolates" />
+        </label>
+        <label class="inline-option cartela-prize-repeat-option">
+          <input class="editor-prize-repeat" type="checkbox" ${prize.repeatable ? "checked" : ""} />
+          Pode repetir este prêmio
+        </label>
+        <button class="link-button danger-text" type="button">Remover</button>`;
+
+      const nameInput = row.querySelector(".editor-prize-name");
+      const repeatInput = row.querySelector(".editor-prize-repeat");
+      nameInput.addEventListener("input", () => { editorPrizes[index].name = nameInput.value; });
+      repeatInput.addEventListener("change", () => { editorPrizes[index].repeatable = repeatInput.checked; });
+      row.querySelector("button").addEventListener("click", () => {
+        if (editorPrizes.length <= 1) {
+          editorPrizes[0] = { ...editorPrizes[0], name: "", repeatable: false };
+        } else {
+          editorPrizes.splice(index, 1);
+        }
+        renderEditorPrizeRows();
+      });
+      editorPrizeList.appendChild(row);
+    });
+  }
+
+  function collectEditorPrizes() {
+    return editorPrizes
+      .map(prize => ({
+        id: prize.id || Sortick.createId("prize"),
+        name: Sortick.normalizeText(prize.name).slice(0, 100),
+        repeatable: Boolean(prize.repeatable)
+      }))
+      .filter(prize => prize.name);
+  }
+
+  if (editorAddPrizeButton) {
+    editorAddPrizeButton.addEventListener("click", () => {
+      editorPrizes.push({ id: Sortick.createId("prize"), name: "", repeatable: false });
+      renderEditorPrizeRows();
+      const fields = editorPrizeList.querySelectorAll(".editor-prize-name");
+      fields[fields.length - 1].focus();
+    });
+  }
+  renderEditorPrizeRows();
 
   function renderImagePreview() {
     imagePreview.classList.toggle("hidden", !pendingImageData);
@@ -935,7 +1170,9 @@ function openCartelaEditor() {
     }
 
     const updatedInfo = getCartelaInfo();
-    updatedInfo.prize = Sortick.normalizeText(form.elements.prize.value).slice(0, 100);
+    updatedInfo.description = Sortick.normalizeText(form.elements.description.value).slice(0, 180);
+    updatedInfo.prizes = collectEditorPrizes();
+    updatedInfo.prize = updatedInfo.prizes[0] ? updatedInfo.prizes[0].name : "";
     updatedInfo.imageData = pendingImageData;
     updatedInfo.imageName = pendingImageName;
     updatedInfo.value = Sortick.normalizeText(form.elements.value.value).slice(0, 30);
@@ -993,6 +1230,7 @@ function openCartelaPreview() {
           <p class="eyebrow">Visualização da cartela</p>
           <h2 id="${headingId}">${Sortick.escapeHTML(draw.title)}</h2>
           ${details.length ? `<p>${Sortick.escapeHTML(details.join(" · "))}</p>` : ""}
+          ${info.description ? `<p>${Sortick.escapeHTML(info.description)}</p>` : ""}
           ${info.note ? `<p>${Sortick.escapeHTML(info.note)}</p>` : ""}
         </div>
       </div>
@@ -1303,6 +1541,12 @@ async function downloadCartelaImage() {
   ctx.font = "700 24px Inter, Arial, sans-serif";
   if (detailLines.length) {
     y = wrapCanvasText(ctx, detailLines.join(" · "), padding, y, contentRight - padding, 32);
+  }
+
+  if (info.description) {
+    y += 8;
+    ctx.font = "700 22px Inter, Arial, sans-serif";
+    y = wrapCanvasText(ctx, info.description, padding, y, contentRight - padding, 30);
   }
 
   if (info.note) {
@@ -1824,6 +2068,17 @@ if (soundToggle) {
   });
 }
 
+if (randomRepeatToggle) {
+  randomRepeatToggle.addEventListener("change", () => {
+    draw.options.randomAllowRepeats = Boolean(randomRepeatToggle.checked);
+    persist();
+    render();
+    setValidation(draw.options.randomAllowRepeats
+      ? "Números repetidos permitidos."
+      : "Números repetidos bloqueados nesta sequência.");
+  });
+}
+
 participantFilter.addEventListener("change", renderParticipants);
 
 copyButton.addEventListener("click", async () => {
@@ -1882,18 +2137,25 @@ downloadButton.addEventListener("click", () => {
 });
 
 resetButton.addEventListener("click", async () => {
-  if (isDrawing || draw.type !== "bingo") return;
+  if (isDrawing) return;
+
+  const isBingo = draw.type === "bingo";
+  const isRandomSequence = draw.type === "quick" && draw.options.quickType === "random" && !draw.options.randomAllowRepeats;
+  if (!isBingo && !isRandomSequence) return;
 
   const response = await Sortick.askForConfirmation({
-    title: "Reiniciar bingo?",
-    message: "O histórico de números sorteados será limpo e a próxima rodada começará do início.",
-    confirmText: "Reiniciar bingo",
+    title: isBingo ? "Reiniciar bingo?" : "Reiniciar sequência?",
+    message: isBingo
+      ? "O histórico de números sorteados será limpo e a próxima rodada começará do início."
+      : "Os números já usados voltarão a ficar disponíveis neste intervalo.",
+    confirmText: isBingo ? "Reiniciar bingo" : "Reiniciar sequência",
     tone: "danger"
   });
 
   if (!response.confirmed) return;
 
-  draw.options.bingoDrawnNumbers = [];
+  if (isBingo) draw.options.bingoDrawnNumbers = [];
+  if (isRandomSequence) draw.options.randomDrawnNumbers = [];
   draw.result = null;
   persist();
   render();
@@ -2122,10 +2384,43 @@ function getQuickDescription() {
   }
 
   if (draw.options.quickType === "random") {
-    return `Número aleatório de ${draw.options.randomMin} a ${draw.options.randomMax}`;
+    const suffix = draw.options.randomAllowRepeats ? "com repetição" : "sem repetição";
+    return `Número aleatório de ${draw.options.randomMin} a ${draw.options.randomMax} · ${suffix}`;
   }
 
   return "Cara ou coroa";
+}
+
+function getRandomSpan() {
+  return draw.options.randomMax - draw.options.randomMin + 1;
+}
+
+function getRemainingRandomNumberCount() {
+  if (draw.options.randomAllowRepeats) return getRandomSpan();
+  const used = new Set(draw.options.randomDrawnNumbers);
+  return Math.max(0, getRandomSpan() - used.size);
+}
+
+function getRandomAvailableValue() {
+  const min = draw.options.randomMin;
+  const max = draw.options.randomMax;
+  const span = getRandomSpan();
+  if (span <= 0) return null;
+  if (draw.options.randomAllowRepeats) return min + Sortick.secureRandomIndex(span);
+
+  const used = new Set(draw.options.randomDrawnNumbers);
+  if (used.size >= span) return null;
+
+  for (let attempt = 0; attempt < 64; attempt += 1) {
+    const value = min + Sortick.secureRandomIndex(span);
+    if (!used.has(value)) return value;
+  }
+
+  for (let value = min; value <= max; value += 1) {
+    if (!used.has(value)) return value;
+  }
+
+  return null;
 }
 
 function setupSimpleCorePanels() {
@@ -2178,8 +2473,24 @@ function setupSimpleCorePanels() {
   }
 
   if (isQuick) {
+    const isRandom = draw.options.quickType === "random";
     drawButton.textContent = "Decidir";
+    resetButton.classList.add("hidden");
+    const resetHint = document.querySelector("#resetHint");
+    if (resetHint) resetHint.classList.add("hidden");
     if (quickSettingsText) quickSettingsText.textContent = getQuickDescription();
+    if (randomRepeatOption) randomRepeatOption.classList.toggle("hidden", !isRandom);
+    if (randomRepeatToggle) randomRepeatToggle.checked = Boolean(draw.options.randomAllowRepeats);
+
+    if (isRandom && !draw.options.randomAllowRepeats) {
+      resetButton.textContent = "Reiniciar sequência";
+      resetButton.classList.remove("hidden");
+      const resetHint = document.querySelector("#resetHint");
+      if (resetHint) {
+        resetHint.textContent = "Libera novamente todos os números deste intervalo.";
+        resetHint.classList.remove("hidden");
+      }
+    }
   }
 }
 
@@ -2217,8 +2528,12 @@ function getSelectionCount(eligible) {
 
 function renderStatusSummary() {
   if (draw.type === "quick") {
+    const randomMeta = draw.options.quickType === "random"
+      ? `<span>${draw.options.randomAllowRepeats ? "Repetição permitida" : `${getRemainingRandomNumberCount()} restante(s)`}</span>`
+      : "";
     statusSummary.innerHTML = `
       <span>Modo: ${Sortick.escapeHTML(getQuickDescription())}</span>
+      ${randomMeta}
       <span>Sem lista de participantes</span>
     `;
     return;
@@ -2275,17 +2590,48 @@ function renderSelectionBoard(participants, heading = "") {
     </div>`;
 }
 
+function regularPolygonPoints(sides, radius = 88, startAngle = -90) {
+  const points = [];
+  for (let index = 0; index < sides; index += 1) {
+    const angle = ((startAngle + index * 360 / sides) * Math.PI) / 180;
+    points.push(`${(100 + Math.cos(angle) * radius).toFixed(1)},${(100 + Math.sin(angle) * radius).toFixed(1)}`);
+  }
+  return points.join(" ");
+}
+
+function getDiceSvgMarkup(sides, value) {
+  const safeValue = Sortick.escapeHTML(value || "?");
+  const base = {
+    4: { points: "100,12 188,182 12,182", facets: '<path d="M100 12 L100 182 M12 182 L188 182" />' },
+    6: { points: "28,28 172,28 172,172 28,172", facets: '<path d="M28 28 L172 172 M172 28 L28 172" />' },
+    8: { points: "100,10 190,100 100,190 10,100", facets: '<path d="M100 10 L100 190 M10 100 L190 100 M100 10 L190 100 M190 100 L100 190 M100 190 L10 100 M10 100 L100 10" />' },
+    10: { points: regularPolygonPoints(10, 88, -90), facets: '<path d="M100 12 L100 188 M30 56 L170 144 M170 56 L30 144" />' },
+    12: { points: regularPolygonPoints(12, 88, -90), facets: '<path d="M100 12 L100 188 M24 56 L176 144 M176 56 L24 144 M12 100 L188 100" />' },
+    20: { points: "100,10 181,69 150,174 50,174 19,69", facets: '<path d="M100 10 L100 174 M19 69 L150 174 M181 69 L50 174 M19 69 L181 69 M50 174 L150 174" />' }
+  }[sides] || { points: "28,28 172,28 172,172 28,172", facets: "" };
+
+  return `
+    <div class="quick-dice-shell quick-dice-shell-d${sides}" aria-hidden="true">
+      <svg class="quick-dice-svg" viewBox="0 0 200 200" role="img">
+        <polygon class="quick-dice-face" points="${base.points}"></polygon>
+        <g class="quick-dice-facets">${base.facets}</g>
+        <text class="quick-dice-kind" x="100" y="58" text-anchor="middle">D${sides}</text>
+        <text class="quick-dice-value" x="100" y="132" text-anchor="middle">${safeValue}</text>
+      </svg>
+    </div>`;
+}
+
 function getQuickVisualMarkup(result = null, { isAnimating = false } = {}) {
   const quickType = draw.options.quickType;
   const resultValue = result ? String(result.value) : "";
   const resultLabel = result ? result.label : getQuickDescription();
 
   if (quickType === "coin") {
-    const face = resultValue || "?";
+    const face = !result ? "?" : resultValue === "Cara" ? "🙂" : "👑";
     return `
       <div class="quick-visual quick-coin ${isAnimating ? "is-animating" : ""}" aria-hidden="true">
-        <span class="quick-coin-face">${Sortick.escapeHTML(face)}</span>
-        <small>${isAnimating ? "girando" : "cara ou coroa"}</small>
+        <span class="quick-coin-face">${face}</span>
+        <small>${isAnimating ? "girando" : result ? resultValue.toLowerCase() : "cara ou coroa"}</small>
       </div>
       <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
   }
@@ -2293,10 +2639,7 @@ function getQuickVisualMarkup(result = null, { isAnimating = false } = {}) {
   if (quickType === "dice") {
     const value = resultValue || "?";
     return `
-      <div class="quick-visual quick-die quick-die-d${draw.options.diceSides} ${isAnimating ? "is-animating" : ""}" aria-hidden="true">
-        <small>D${draw.options.diceSides}</small>
-        <strong>${Sortick.escapeHTML(value)}</strong>
-      </div>
+      <div class="quick-visual ${isAnimating ? "is-animating" : ""}">${getDiceSvgMarkup(draw.options.diceSides, value)}</div>
       <strong>${Sortick.escapeHTML(resultLabel)}</strong>`;
   }
 
@@ -2307,10 +2650,14 @@ function getQuickVisualMarkup(result = null, { isAnimating = false } = {}) {
 }
 
 function renderQuickDecision(result = null, { isAnimating = false } = {}) {
+  const history = draw.options.quickType === "random" && !draw.options.randomAllowRepeats
+    ? `<small class="quick-history-note">${draw.options.randomDrawnNumbers.length} número(s) já usado(s) nesta sequência</small>`
+    : "";
   animationArea.innerHTML = `
     <div class="quick-decision-card ${isAnimating ? "quick-is-rolling" : ""}">
       ${getQuickVisualMarkup(result, { isAnimating })}
       <p>${isAnimating ? "Sorteando..." : result ? "Decisão registrada. Você pode decidir novamente quando quiser." : "Clique em Decidir para gerar um resultado."}</p>
+      ${history}
     </div>`;
 }
 
@@ -2330,7 +2677,7 @@ function runQuickAnimation(finalResult) {
 
       if (now - lastTick > delay) {
         lastTick = now;
-        renderQuickDecision(makeQuickResult(), { isAnimating: true });
+        renderQuickDecision(makeQuickResult({ preview: true }) || finalResult, { isAnimating: true });
         playTickSound();
       }
 
@@ -2469,7 +2816,9 @@ function renderResult() {
     winnerMeta.textContent = `Bingo de 1 a ${getTotalNumbers()} · ${draw.options.bingoAllowRepeats ? "repetição permitida" : "sem repetição"}`;
   } else {
     winnerMeta.textContent = draw.type === "numbers"
-      ? `Associado a: ${participant.name} · ${Sortick.statusLabel(participant.status)}`
+      ? draw.result.prizeDraw
+        ? `Prêmio: ${draw.result.prizeDraw.name} · Nº ${participant.number} · ${participant.name}`
+        : `Associado a: ${participant.name} · ${Sortick.statusLabel(participant.status)}`
       : `${Sortick.typeLabel(draw.type)} · ${Sortick.statusLabel(participant.status)}`;
   }
 
@@ -2502,6 +2851,10 @@ function createProofText() {
 
   if (draw.type === "quick") {
     header.push(`Resultado: ${draw.result.quickResult.label}`);
+    if (draw.options.quickType === "random") {
+      header.push(`Intervalo: ${draw.options.randomMin} a ${draw.options.randomMax}`);
+      header.push(`Repetição: ${draw.options.randomAllowRepeats ? "permitida" : "não permitida"}`);
+    }
     header.push(`Data: ${Sortick.formatDateTime(draw.result.createdAt)}`);
     header.push("Feito no Sortick");
     return header.join("\n");
@@ -2526,6 +2879,7 @@ function createProofText() {
   header.push(`Resultado: ${getParticipantDisplay(participant)}`);
 
   if (draw.type === "numbers") {
+    if (draw.result.prizeDraw) header.push(`Prêmio: ${draw.result.prizeDraw.name}`);
     header.push(`Associado a: ${participant.name}`);
     header.push(`Cartela: 1 a ${getTotalNumbers()}`);
     header.push(`Status: ${Sortick.statusLabel(participant.status)}`);
@@ -2561,7 +2915,9 @@ function render() {
   }
 
   if (draw.type === "quick") {
-    canDraw = true;
+    canDraw = draw.options.quickType !== "random"
+      || draw.options.randomAllowRepeats
+      || getRemainingRandomNumberCount() > 0;
   }
 
   drawButton.disabled = !canDraw || isDrawing;
@@ -2571,15 +2927,18 @@ function render() {
   setRuleOptionsLocked(isDrawing);
 }
 
-function makeQuickResult() {
+function makeQuickResult({ preview = false, consume = false } = {}) {
   if (draw.options.quickType === "dice") {
     const value = Sortick.secureRandomIndex(draw.options.diceSides) + 1;
     return { label: `D${draw.options.diceSides}: ${value}`, value: String(value) };
   }
 
   if (draw.options.quickType === "random") {
-    const span = draw.options.randomMax - draw.options.randomMin + 1;
-    const value = draw.options.randomMin + Sortick.secureRandomIndex(span);
+    const value = getRandomAvailableValue();
+    if (value === null) return null;
+    if (consume && !preview && !draw.options.randomAllowRepeats) {
+      draw.options.randomDrawnNumbers.push(value);
+    }
     return { label: `Número: ${value}`, value: String(value) };
   }
 
@@ -2625,7 +2984,13 @@ async function performCoreDraw() {
     };
     playSuccessSound();
   } else if (draw.type === "quick") {
-    const quickResult = makeQuickResult();
+    const quickResult = makeQuickResult({ consume: true });
+    if (!quickResult) {
+      isDrawing = false;
+      render();
+      setValidation("Todos os números deste intervalo já foram usados. Reinicie a sequência ou permita repetição.");
+      return;
+    }
     await runQuickAnimation(quickResult);
     draw.result = {
       participant: { id: Sortick.createId("q"), name: quickResult.label, status: "confirmed" },
