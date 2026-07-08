@@ -61,3 +61,10 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - Dados substituídos por SVG 2.5D locais, com faces, facetas, sombra e número dinâmico.
 - Botões inferiores alterados para +D4, +D6, +D8, +D10, +D12 e +D20.
 - Layout dos dados ajustado para 1–10 dados e telas menores.
+
+
+## v1.21 — correção de carregamento
+
+- A mesa de dados foi forçada a renderizar depois do código legado.
+- O modo Dado não deve mais cair na tela “Adicione participantes para começar”.
+- Mantém o som próprio da moeda e os dados SVG 2.5D.

@@ -10,181 +10,105 @@
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-  function getQueryId() {
-    return new URLSearchParams(window.location.search).get("id");
+  function getDrawId() {
+    return new URLSearchParams(location.search).get("id");
   }
 
-  function readDraw() {
-    try {
-      const id = getQueryId();
-      const draws = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      return draws.find(draw => draw.id === id) || null;
-    } catch {
-      return null;
-    }
+  function getDraws() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+    catch { return []; }
+  }
+
+  function getDraw() {
+    const id = getDrawId();
+    return getDraws().find(draw => draw && draw.id === id) || null;
   }
 
   function saveDraw(draw) {
     try {
-      const draws = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      const draws = getDraws();
       const index = draws.findIndex(item => item.id === draw.id);
-      if (index >= 0) {
-        draws[index] = draw;
-      } else {
-        draws.push(draw);
-      }
+      if (index >= 0) draws[index] = draw;
+      else draws.push(draw);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(draws));
-    } catch {
-      // Fallback: the dice table remains usable even when storage fails.
-    }
+    } catch {}
   }
 
-  function secureRandomIndex(max) {
+  function isDiceDraw(draw) {
+    return draw && draw.type === "quick" && draw.options && draw.options.quickType === "dice";
+  }
+
+  function randomIndex(max) {
     if (max <= 0) return 0;
-    if (window.crypto && typeof window.crypto.getRandomValues === "function") {
-      const array = new Uint32Array(1);
+    if (crypto && typeof crypto.getRandomValues === "function") {
+      const buffer = new Uint32Array(1);
       const limit = Math.floor(0xffffffff / max) * max;
       let value;
       do {
-        window.crypto.getRandomValues(array);
-        value = array[0];
+        crypto.getRandomValues(buffer);
+        value = buffer[0];
       } while (value >= limit);
       return value % max;
     }
     return Math.floor(Math.random() * max);
   }
 
-  function createId(prefix = "dice") {
-    return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  function makeId() {
+    return `die_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   }
 
-  function getDiceState(draw) {
+  function state(draw) {
     draw.options = draw.options || {};
-    draw.options.diceTable = draw.options.diceTable || {
-      dice: [],
-      lastTotal: 0,
-      updatedAt: ""
-    };
-    draw.options.diceTable.dice = Array.isArray(draw.options.diceTable.dice)
-      ? draw.options.diceTable.dice.filter(item => item && DICE_TYPES.includes(Number(item.sides))).slice(0, DICE_LIMIT)
-      : [];
+    draw.options.diceTable = draw.options.diceTable || {};
+    const dice = Array.isArray(draw.options.diceTable.dice) ? draw.options.diceTable.dice : [];
+    draw.options.diceTable.dice = dice
+      .filter(item => item && DICE_TYPES.includes(Number(item.sides)))
+      .slice(0, DICE_LIMIT)
+      .map(item => ({
+        id: item.id || makeId(),
+        sides: Number(item.sides),
+        value: Number.isInteger(Number(item.value)) ? Number(item.value) : null
+      }));
+    draw.options.diceTable.lastTotal = draw.options.diceTable.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     return draw.options.diceTable;
   }
 
-  function diceLabel(sides) {
-    return `D${sides}`;
-  }
-
-  function diceSvg(sides, value = "?") {
-    const safeValue = escapeHTML(value);
-    const configs = {
-      4: {
-        labelY: 56,
-        valueY: 134,
-        view: "0 0 220 200",
-        body: `
-          <path class="dice-shadow" d="M44 176 L176 176 L110 22 Z"/>
-          <path class="dice-face dice-main" d="M110 18 L202 184 L18 184 Z"/>
-          <path class="dice-face dice-side-a" d="M110 18 L110 184 L18 184 Z"/>
-          <path class="dice-face dice-side-b" d="M110 18 L202 184 L110 184 Z"/>
-          <path class="dice-line" d="M110 18 L110 184 M18 184 L202 184"/>
-        `
-      },
-      6: {
-        labelY: 58,
-        valueY: 136,
-        view: "0 0 220 200",
-        body: `
-          <path class="dice-shadow" d="M58 172 L166 172 L196 58 L90 58 Z"/>
-          <path class="dice-face dice-top" d="M62 48 L144 22 L196 58 L112 88 Z"/>
-          <path class="dice-face dice-main" d="M112 88 L196 58 L196 144 L112 178 Z"/>
-          <path class="dice-face dice-side-a" d="M62 48 L112 88 L112 178 L62 132 Z"/>
-          <path class="dice-line" d="M62 48 L112 88 L196 58 M112 88 L112 178"/>
-        `
-      },
-      8: {
-        labelY: 54,
-        valueY: 132,
-        view: "0 0 220 200",
-        body: `
-          <path class="dice-shadow" d="M110 188 L198 102 L110 18 L22 102 Z"/>
-          <path class="dice-face dice-main" d="M110 18 L198 102 L110 106 Z"/>
-          <path class="dice-face dice-side-a" d="M110 18 L110 106 L22 102 Z"/>
-          <path class="dice-face dice-side-b" d="M22 102 L110 106 L110 188 Z"/>
-          <path class="dice-face dice-side-c" d="M198 102 L110 106 L110 188 Z"/>
-          <path class="dice-line" d="M110 18 L110 188 M22 102 L198 102"/>
-        `
-      },
-      10: {
-        labelY: 56,
-        valueY: 133,
-        view: "0 0 220 200",
-        body: `
-          <path class="dice-shadow" d="M34 98 L70 32 L150 20 L196 88 L170 164 L98 188 L38 142 Z"/>
-          <path class="dice-face dice-main" d="M70 32 L150 20 L196 88 L112 104 Z"/>
-          <path class="dice-face dice-side-a" d="M34 98 L70 32 L112 104 L38 142 Z"/>
-          <path class="dice-face dice-side-b" d="M196 88 L170 164 L112 104 Z"/>
-          <path class="dice-face dice-side-c" d="M38 142 L112 104 L98 188 Z"/>
-          <path class="dice-face dice-side-d" d="M112 104 L170 164 L98 188 Z"/>
-          <path class="dice-line" d="M70 32 L112 104 L150 20 M34 98 L112 104 L196 88 M38 142 L112 104 L98 188 M170 164 L112 104"/>
-        `
-      },
-      12: {
-        labelY: 56,
-        valueY: 134,
-        view: "0 0 220 200",
-        body: `
-          <path class="dice-shadow" d="M110 14 L176 40 L204 106 L166 174 L92 190 L32 142 L28 70 Z"/>
-          <path class="dice-face dice-main" d="M110 42 L160 70 L148 132 L86 132 L68 72 Z"/>
-          <path class="dice-face dice-side-a" d="M110 14 L176 40 L160 70 L110 42 Z"/>
-          <path class="dice-face dice-side-b" d="M176 40 L204 106 L148 132 L160 70 Z"/>
-          <path class="dice-face dice-side-c" d="M148 132 L166 174 L92 190 L86 132 Z"/>
-          <path class="dice-face dice-side-d" d="M28 70 L68 72 L86 132 L32 142 Z"/>
-          <path class="dice-line" d="M110 42 L160 70 L148 132 L86 132 L68 72 Z M110 42 L110 14 M160 70 L176 40 M148 132 L204 106 M86 132 L92 190 M68 72 L28 70"/>
-        `
-      },
-      20: {
-        labelY: 54,
-        valueY: 132,
-        view: "0 0 220 200",
-        body: `
-          <path class="dice-shadow" d="M110 10 L190 54 L196 142 L110 192 L24 142 L30 54 Z"/>
-          <path class="dice-face dice-main" d="M110 40 L166 74 L142 136 L78 136 L54 74 Z"/>
-          <path class="dice-face dice-side-a" d="M110 10 L190 54 L166 74 L110 40 Z"/>
-          <path class="dice-face dice-side-b" d="M190 54 L196 142 L142 136 L166 74 Z"/>
-          <path class="dice-face dice-side-c" d="M142 136 L110 192 L78 136 Z"/>
-          <path class="dice-face dice-side-d" d="M24 142 L54 74 L78 136 Z"/>
-          <path class="dice-face dice-side-e" d="M30 54 L110 10 L110 40 L54 74 Z"/>
-          <path class="dice-line" d="M110 40 L166 74 L142 136 L78 136 L54 74 Z M110 10 L110 40 M190 54 L166 74 M196 142 L142 136 M110 192 L142 136 M110 192 L78 136 M24 142 L78 136 M30 54 L54 74"/>
-        `
-      }
+  function diceSvg(sides, value) {
+    const v = escapeHTML(value ?? "?");
+    const shared = `
+      <defs>
+        <linearGradient id="diceGrad${sides}" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="rgba(255,255,255,.95)"/>
+          <stop offset=".35" stop-color="var(--dice-light)"/>
+          <stop offset="1" stop-color="var(--dice-dark)"/>
+        </linearGradient>
+      </defs>`;
+    const shapes = {
+      4: `<path class="dice-shadow" d="M42 182 L178 182 L110 28 Z"/><path class="dice-main" d="M110 20 L204 186 L16 186 Z"/><path class="dice-side dice-side-a" d="M110 20 L110 186 L16 186 Z"/><path class="dice-side dice-side-b" d="M110 20 L204 186 L110 186 Z"/><path class="dice-line" d="M110 20 L110 186 M16 186 L204 186"/>`,
+      6: `<path class="dice-shadow" d="M54 174 L166 174 L198 64 L88 54 Z"/><path class="dice-top" d="M58 52 L144 24 L198 64 L112 94 Z"/><path class="dice-main" d="M112 94 L198 64 L198 148 L112 180 Z"/><path class="dice-side dice-side-a" d="M58 52 L112 94 L112 180 L58 136 Z"/><path class="dice-line" d="M58 52 L112 94 L198 64 M112 94 L112 180"/>`,
+      8: `<path class="dice-shadow" d="M110 192 L202 104 L110 14 L18 104 Z"/><path class="dice-top" d="M110 14 L202 104 L110 106 Z"/><path class="dice-side dice-side-a" d="M110 14 L110 106 L18 104 Z"/><path class="dice-main" d="M18 104 L110 106 L110 192 Z"/><path class="dice-side dice-side-b" d="M202 104 L110 106 L110 192 Z"/><path class="dice-line" d="M110 14 L110 192 M18 104 L202 104"/>`,
+      10: `<path class="dice-shadow" d="M30 100 L70 30 L150 18 L202 90 L170 168 L96 190 L36 146 Z"/><path class="dice-top" d="M70 30 L150 18 L202 90 L112 106 Z"/><path class="dice-side dice-side-a" d="M30 100 L70 30 L112 106 L36 146 Z"/><path class="dice-main" d="M202 90 L170 168 L112 106 Z"/><path class="dice-side dice-side-b" d="M36 146 L112 106 L96 190 Z"/><path class="dice-side dice-side-c" d="M112 106 L170 168 L96 190 Z"/><path class="dice-line" d="M70 30 L112 106 L150 18 M30 100 L112 106 L202 90 M36 146 L112 106 L96 190 M170 168 L112 106"/>`,
+      12: `<path class="dice-shadow" d="M110 12 L178 42 L206 108 L166 176 L92 192 L30 144 L26 70 Z"/><path class="dice-main" d="M110 42 L162 72 L150 134 L86 134 L66 74 Z"/><path class="dice-top" d="M110 12 L178 42 L162 72 L110 42 Z"/><path class="dice-side dice-side-a" d="M178 42 L206 108 L150 134 L162 72 Z"/><path class="dice-side dice-side-b" d="M150 134 L166 176 L92 192 L86 134 Z"/><path class="dice-side dice-side-c" d="M26 70 L66 74 L86 134 L30 144 Z"/><path class="dice-line" d="M110 42 L162 72 L150 134 L86 134 L66 74 Z M110 42 L110 12 M162 72 L178 42 M150 134 L206 108 M86 134 L92 192 M66 74 L26 70"/>`,
+      20: `<path class="dice-shadow" d="M110 10 L192 54 L198 144 L110 194 L22 144 L28 54 Z"/><path class="dice-main" d="M110 42 L168 76 L142 138 L78 138 L52 76 Z"/><path class="dice-top" d="M110 10 L192 54 L168 76 L110 42 Z"/><path class="dice-side dice-side-a" d="M192 54 L198 144 L142 138 L168 76 Z"/><path class="dice-side dice-side-b" d="M142 138 L110 194 L78 138 Z"/><path class="dice-side dice-side-c" d="M22 144 L52 76 L78 138 Z"/><path class="dice-side dice-side-d" d="M28 54 L110 10 L110 42 L52 76 Z"/><path class="dice-line" d="M110 42 L168 76 L142 138 L78 138 L52 76 Z M110 10 L110 42 M192 54 L168 76 M198 144 L142 138 M110 194 L142 138 M110 194 L78 138 M22 144 L78 138 M28 54 L52 76"/>`
     };
-
-    const config = configs[sides] || configs[6];
-    return `
-      <svg class="dice-piece-svg dice-piece-svg-d${sides}" viewBox="${config.view}" role="img" aria-label="D${sides}, resultado ${safeValue}">
-        ${config.body}
-        <text class="dice-type-text" x="110" y="${config.labelY}" text-anchor="middle">D${sides}</text>
-        <text class="dice-value-text" x="110" y="${config.valueY}" text-anchor="middle">${safeValue}</text>
-      </svg>`;
+    return `<svg class="dice-piece-svg dice-piece-svg-d${sides}" viewBox="0 0 220 205" role="img" aria-label="D${sides}, resultado ${v}">${shared}${shapes[sides]}<text class="dice-type-text" x="110" y="58" text-anchor="middle">D${sides}</text><text class="dice-value-text" x="110" y="137" text-anchor="middle">${v}</text></svg>`;
   }
 
-  function totalFromDice(dice) {
-    return dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
-  }
-
-  function render(draw, { rolling = false } = {}) {
+  function render(draw, rolling = false) {
+    if (!isDiceDraw(draw)) return;
+    const root = document.querySelector(".draw-layout");
     const stage = document.querySelector(".draw-stage");
     const side = document.querySelector(".draw-side");
-    if (!stage) return;
+    if (!root || !stage) return;
 
     document.body.classList.add("dice-direct-mode");
+    const old = document.querySelector(".winner-card");
+    if (old) old.classList.add("hidden");
 
-    const state = getDiceState(draw);
-    const dice = state.dice;
-    const total = totalFromDice(dice);
-    const compactClass = dice.length >= 8 ? "is-compact" : dice.length >= 5 ? "is-medium" : "";
-    const hasDice = dice.length > 0;
+    const s = state(draw);
+    const dice = s.dice;
+    const total = dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+    const sizeClass = dice.length >= 8 ? "is-compact" : dice.length >= 5 ? "is-medium" : "";
 
     stage.innerHTML = `
       <div class="dice-direct-card">
@@ -192,87 +116,70 @@
           <div>
             <p class="eyebrow">DECISÕES RÁPIDAS</p>
             <h1>Jogar os dados</h1>
-            <p>${hasDice ? "Role novamente, remova dados ou limpe a mesa." : "Escolha um ou mais dados abaixo para começar."}</p>
+            <p>${dice.length ? "Role novamente, remova dados ou limpe a mesa." : "Escolha um ou mais dados abaixo para começar."}</p>
           </div>
           <span class="dice-count">${dice.length}/${DICE_LIMIT} dados</span>
         </div>
 
-        <div class="dice-table ${compactClass} ${rolling ? "is-rolling" : ""}">
-          ${hasDice ? `
-            <div class="dice-pieces" aria-live="polite">
-              ${dice.map(item => `
-                <article class="dice-piece dice-piece-d${item.sides}" data-dice-id="${escapeHTML(item.id)}">
-                  <button class="dice-remove" type="button" aria-label="Remover D${item.sides}">×</button>
-                  ${diceSvg(item.sides, item.value || "?")}
-                </article>`).join("")}
+        <div class="dice-table ${sizeClass} ${rolling ? "is-rolling" : ""}">
+          ${dice.length ? `
+            <div class="dice-pieces">
+              ${dice.map(item => `<article class="dice-piece dice-piece-d${item.sides}" data-die="${escapeHTML(item.id)}"><button class="dice-remove" type="button" aria-label="Remover D${item.sides}">×</button>${diceSvg(item.sides, item.value || "?")}</article>`).join("")}
             </div>
-            ${dice.length > 1 ? `
-              <div class="dice-total-box">
-                <span>Total</span>
-                <strong>${total}</strong>
-              </div>` : ""}
-          ` : `
-            <div class="dice-empty">
-              <strong>Escolha os dados</strong>
-              <span>Use os botões abaixo para adicionar D4, D6, D8, D10, D12 ou D20.</span>
-            </div>`}
+            ${dice.length > 1 ? `<div class="dice-total-box"><span>Total</span><strong>${total}</strong></div>` : ""}
+          ` : `<div class="dice-empty"><strong>Mesa vazia</strong><span>Use os botões abaixo para adicionar dados.</span></div>`}
         </div>
 
         <div class="dice-controls">
           <div class="dice-add-row">
-            ${DICE_TYPES.map(sides => `
-              <button class="dice-add" type="button" data-sides="${sides}" ${dice.length >= DICE_LIMIT ? "disabled" : ""}>+ D${sides}</button>`).join("")}
+            ${DICE_TYPES.map(n => `<button class="dice-add" data-sides="${n}" type="button" ${dice.length >= DICE_LIMIT ? "disabled" : ""}>+ D${n}</button>`).join("")}
           </div>
-
           <div class="dice-action-row">
-            <button id="diceRollButton" class="btn btn-primary" type="button" ${!hasDice ? "disabled" : ""}>Rolar</button>
-            <button id="diceClearButton" class="btn btn-ghost light" type="button" ${!hasDice ? "disabled" : ""}>Limpar</button>
+            <button id="diceRollButton" class="btn btn-primary" type="button" ${dice.length ? "" : "disabled"}>Rolar</button>
+            <button id="diceClearButton" class="btn btn-ghost light" type="button" ${dice.length ? "" : "disabled"}>Limpar</button>
           </div>
-
           ${dice.length >= DICE_LIMIT ? `<p class="dice-limit-note">Limite de ${DICE_LIMIT} dados atingido.</p>` : ""}
         </div>
       </div>`;
 
     if (side) {
-      side.innerHTML = `
-        <aside class="info-card">
-          <h3>Transparência</h3>
-          <p>Os resultados usam a aleatoriedade do navegador com crypto.getRandomValues, quando disponível.</p>
-        </aside>`;
+      side.innerHTML = `<aside class="info-card"><h3>Transparência</h3><p>Os resultados usam a aleatoriedade do navegador com crypto.getRandomValues, quando disponível.</p></aside>`;
     }
 
-    stage.querySelectorAll(".dice-add").forEach(button => {
-      button.addEventListener("click", () => {
-        const sides = Number(button.dataset.sides);
-        if (!DICE_TYPES.includes(sides) || state.dice.length >= DICE_LIMIT) return;
-        state.dice.push({ id: createId("die"), sides, value: null });
-        state.updatedAt = new Date().toISOString();
+    stage.querySelectorAll(".dice-add").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const sides = Number(btn.dataset.sides);
+        const current = state(draw);
+        if (!DICE_TYPES.includes(sides) || current.dice.length >= DICE_LIMIT) return;
+        current.dice.push({ id: makeId(), sides, value: null });
+        current.lastTotal = current.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
         draw.result = null;
         saveDraw(draw);
         render(draw);
       });
     });
 
-    stage.querySelectorAll(".dice-remove").forEach(button => {
-      button.addEventListener("click", () => {
-        const id = button.closest(".dice-piece")?.dataset.diceId;
-        state.dice = state.dice.filter(item => item.id !== id);
-        draw.options.diceTable = state;
+    stage.querySelectorAll(".dice-remove").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.closest(".dice-piece")?.dataset.die;
+        const current = state(draw);
+        current.dice = current.dice.filter(item => item.id !== id);
+        current.lastTotal = current.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+        draw.options.diceTable = current;
         draw.result = null;
-        state.updatedAt = new Date().toISOString();
         saveDraw(draw);
         render(draw);
       });
     });
 
-    const rollButton = stage.querySelector("#diceRollButton");
-    const clearButton = stage.querySelector("#diceClearButton");
+    const roll = stage.querySelector("#diceRollButton");
+    const clear = stage.querySelector("#diceClearButton");
 
-    if (rollButton) rollButton.addEventListener("click", () => rollDice(draw));
-    if (clearButton) clearButton.addEventListener("click", () => {
-      state.dice = [];
-      state.lastTotal = 0;
-      state.updatedAt = new Date().toISOString();
+    if (roll) roll.addEventListener("click", () => rollDice(draw));
+    if (clear) clear.addEventListener("click", () => {
+      const current = state(draw);
+      current.dice = [];
+      current.lastTotal = 0;
       draw.result = null;
       saveDraw(draw);
       render(draw);
@@ -280,52 +187,51 @@
   }
 
   function rollDice(draw) {
-    const state = getDiceState(draw);
-    if (!state.dice.length) return;
+    const s = state(draw);
+    if (!s.dice.length) return;
 
-    let ticks = 0;
-    const maxTicks = 13;
-
-    const interval = window.setInterval(() => {
-      ticks += 1;
-      state.dice = state.dice.map(item => ({
-        ...item,
-        value: secureRandomIndex(item.sides) + 1
-      }));
-      state.lastTotal = totalFromDice(state.dice);
-      render(draw, { rolling: true });
-
-      if (ticks >= maxTicks) {
-        window.clearInterval(interval);
-        state.dice = state.dice.map(item => ({
-          ...item,
-          value: secureRandomIndex(item.sides) + 1
-        }));
-        state.lastTotal = totalFromDice(state.dice);
-        state.updatedAt = new Date().toISOString();
+    let tick = 0;
+    const maxTick = 13;
+    const timer = setInterval(() => {
+      tick += 1;
+      s.dice = s.dice.map(item => ({ ...item, value: randomIndex(item.sides) + 1 }));
+      s.lastTotal = s.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+      render(draw, true);
+      if (tick >= maxTick) {
+        clearInterval(timer);
+        s.dice = s.dice.map(item => ({ ...item, value: randomIndex(item.sides) + 1 }));
+        s.lastTotal = s.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
         draw.result = {
-          quickResult: {
-            label: `Total: ${state.lastTotal}`,
-            value: String(state.lastTotal)
-          },
-          diceResults: state.dice.map(item => ({ sides: item.sides, value: item.value })),
+          quickResult: { label: `Total: ${s.lastTotal}`, value: String(s.lastTotal) },
+          diceResults: s.dice.map(item => ({ sides: item.sides, value: item.value })),
           createdAt: new Date().toISOString()
         };
         saveDraw(draw);
-        render(draw);
+        render(draw, false);
       }
     }, 58);
   }
 
-  function init() {
-    const draw = readDraw();
-    if (!draw || draw.type !== "quick" || draw.options?.quickType !== "dice") return;
+  function boot() {
+    const draw = getDraw();
+    if (!isDiceDraw(draw)) return false;
     render(draw);
+    return true;
+  }
+
+  // Run repeatedly for a moment because the legacy renderer may repaint after DOMContentLoaded.
+  function forceBoot() {
+    let count = 0;
+    const run = () => {
+      if (boot()) count += 1;
+      if (count < 10) setTimeout(run, 120);
+    };
+    run();
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", forceBoot);
   } else {
-    init();
+    forceBoot();
   }
 })();
