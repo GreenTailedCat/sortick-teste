@@ -75,3 +75,11 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - Corrigida leitura do armazenamento do modo Dado.
 - Mesa de dados forçada sobre o renderizador legado.
 - Botão próprio de som da moeda.
+
+
+## v1.23 — som da moeda corrigido
+
+- Corrigida a criação do AudioContext da moeda.
+- O som da moeda não depende do som geral.
+- Botão de mutar/desmutar mantido.
+- Reativar o som toca uma prévia curta.

@@ -87,6 +87,7 @@ if (!draw) {
   draw.options.roundDrawnIds = Array.isArray(draw.options.roundDrawnIds) ? draw.options.roundDrawnIds : [];
   draw.options.groupNames = Array.isArray(draw.options.groupNames) ? draw.options.groupNames : [];
   draw.options.quickType = ["coin", "dice", "random"].includes(draw.options.quickType) ? draw.options.quickType : "coin";
+  if (draw.type === "quick" && draw.options.quickType === "coin") draw.options.coinSoundEnabled = draw.options.coinSoundEnabled !== false;
   const supportedDiceSides = [4, 6, 8, 10, 12, 20];
   draw.options.diceSides = supportedDiceSides.includes(Number(draw.options.diceSides)) ? Number(draw.options.diceSides) : 6;
   draw.options.diceTray = Array.isArray(draw.options.diceTray)
@@ -3081,82 +3082,106 @@ async function rollDiceGame() {
 }
 
 
-let coinSpinNodes = null;
 
-function getAudioContextSafe() {
+let coinSpinNodes = null;
+let coinAudioContext = null;
+
+function getCoinAudioContext() {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return null;
-    return audioContext || (audioContext = new AudioContextClass());
+    if (!coinAudioContext) coinAudioContext = new AudioContextClass();
+    if (coinAudioContext.state === "suspended") {
+      coinAudioContext.resume().catch(() => {});
+    }
+    return coinAudioContext;
   } catch {
     return null;
   }
 }
 
+function coinSoundAllowed() {
+  return draw.options.coinSoundEnabled !== false;
+}
+
 function startCoinSpinSound() {
-  if (draw.options.coinSoundEnabled === false) return;
-  const context = getAudioContextSafe();
+  if (!coinSoundAllowed()) return;
+  const context = getCoinAudioContext();
   if (!context) return;
 
   stopCoinSpinSound();
 
-  const oscillator = context.createOscillator();
   const gain = context.createGain();
   const filter = context.createBiquadFilter();
+  const oscillatorA = context.createOscillator();
+  const oscillatorB = context.createOscillator();
 
-  oscillator.type = "triangle";
   filter.type = "bandpass";
-  filter.frequency.setValueAtTime(1150, context.currentTime);
+  filter.frequency.setValueAtTime(1550, context.currentTime);
+  filter.Q.setValueAtTime(5, context.currentTime);
+
   gain.gain.setValueAtTime(0.0001, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.055, context.currentTime + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.035);
 
-  oscillator.frequency.setValueAtTime(700, context.currentTime);
-  oscillator.frequency.linearRampToValueAtTime(1340, context.currentTime + 0.18);
-  oscillator.frequency.linearRampToValueAtTime(760, context.currentTime + 0.36);
+  oscillatorA.type = "triangle";
+  oscillatorB.type = "sawtooth";
+  oscillatorA.frequency.setValueAtTime(980, context.currentTime);
+  oscillatorB.frequency.setValueAtTime(1320, context.currentTime);
+  oscillatorA.frequency.linearRampToValueAtTime(1750, context.currentTime + 0.18);
+  oscillatorA.frequency.linearRampToValueAtTime(870, context.currentTime + 0.36);
+  oscillatorB.frequency.linearRampToValueAtTime(780, context.currentTime + 0.23);
+  oscillatorB.frequency.linearRampToValueAtTime(1480, context.currentTime + 0.42);
 
-  oscillator.connect(filter);
+  oscillatorA.connect(filter);
+  oscillatorB.connect(filter);
   filter.connect(gain);
   gain.connect(context.destination);
-  oscillator.start();
 
-  coinSpinNodes = { oscillator, gain, context };
+  oscillatorA.start();
+  oscillatorB.start();
+  coinSpinNodes = { context, gain, oscillators: [oscillatorA, oscillatorB] };
 }
 
 function stopCoinSpinSound() {
   if (!coinSpinNodes) return;
-  const { oscillator, gain, context } = coinSpinNodes;
+  const { context, gain, oscillators } = coinSpinNodes;
   try {
     gain.gain.cancelScheduledValues(context.currentTime);
-    gain.gain.setValueAtTime(Math.max(gain.gain.value || 0.0001, 0.0001), context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.06);
-    oscillator.stop(context.currentTime + 0.08);
+    gain.gain.setValueAtTime(Math.max(gain.gain.value || 0.001, 0.001), context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.05);
+    oscillators.forEach(oscillator => oscillator.stop(context.currentTime + 0.065));
   } catch {
-    try { oscillator.stop(); } catch {}
+    oscillators.forEach(oscillator => { try { oscillator.stop(); } catch {} });
   }
   coinSpinNodes = null;
 }
 
 function playCoinLandSound() {
-  if (draw.options.coinSoundEnabled === false) return;
-  const context = getAudioContextSafe();
+  if (!coinSoundAllowed()) return;
+  const context = getCoinAudioContext();
   if (!context) return;
 
-  const gain = context.createGain();
-  gain.gain.setValueAtTime(0.075, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.24);
-  gain.connect(context.destination);
+  const master = context.createGain();
+  master.gain.setValueAtTime(0.24, context.currentTime);
+  master.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.34);
+  master.connect(context.destination);
 
-  [880, 1320].forEach((frequency, index) => {
+  [1560, 960, 520].forEach((frequency, index) => {
     const oscillator = context.createOscillator();
-    oscillator.type = index === 0 ? "sine" : "triangle";
-    oscillator.frequency.setValueAtTime(frequency, context.currentTime + index * 0.035);
-    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.62, context.currentTime + 0.22);
-    oscillator.connect(gain);
-    oscillator.start(context.currentTime + index * 0.035);
-    oscillator.stop(context.currentTime + 0.25 + index * 0.035);
+    oscillator.type = index === 2 ? "sine" : "triangle";
+    const startAt = context.currentTime + index * 0.045;
+    oscillator.frequency.setValueAtTime(frequency, startAt);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(90, frequency * 0.55), startAt + 0.18);
+    oscillator.connect(master);
+    oscillator.start(startAt);
+    oscillator.stop(startAt + 0.24);
   });
 }
 
+function playCoinTogglePreview() {
+  if (!coinSoundAllowed()) return;
+  playCoinLandSound();
+}
 
 function renderCoinGame(result = null, rolling = false) {
   const face = result ? (result.value === "Cara" ? "😄" : "👑") : "?";
@@ -3166,8 +3191,10 @@ function renderCoinGame(result = null, rolling = false) {
   if (toggle) toggle.addEventListener("click", () => {
     draw.options.coinSoundEnabled = !(draw.options.coinSoundEnabled !== false);
     persist();
+    const enabled = draw.options.coinSoundEnabled !== false;
     renderCoinGame(result, rolling);
-    setValidation(draw.options.coinSoundEnabled !== false ? "Som da moeda ativado." : "Som da moeda desativado.");
+    if (enabled) setTimeout(playCoinTogglePreview, 30);
+    setValidation(enabled ? "Som da moeda ativado." : "Som da moeda desativado.");
   });
 }
 
