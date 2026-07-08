@@ -3094,7 +3094,7 @@ function getAudioContextSafe() {
 }
 
 function startCoinSpinSound() {
-  if (!draw.options.soundEnabled) return;
+  if (draw.options.coinSoundEnabled === false) return;
   const context = getAudioContextSafe();
   if (!context) return;
 
@@ -3137,7 +3137,7 @@ function stopCoinSpinSound() {
 }
 
 function playCoinLandSound() {
-  if (!draw.options.soundEnabled) return;
+  if (draw.options.coinSoundEnabled === false) return;
   const context = getAudioContextSafe();
   if (!context) return;
 
@@ -3160,7 +3160,15 @@ function playCoinLandSound() {
 
 function renderCoinGame(result = null, rolling = false) {
   const face = result ? (result.value === "Cara" ? "😄" : "👑") : "?";
-  animationArea.innerHTML = `<div class="quick-decision-card coin-game ${rolling ? "is-rolling" : ""}"><div class="coin-visual"><span>${face}</span><small>${result ? Sortick.escapeHTML(result.value) : "cara ou coroa"}</small></div><strong>${result ? Sortick.escapeHTML(result.label) : "Pronto para decidir"}</strong><p>Clique em Decidir para jogar a moeda.</p></div>`;
+  const soundOn = draw.options.coinSoundEnabled !== false;
+  animationArea.innerHTML = `<div class="quick-decision-card coin-game ${rolling ? "is-rolling" : ""}"><button class="coin-sound-toggle" type="button">${soundOn ? "🔊 Som da moeda" : "🔇 Som da moeda"}</button><div class="coin-visual"><span>${face}</span><small>${result ? Sortick.escapeHTML(result.value) : "cara ou coroa"}</small></div><strong>${result ? Sortick.escapeHTML(result.label) : "Pronto para decidir"}</strong><p>Clique em Decidir para jogar a moeda.</p></div>`;
+  const toggle = animationArea.querySelector(".coin-sound-toggle");
+  if (toggle) toggle.addEventListener("click", () => {
+    draw.options.coinSoundEnabled = !(draw.options.coinSoundEnabled !== false);
+    persist();
+    renderCoinGame(result, rolling);
+    setValidation(draw.options.coinSoundEnabled !== false ? "Som da moeda ativado." : "Som da moeda desativado.");
+  });
 }
 
 function renderRandomGame(result = null, rolling = false) {

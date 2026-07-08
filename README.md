@@ -68,3 +68,10 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - A mesa de dados foi forçada a renderizar depois do código legado.
 - O modo Dado não deve mais cair na tela “Adicione participantes para começar”.
 - Mantém o som próprio da moeda e os dados SVG 2.5D.
+
+
+## v1.22 — dados e som corrigidos
+
+- Corrigida leitura do armazenamento do modo Dado.
+- Mesa de dados forçada sobre o renderizador legado.
+- Botão próprio de som da moeda.
