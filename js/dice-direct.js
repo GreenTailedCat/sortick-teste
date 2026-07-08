@@ -3,6 +3,76 @@
   const DICE_TYPES = [4, 6, 8, 10, 12, 20];
   const STORAGE_KEY = "sortick_test_draws_v1";
 
+/* v1.25: som direto dos dados, acionado pelo clique em Rolar */
+let sortickDiceAudioContextV125 = null;
+let sortickDiceSoundEnabledV125 = localStorage.getItem("sortick_dice_sound_enabled_v125") !== "false";
+let sortickDiceRollTimerV125 = null;
+
+function sortickGetDiceAudioV125() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!sortickDiceAudioContextV125) sortickDiceAudioContextV125 = new AudioContextClass();
+    if (sortickDiceAudioContextV125.state === "suspended") sortickDiceAudioContextV125.resume();
+    return sortickDiceAudioContextV125;
+  } catch {
+    return null;
+  }
+}
+
+function sortickBeepV125(frequency, duration = 0.055, volume = 0.08, type = "triangle") {
+  if (!sortickDiceSoundEnabledV125) return;
+  const context = sortickGetDiceAudioV125();
+  if (!context) return;
+
+  const osc = context.createOscillator();
+  const gain = context.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, context.currentTime);
+  gain.gain.setValueAtTime(volume, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+
+  osc.connect(gain);
+  gain.connect(context.destination);
+  osc.start();
+  osc.stop(context.currentTime + duration);
+}
+
+function sortickStartDiceRollSoundV125() {
+  if (!sortickDiceSoundEnabledV125) return;
+  sortickGetDiceAudioV125();
+  sortickStopDiceRollSoundV125(false);
+
+  let index = 0;
+  const pattern = [120, 160, 210, 150, 250, 180, 310, 140];
+  sortickDiceRollTimerV125 = window.setInterval(() => {
+    sortickBeepV125(pattern[index % pattern.length], 0.045, 0.055, index % 2 ? "square" : "triangle");
+    index += 1;
+  }, 58);
+}
+
+function sortickStopDiceRollSoundV125(playLand = true) {
+  if (sortickDiceRollTimerV125) {
+    window.clearInterval(sortickDiceRollTimerV125);
+    sortickDiceRollTimerV125 = null;
+  }
+  if (playLand && sortickDiceSoundEnabledV125) {
+    sortickBeepV125(360, 0.07, 0.11, "triangle");
+    window.setTimeout(() => sortickBeepV125(190, 0.09, 0.09, "sine"), 65);
+  }
+}
+
+function sortickToggleDiceSoundV125() {
+  sortickDiceSoundEnabledV125 = !sortickDiceSoundEnabledV125;
+  localStorage.setItem("sortick_dice_sound_enabled_v125", sortickDiceSoundEnabledV125 ? "true" : "false");
+  if (!sortickDiceSoundEnabledV125) sortickStopDiceRollSoundV125(false);
+  else sortickBeepV125(420, 0.08, 0.1, "triangle");
+  const draw = getDraw();
+  if (isDiceDraw(draw)) render(draw);
+}
+
+
 let diceAudioContext = null;
 let diceRollNodes = null;
 let diceSoundEnabled = localStorage.getItem("sortick_dice_sound_enabled") !== "false";
@@ -24,7 +94,7 @@ function startDiceRollSound() {
   const context = getDiceAudioContext();
   if (!context) return;
 
-  stopDiceRollSound();
+  sortickStopDiceRollSoundV125();
 
   const master = context.createGain();
   master.gain.setValueAtTime(0.0001, context.currentTime);
@@ -224,7 +294,7 @@ function toggleDiceSound() {
         <div class="dice-direct-head">
           <div><p class="eyebrow">DECISÕES RÁPIDAS</p><h1>Jogar os dados</h1><p>${dice.length ? "Role novamente, remova dados ou limpe a mesa." : "Escolha um ou mais dados abaixo para começar."}</p></div>
           <div class="dice-head-actions">
-            <button id="diceSoundToggle" class="dice-sound-toggle" type="button">${diceSoundEnabled ? "🔊 Som" : "🔇 Som"}</button>
+            <button id="diceSoundToggle" class="dice-sound-toggle" type="button">${sortickDiceSoundEnabledV125 ? "🔊 Som" : "🔇 Som"}</button>
             <span class="dice-count">${dice.length}/${DICE_LIMIT} dados</span>
           </div>
         </div>
@@ -264,7 +334,7 @@ function toggleDiceSound() {
     }));
 
     const soundToggle = stage.querySelector("#diceSoundToggle");
-    if (soundToggle) soundToggle.addEventListener("click", toggleDiceSound);
+    if (soundToggle) soundToggle.addEventListener("click", sortickToggleDiceSoundV125);
 
     const roll = stage.querySelector("#diceRollButton");
     const clear = stage.querySelector("#diceClearButton");
@@ -296,7 +366,7 @@ function toggleDiceSound() {
         state.lastTotal = state.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
         draw.result = { quickResult: { label: `Total: ${state.lastTotal}`, value: String(state.lastTotal) }, diceResults: state.dice.map(item => ({ sides: item.sides, value: item.value })), createdAt: new Date().toISOString() };
         saveDraw(draw);
-        stopDiceRollSound();
+        sortickStopDiceRollSoundV125();
         render(draw, false);
       }
     }, 58);

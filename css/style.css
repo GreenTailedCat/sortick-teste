@@ -3829,3 +3829,32 @@ body[data-sortick-draw-type="quick-dice"] .draw-stage {
     justify-content: flex-start;
   }
 }
+
+
+/* v1.25 sound reliability */
+.dice-head-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.dice-sound-toggle {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.dice-sound-toggle:hover,
+.dice-sound-toggle:focus-visible {
+  background: rgba(255, 255, 255, 0.26);
+  outline: none;
+}

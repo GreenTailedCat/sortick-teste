@@ -91,3 +91,11 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - Adicionado botão de som dos dados.
 - Número aleatório permanece usando o som comum dos outros modos.
 - Moeda continua com som próprio.
+
+
+## v1.25 — sons corrigidos
+
+- Som dos dados refeito para tocar diretamente no clique em Rolar.
+- Som dos dados usa contexto de áudio próprio.
+- Número aleatório recebeu efeito comum direto.
+- Moeda mantém som próprio funcionando.

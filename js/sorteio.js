@@ -3198,6 +3198,49 @@ function renderCoinGame(result = null, rolling = false) {
   });
 }
 
+
+/* v1.25: som comum direto para número aleatório */
+let sortickRandomAudioContextV125 = null;
+
+function sortickGetRandomAudioV125() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!sortickRandomAudioContextV125) sortickRandomAudioContextV125 = new AudioContextClass();
+    if (sortickRandomAudioContextV125.state === "suspended") sortickRandomAudioContextV125.resume();
+    return sortickRandomAudioContextV125;
+  } catch {
+    return null;
+  }
+}
+
+function sortickRandomBeepV125(frequency, duration = 0.045, volume = 0.075, type = "sine") {
+  const context = sortickGetRandomAudioV125();
+  if (!context) return;
+
+  const osc = context.createOscillator();
+  const gain = context.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, context.currentTime);
+  gain.gain.setValueAtTime(volume, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+
+  osc.connect(gain);
+  gain.connect(context.destination);
+  osc.start();
+  osc.stop(context.currentTime + duration);
+}
+
+function sortickRandomTickV125() {
+  sortickRandomBeepV125(520 + Math.floor(Math.random() * 260), 0.035, 0.055, "triangle");
+}
+
+function sortickRandomLandV125() {
+  sortickRandomBeepV125(760, 0.07, 0.095, "sine");
+  window.setTimeout(() => sortickRandomBeepV125(980, 0.08, 0.085, "triangle"), 55);
+}
+
 function renderRandomGame(result = null, rolling = false) {
   const remaining = getRandomRemaining();
   const value = result ? result.value : "?";
@@ -3375,13 +3418,14 @@ async function performCoreDraw() {
     const quickResult=makeQuickResult();
     const isCoin = draw.options.quickType === "coin";
     if (isCoin) startCoinSpinSound();
-    await new Promise(resolve=>{const start=performance.now(); let last=0; function frame(now){const p=Math.min((now-start)/900,1);if(now-last>65+p*120){last=now;const preview=draw.options.quickType==="coin"?{label:Sortick.secureRandomIndex(2)?"Coroa":"Cara",value:Sortick.secureRandomIndex(2)?"Coroa":"Cara"}:{label:"Número",value:String(draw.options.randomMin+Sortick.secureRandomIndex(getRandomSpan()))}; draw.options.quickType==="coin"?renderCoinGame(preview,true):renderRandomGame(preview,true); if(!isCoin) playTickSound();}if(p<1)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
+    await new Promise(resolve=>{const start=performance.now(); let last=0; function frame(now){const p=Math.min((now-start)/900,1);if(now-last>65+p*120){last=now;const preview=draw.options.quickType==="coin"?{label:Sortick.secureRandomIndex(2)?"Coroa":"Cara",value:Sortick.secureRandomIndex(2)?"Coroa":"Cara"}:{label:"Número",value:String(draw.options.randomMin+Sortick.secureRandomIndex(getRandomSpan()))}; draw.options.quickType==="coin"?renderCoinGame(preview,true):renderRandomGame(preview,true); if(!isCoin) { playTickSound(); if (draw.options.quickType === "random") sortickRandomTickV125(); }}if(p<1)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
     if (isCoin) {
       stopCoinSpinSound();
       renderCoinGame(quickResult, false);
       playCoinLandSound();
     } else {
       playSuccessSound();
+      if (draw.options.quickType === "random") sortickRandomLandV125();
     }
     draw.result={participant:{id:Sortick.createId("q"),name:quickResult.label,status:"confirmed"},quickResult,createdAt:new Date().toISOString(),participantCount:0};
   } else {
