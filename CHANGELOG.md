@@ -1,5 +1,8 @@
 # Changelog do Sortick
 
+## v1.20 — moeda e dados
+- Som próprio de moeda e dados 2.5D em SVG local.
+
 ## v1.16 — formulários e dados
 - Assistente genérico por etapas para os modos aplicáveis, imagem de atividade e correção do modo Dados.
 

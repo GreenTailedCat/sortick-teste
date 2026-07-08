@@ -3080,8 +3080,86 @@ async function rollDiceGame() {
   render();
 }
 
+
+let coinSpinNodes = null;
+
+function getAudioContextSafe() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    return audioContext || (audioContext = new AudioContextClass());
+  } catch {
+    return null;
+  }
+}
+
+function startCoinSpinSound() {
+  if (!draw.options.soundEnabled) return;
+  const context = getAudioContextSafe();
+  if (!context) return;
+
+  stopCoinSpinSound();
+
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const filter = context.createBiquadFilter();
+
+  oscillator.type = "triangle";
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(1150, context.currentTime);
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.055, context.currentTime + 0.03);
+
+  oscillator.frequency.setValueAtTime(700, context.currentTime);
+  oscillator.frequency.linearRampToValueAtTime(1340, context.currentTime + 0.18);
+  oscillator.frequency.linearRampToValueAtTime(760, context.currentTime + 0.36);
+
+  oscillator.connect(filter);
+  filter.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start();
+
+  coinSpinNodes = { oscillator, gain, context };
+}
+
+function stopCoinSpinSound() {
+  if (!coinSpinNodes) return;
+  const { oscillator, gain, context } = coinSpinNodes;
+  try {
+    gain.gain.cancelScheduledValues(context.currentTime);
+    gain.gain.setValueAtTime(Math.max(gain.gain.value || 0.0001, 0.0001), context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.06);
+    oscillator.stop(context.currentTime + 0.08);
+  } catch {
+    try { oscillator.stop(); } catch {}
+  }
+  coinSpinNodes = null;
+}
+
+function playCoinLandSound() {
+  if (!draw.options.soundEnabled) return;
+  const context = getAudioContextSafe();
+  if (!context) return;
+
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.075, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.24);
+  gain.connect(context.destination);
+
+  [880, 1320].forEach((frequency, index) => {
+    const oscillator = context.createOscillator();
+    oscillator.type = index === 0 ? "sine" : "triangle";
+    oscillator.frequency.setValueAtTime(frequency, context.currentTime + index * 0.035);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.62, context.currentTime + 0.22);
+    oscillator.connect(gain);
+    oscillator.start(context.currentTime + index * 0.035);
+    oscillator.stop(context.currentTime + 0.25 + index * 0.035);
+  });
+}
+
+
 function renderCoinGame(result = null, rolling = false) {
-  const face = result ? (result.value === "Cara" ? "🙂" : "👑") : "?";
+  const face = result ? (result.value === "Cara" ? "😄" : "👑") : "?";
   animationArea.innerHTML = `<div class="quick-decision-card coin-game ${rolling ? "is-rolling" : ""}"><div class="coin-visual"><span>${face}</span><small>${result ? Sortick.escapeHTML(result.value) : "cara ou coroa"}</small></div><strong>${result ? Sortick.escapeHTML(result.label) : "Pronto para decidir"}</strong><p>Clique em Decidir para jogar a moeda.</p></div>`;
 }
 
@@ -3260,8 +3338,17 @@ async function performCoreDraw() {
   if (draw.type === "groups") { const groups=generateGroups(); draw.result={groups,participant:{id:Sortick.createId("g"),name:"Grupos gerados",status:"confirmed"},createdAt:new Date().toISOString(),participantCount:draw.participants.length}; playSuccessSound(); }
   else if (draw.type === "quick") {
     const quickResult=makeQuickResult();
-    await new Promise(resolve=>{const start=performance.now(); let last=0; function frame(now){const p=Math.min((now-start)/900,1);if(now-last>65+p*120){last=now;const preview=draw.options.quickType==="coin"?{label:Sortick.secureRandomIndex(2)?"Coroa":"Cara",value:Sortick.secureRandomIndex(2)?"Coroa":"Cara"}:{label:"Número",value:String(draw.options.randomMin+Sortick.secureRandomIndex(getRandomSpan()))}; draw.options.quickType==="coin"?renderCoinGame(preview,true):renderRandomGame(preview,true);playTickSound();}if(p<1)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
-    draw.result={participant:{id:Sortick.createId("q"),name:quickResult.label,status:"confirmed"},quickResult,createdAt:new Date().toISOString(),participantCount:0}; playSuccessSound();
+    const isCoin = draw.options.quickType === "coin";
+    if (isCoin) startCoinSpinSound();
+    await new Promise(resolve=>{const start=performance.now(); let last=0; function frame(now){const p=Math.min((now-start)/900,1);if(now-last>65+p*120){last=now;const preview=draw.options.quickType==="coin"?{label:Sortick.secureRandomIndex(2)?"Coroa":"Cara",value:Sortick.secureRandomIndex(2)?"Coroa":"Cara"}:{label:"Número",value:String(draw.options.randomMin+Sortick.secureRandomIndex(getRandomSpan()))}; draw.options.quickType==="coin"?renderCoinGame(preview,true):renderRandomGame(preview,true); if(!isCoin) playTickSound();}if(p<1)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
+    if (isCoin) {
+      stopCoinSpinSound();
+      renderCoinGame(quickResult, false);
+      playCoinLandSound();
+    } else {
+      playSuccessSound();
+    }
+    draw.result={participant:{id:Sortick.createId("q"),name:quickResult.label,status:"confirmed"},quickResult,createdAt:new Date().toISOString(),participantCount:0};
   } else {
     const selected=getCoreSelectionResult(eligible); const first=selected[0]; const firstIndex=eligible.findIndex(p=>p.id===first.id);
     if(draw.options.selectionMode!=="order"){await runCountdown();await runAnimation(first,firstIndex,eligible);} if(draw.options.noRepeat){const ids=new Set(draw.options.roundDrawnIds);selected.forEach(p=>ids.add(p.id));draw.options.roundDrawnIds=Array.from(ids);} draw.result={participant:first,participants:selected,participantIndex:firstIndex,createdAt:new Date().toISOString(),participantCount:eligible.length,rouletteParticipants:draw.type==="roulette"?eligible.map(p=>({...p})):null,selectionMode:draw.options.selectionMode,wheelRotation:draw.type==="roulette"?currentWheelRotation:null};playSuccessSound();

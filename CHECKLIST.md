@@ -46,3 +46,15 @@
 
 ## v1.19 — mesa de dados isolada
 - Adicionado controlador independente para o modo Dado, sem lógica de participantes e sem depender do código legado de decisões rápidas.
+
+
+## Teste v1.20 — moeda e dados
+
+- [ ] Cara ou coroa usa som diferente dos demais modos.
+- [ ] O som de giro da moeda para ao revelar o resultado.
+- [ ] Resultado da moeda mostra 😄 ou 👑.
+- [ ] D4, D6, D8, D10, D12 e D20 aparecem como SVG 2.5D.
+- [ ] Botões inferiores mostram +D4, +D6, +D8, +D10, +D12, +D20.
+- [ ] Total soma corretamente.
+- [ ] Limite de 10 dados continua funcionando.
+- [ ] A mesa não quebra no celular.

@@ -1,4 +1,4 @@
-# Sortick Teste v1.18 — dados direto
+# Sortick Teste v1.20 — moeda e dados
 
 Esta versão é a entrega consolidada para o repositório de testes.
 
@@ -51,3 +51,13 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 
 ## v1.19 — mesa de dados isolada
 - Adicionado controlador independente para o modo Dado, sem lógica de participantes e sem depender do código legado de decisões rápidas.
+
+
+## v1.20 — moeda e dados
+
+- Moeda com efeito sonoro próprio gerado via Web Audio.
+- Resultado visual da moeda com 😄 ou 👑.
+- Mesa de dados isolada mantida.
+- Dados substituídos por SVG 2.5D locais, com faces, facetas, sombra e número dinâmico.
+- Botões inferiores alterados para +D4, +D6, +D8, +D10, +D12 e +D20.
+- Layout dos dados ajustado para 1–10 dados e telas menores.
