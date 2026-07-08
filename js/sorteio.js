@@ -3745,3 +3745,5 @@ function forceDirectDiceTable() {
 
 queueMicrotask(forceDirectDiceTable);
 window.addEventListener("pageshow", forceDirectDiceTable);
+
+// v1.24: número aleatório usa som comum dos outros modos; moeda e dados possuem sons próprios.

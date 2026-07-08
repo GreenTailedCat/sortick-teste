@@ -83,3 +83,11 @@ O modo Dados é uma implementação local em SVG/CSS/JavaScript, sem API, CDN ou
 - O som da moeda não depende do som geral.
 - Botão de mutar/desmutar mantido.
 - Reativar o som toca uma prévia curta.
+
+
+## v1.24 — som dos dados
+
+- Mesa de dados agora possui efeito sonoro próprio durante a rolagem.
+- Adicionado botão de som dos dados.
+- Número aleatório permanece usando o som comum dos outros modos.
+- Moeda continua com som próprio.

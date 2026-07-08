@@ -3,6 +3,117 @@
   const DICE_TYPES = [4, 6, 8, 10, 12, 20];
   const STORAGE_KEY = "sortick_test_draws_v1";
 
+let diceAudioContext = null;
+let diceRollNodes = null;
+let diceSoundEnabled = localStorage.getItem("sortick_dice_sound_enabled") !== "false";
+
+function getDiceAudioContext() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!diceAudioContext) diceAudioContext = new AudioContextClass();
+    if (diceAudioContext.state === "suspended") diceAudioContext.resume();
+    return diceAudioContext;
+  } catch {
+    return null;
+  }
+}
+
+function startDiceRollSound() {
+  if (!diceSoundEnabled) return;
+  const context = getDiceAudioContext();
+  if (!context) return;
+
+  stopDiceRollSound();
+
+  const master = context.createGain();
+  master.gain.setValueAtTime(0.0001, context.currentTime);
+  master.gain.exponentialRampToValueAtTime(0.085, context.currentTime + 0.025);
+  master.connect(context.destination);
+
+  const noiseBuffer = context.createBuffer(1, context.sampleRate * 0.45, context.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < data.length; i += 1) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  }
+
+  const noise = context.createBufferSource();
+  noise.buffer = noiseBuffer;
+  noise.loop = true;
+
+  const filter = context.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(520, context.currentTime);
+  filter.Q.setValueAtTime(1.2, context.currentTime);
+
+  const oscillator = context.createOscillator();
+  oscillator.type = "square";
+  oscillator.frequency.setValueAtTime(48, context.currentTime);
+
+  const clickGain = context.createGain();
+  clickGain.gain.setValueAtTime(0.018, context.currentTime);
+
+  noise.connect(filter);
+  filter.connect(master);
+  oscillator.connect(clickGain);
+  clickGain.connect(master);
+
+  noise.start();
+  oscillator.start();
+
+  diceRollNodes = { context, master, noise, oscillator };
+}
+
+function stopDiceRollSound({ land = true } = {}) {
+  if (!diceRollNodes) return;
+
+  const { context, master, noise, oscillator } = diceRollNodes;
+  try {
+    master.gain.cancelScheduledValues(context.currentTime);
+    master.gain.setValueAtTime(Math.max(master.gain.value || 0.0001, 0.0001), context.currentTime);
+    master.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.08);
+    noise.stop(context.currentTime + 0.09);
+    oscillator.stop(context.currentTime + 0.09);
+  } catch {
+    try { noise.stop(); } catch {}
+    try { oscillator.stop(); } catch {}
+  }
+
+  diceRollNodes = null;
+
+  if (land && diceSoundEnabled) playDiceLandSound();
+}
+
+function playDiceLandSound() {
+  const context = getDiceAudioContext();
+  if (!context) return;
+
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.11, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.2);
+  gain.connect(context.destination);
+
+  [160, 230, 310].forEach((frequency, index) => {
+    const oscillator = context.createOscillator();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(frequency, context.currentTime + index * 0.018);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.56, context.currentTime + 0.16);
+    oscillator.connect(gain);
+    oscillator.start(context.currentTime + index * 0.018);
+    oscillator.stop(context.currentTime + 0.19 + index * 0.018);
+  });
+}
+
+function toggleDiceSound() {
+  diceSoundEnabled = !diceSoundEnabled;
+  localStorage.setItem("sortick_dice_sound_enabled", diceSoundEnabled ? "true" : "false");
+  if (!diceSoundEnabled) stopDiceRollSound({ land: false });
+  else playDiceLandSound();
+  const draw = getDraw();
+  if (isDiceDraw(draw)) render(draw);
+}
+
+
   const escapeHTML = value => String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -112,7 +223,10 @@
       <div class="dice-direct-card">
         <div class="dice-direct-head">
           <div><p class="eyebrow">DECISÕES RÁPIDAS</p><h1>Jogar os dados</h1><p>${dice.length ? "Role novamente, remova dados ou limpe a mesa." : "Escolha um ou mais dados abaixo para começar."}</p></div>
-          <span class="dice-count">${dice.length}/${DICE_LIMIT} dados</span>
+          <div class="dice-head-actions">
+            <button id="diceSoundToggle" class="dice-sound-toggle" type="button">${diceSoundEnabled ? "🔊 Som" : "🔇 Som"}</button>
+            <span class="dice-count">${dice.length}/${DICE_LIMIT} dados</span>
+          </div>
         </div>
         <div class="dice-table ${sizeClass} ${rolling ? "is-rolling" : ""}">
           ${dice.length ? `<div class="dice-pieces">${dice.map(item => `<article class="dice-piece dice-piece-d${item.sides}" data-die="${escapeHTML(item.id)}"><button class="dice-remove" type="button" aria-label="Remover D${item.sides}">×</button>${diceSvg(item.sides, item.value || "?")}</article>`).join("")}</div>${dice.length > 1 ? `<div class="dice-total-box"><span>Total</span><strong>${total}</strong></div>` : ""}` : `<div class="dice-empty"><strong>Mesa vazia</strong><span>Use os botões abaixo para adicionar dados.</span></div>`}
@@ -149,6 +263,9 @@
       render(draw);
     }));
 
+    const soundToggle = stage.querySelector("#diceSoundToggle");
+    if (soundToggle) soundToggle.addEventListener("click", toggleDiceSound);
+
     const roll = stage.querySelector("#diceRollButton");
     const clear = stage.querySelector("#diceClearButton");
     if (roll) roll.addEventListener("click", () => rollDice(draw));
@@ -179,6 +296,7 @@
         state.lastTotal = state.dice.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
         draw.result = { quickResult: { label: `Total: ${state.lastTotal}`, value: String(state.lastTotal) }, diceResults: state.dice.map(item => ({ sides: item.sides, value: item.value })), createdAt: new Date().toISOString() };
         saveDraw(draw);
+        stopDiceRollSound();
         render(draw, false);
       }
     }, 58);
