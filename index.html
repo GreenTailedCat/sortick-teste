@@ -3,154 +3,138 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sortick — sorteios simples</title>
-  <meta name="description" content="Sortick: roleta, sorteio por nomes, número aleatório, cara ou coroa, dados, cartelas, bingo e grupos em uma interface simples.">
+  <title>Sortick XP — conceito</title>
+  <meta name="description" content="Conceito alternativo do Sortick com visual inspirado em aplicativos antigos e Windows XP.">
   <meta name="robots" content="noindex,nofollow">
   <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=concept1">
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=xp1">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/sortick-teste/">
-      <span class="brand-mark">S</span>
-      <span>Sortick</span>
-    </a>
+  <div class="desktop">
+    <div class="desktop-icons" aria-label="Atalhos">
+      <button class="desktop-icon" data-open-mode="wheel"><span>🎡</span><strong>Roleta</strong></button>
+      <button class="desktop-icon" data-open-mode="names"><span>👥</span><strong>Nomes</strong></button>
+      <button class="desktop-icon" data-open-mode="random"><span>#</span><strong>Número</strong></button>
+      <button class="desktop-icon" data-open-mode="dice"><span>🎲</span><strong>Dados</strong></button>
+    </div>
 
-    <nav class="topnav" aria-label="Navegação">
-      <a href="#modos">Modos</a>
-      <a href="#como">Como usar</a>
-      <a href="#sobre">Sobre</a>
-      <button id="miniHelpButton" class="icon-button" type="button" title="Ajuda">?</button>
-    </nav>
-  </header>
-
-  <main class="app-shell">
-    <section class="home-hero">
-      <div class="hero-left">
-        <p class="eyebrow">SORTEIOS ONLINE</p>
-        <h1>Escolha um modo e use.</h1>
-        <p class="hero-subtitle">Sem cadastro, sem tela cheia de texto. Escolha o tipo de sorteio e comece.</p>
-
-        <div class="quick-start">
-          <button class="primary-action" data-open-mode="wheel">Abrir roleta</button>
-          <button class="secondary-action" data-open-mode="names">Sortear nomes</button>
+    <main class="xp-window" role="application" aria-label="Sortick XP">
+      <header class="titlebar">
+        <div class="title-left">
+          <span class="folder-icon">📁</span>
+          <strong>Sortick — Sorteios e Decisões</strong>
         </div>
-      </div>
-
-      <div class="hero-preview" aria-label="Prévia da roleta">
-        <div class="wheel-wrap">
-          <canvas id="previewWheel" width="520" height="520"></canvas>
-          <span class="wheel-pointer"></span>
-          <button id="previewSpin" class="wheel-center-button" type="button">Girar</button>
+        <div class="window-buttons" aria-hidden="true">
+          <button type="button">_</button>
+          <button type="button">□</button>
+          <button type="button">×</button>
         </div>
-      </div>
-    </section>
+      </header>
 
-    <section id="modos" class="mode-board" aria-label="Modos do Sortick">
-      <button class="mode-tile is-featured" data-open-mode="wheel">
-        <span class="mode-icon">🎡</span>
-        <strong>Roleta</strong>
-        <small>Gire uma roda com opções.</small>
-      </button>
+      <nav class="menubar" aria-label="Menu antigo">
+        <button type="button">Arquivo</button>
+        <button type="button">Editar</button>
+        <button type="button">Modos</button>
+        <button type="button">Ferramentas</button>
+        <button type="button">Ajuda</button>
+        <span class="date-label">qua., 08 de jul. de 2026</span>
+      </nav>
 
-      <button class="mode-tile" data-open-mode="names">
-        <span class="mode-icon">👥</span>
-        <strong>Nomes</strong>
-        <small>Sorteie pessoas ou itens.</small>
-      </button>
+      <section class="toolbar" aria-label="Barra de ferramentas">
+        <button data-open-mode="wheel">🎡 Nova Roleta</button>
+        <button data-open-mode="names">👥 Novo Sorteio</button>
+        <button data-open-mode="random">🔢 Número</button>
+        <button data-open-mode="coin">🪙 Moeda</button>
+        <button data-open-mode="dice">🎲 Dados</button>
+        <button data-open-mode="groups">🧩 Grupos</button>
+        <button data-open-mode="raffle">🎟️ Cartela</button>
+        <span class="toolbar-spacer"></span>
+        <input id="globalSearch" type="search" placeholder="🔍 Busca global..." aria-label="Busca global">
+      </section>
 
-      <button class="mode-tile" data-open-mode="random">
-        <span class="mode-icon">#</span>
-        <strong>Número</strong>
-        <small>Escolha um intervalo.</small>
-      </button>
+      <section class="tabs" aria-label="Modos do Sortick">
+        <button class="tab active" data-open-mode="home">🏠 Início</button>
+        <button class="tab" data-open-mode="wheel">🎡 Roleta</button>
+        <button class="tab" data-open-mode="names">👥 Nomes</button>
+        <button class="tab" data-open-mode="random">🔢 Número</button>
+        <button class="tab" data-open-mode="coin">🪙 Moeda</button>
+        <button class="tab" data-open-mode="dice">🎲 Dados</button>
+        <button class="tab" data-open-mode="groups">🧩 Grupos</button>
+        <button class="tab" data-open-mode="bingo">🔵 Bingo</button>
+        <button class="tab" data-open-mode="raffle">🎟️ Cartela</button>
+      </section>
 
-      <button class="mode-tile" data-open-mode="coin">
-        <span class="mode-icon">🪙</span>
-        <strong>Cara ou coroa</strong>
-        <small>Decisão rápida.</small>
-      </button>
+      <section class="subtoolbar">
+        <button id="newItemButton">➕ Novo</button>
+        <input id="quickFilter" type="search" placeholder="🔍 Buscar...">
+        <select id="levelFilter">
+          <option>Todos os modos</option>
+          <option>Decisões rápidas</option>
+          <option>Sorteios com lista</option>
+          <option>Números</option>
+        </select>
+      </section>
 
-      <button class="mode-tile" data-open-mode="dice">
-        <span class="mode-icon">🎲</span>
-        <strong>Dados</strong>
-        <small>D4, D6, D8, D10, D12 e D20.</small>
-      </button>
+      <section class="content-area">
+        <aside class="left-pane">
+          <div class="pane-title">Modos disponíveis</div>
+          <button class="tree-item active" data-open-mode="home">▣ Visão geral</button>
+          <button class="tree-item" data-open-mode="wheel">▸ Roleta</button>
+          <button class="tree-item" data-open-mode="names">▸ Sorteio por nomes</button>
+          <button class="tree-item" data-open-mode="random">▸ Número aleatório</button>
+          <button class="tree-item" data-open-mode="coin">▸ Cara ou coroa</button>
+          <button class="tree-item" data-open-mode="dice">▸ Dados</button>
+          <button class="tree-item" data-open-mode="groups">▸ Grupos</button>
+          <button class="tree-item" data-open-mode="bingo">▸ Bingo</button>
+          <button class="tree-item" data-open-mode="raffle">▸ Cartela</button>
 
-      <button class="mode-tile" data-open-mode="groups">
-        <span class="mode-icon">🧩</span>
-        <strong>Grupos</strong>
-        <small>Divida listas em equipes.</small>
-      </button>
-
-      <button class="mode-tile" data-open-mode="bingo">
-        <span class="mode-icon">🔢</span>
-        <strong>Bingo</strong>
-        <small>Sorteie números.</small>
-      </button>
-
-      <button class="mode-tile" data-open-mode="raffle">
-        <span class="mode-icon">🎟️</span>
-        <strong>Cartela</strong>
-        <small>Rifa e número da sorte.</small>
-      </button>
-    </section>
-
-    <section id="workspace" class="workspace hidden">
-      <div class="work-main">
-        <div class="work-stage">
-          <div class="stage-head">
-            <div>
-              <p id="modeKicker" class="eyebrow">MODO</p>
-              <h2 id="modeTitle">Roleta</h2>
-            </div>
-            <button id="closeWorkspace" class="icon-button" type="button">×</button>
-          </div>
-
-          <div id="interactiveArea" class="interactive-area"></div>
-        </div>
-      </div>
-
-      <aside class="side-panel">
-        <div class="tabs">
-          <button class="tab is-active" type="button">✎</button>
-          <button class="tab" type="button">☑</button>
-          <button class="tab" type="button">⚙</button>
-          <button class="tab" type="button">👁</button>
-        </div>
-
-        <label class="field-label" for="entriesInput">Entradas</label>
-        <textarea id="entriesInput" spellcheck="false">Escolha 1
+          <div class="pane-title mt">Entradas</div>
+          <textarea id="entriesInput">Escolha 1
 Escolha 2
 Escolha 3
 Escolha 4
 Escolha 5
 Escolha 6
 Escolha 7</textarea>
-        <div class="entry-count"><span id="entryCount">7</span> entradas</div>
+          <div class="small-actions">
+            <button id="shuffleEntries">Misturar</button>
+            <button id="clearEntries">Limpar</button>
+          </div>
+        </aside>
 
-        <div class="tool-row">
-          <button id="shuffleEntries" type="button">Misturar</button>
-          <button id="clearEntries" type="button">Limpar</button>
-        </div>
+        <section class="main-pane">
+          <div id="viewHeader" class="view-header">
+            <h1>Início</h1>
+            <p>Escolha um modo abaixo para começar.</p>
+          </div>
 
-        <div id="modeOptions" class="mode-options"></div>
-      </aside>
-    </section>
+          <div id="appView" class="app-view"></div>
+        </section>
 
-    <section id="como" class="simple-info">
-      <h2>Como usar</h2>
-      <p>Escolha um modo, cole suas entradas e clique no botão principal. O objetivo deste conceito é deixar o Sortick mais parecido com uma ferramenta direta do que com uma página promocional.</p>
-    </section>
+        <aside class="right-pane">
+          <div class="pane-title">Propriedades</div>
+          <div id="propertiesBox" class="properties-box"></div>
 
-    <section id="sobre" class="simple-info">
-      <h2>Sobre este conceito</h2>
-      <p>Esta é uma reconstrução visual alternativa para testes no repositório de testes. A ideia é reduzir texto, priorizar botões e deixar os modos mais próximos de uma ferramenta aberta.</p>
-    </section>
-  </main>
+          <div class="pane-title mt">Resultado</div>
+          <div id="resultBox" class="result-box">Nenhum sorteio executado.</div>
+        </aside>
+      </section>
 
-  <div id="resultToast" class="result-toast hidden" role="status" aria-live="polite"></div>
+      <footer class="statusbar">
+        <span id="statusCount">0 item(ns)</span>
+        <span id="statusMode">Pronto</span>
+        <span>Conceito visual XP</span>
+      </footer>
+    </main>
 
-  <script src="/sortick-teste/js/app.js?v=concept1"></script>
+    <div class="taskbar">
+      <button class="start-button">🪟 Iniciar</button>
+      <button class="task-button active">📁 Sortick</button>
+      <span class="task-spacer"></span>
+      <span class="tray">🔊 20:26</span>
+    </div>
+  </div>
+
+  <script src="/sortick-teste/js/app.js?v=xp1"></script>
 </body>
 </html>

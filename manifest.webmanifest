@@ -1,9 +1,9 @@
 {
-  "name": "Sortick Conceito Simples",
-  "short_name": "Sortick",
+  "name": "Sortick XP Conceito",
+  "short_name": "Sortick XP",
   "start_url": "/sortick-teste/",
   "display": "standalone",
-  "background_color": "#f7f7fb",
-  "theme_color": "#ffffff",
+  "background_color": "#cfcac1",
+  "theme_color": "#0066c9",
   "icons": []
 }

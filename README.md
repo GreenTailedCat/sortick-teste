@@ -1,14 +1,11 @@
-# Sortick — Conceito simples estilo ferramenta
+# Sortick — Conceito Windows XP
 
-Conceito alternativo para testar no repositório `sortick-teste`.
+Conceito visual alternativo para testar no repositório `sortick-teste`.
 
-## Ideia
+## Direção
 
-- Menos texto.
-- Home com modos clicáveis.
-- Visual branco, direto e menos formatado.
-- Ferramenta aberta, inspirada no estilo de interfaces simples como roletas online.
-
-## Observação
-
-Este pacote não é para substituir a versão oficial de produção.
+- Aparência de aplicativo antigo.
+- Janela central com barra azul.
+- Menus, toolbar, abas, painéis laterais e statusbar.
+- Modos do Sortick como abas e itens de árvore.
+- Não é versão oficial.
