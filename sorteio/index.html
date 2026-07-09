@@ -1,222 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta name="robots" content="noindex, nofollow, noarchive" />
-  <meta name="sortick-environment" content="test" />
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Teste — Sortick — Sorteio em andamento</title>
-  <meta name="description" content="Tela de sorteio do Sortick." />
-  <link rel="manifest" href="/sortick-teste/manifest.webmanifest" />
-  <meta name="theme-color" content="#6c4dff" />
-  <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/sortick-teste/icons/icon-192.png" />
-  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=1250" />
-  <script src="/sortick-teste/js/clean-url.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sortick — ferramenta</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="/sortick-teste/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/sortick-teste/css/style.css?v=concept1">
 </head>
-<body class="draw-page">
+<body>
   <header class="topbar">
-    <a class="brand" href="/sortick-teste/" aria-label="Sortick">
-      <img class="brand-icon" src="/sortick-teste/assets/icon.svg" alt="" />
-      <span>Sortick</span>
-    </a>
-
-    <nav class="nav">
-      <a href="/sortick-teste/#modos">Modos</a>
-      <a href="/sortick-teste/sobre/">Sobre</a>
-      <a href="/sortick-teste/#criar">Criar</a>
-    </nav>
+    <a class="brand" href="/sortick-teste/"><span class="brand-mark">S</span><span>Sortick</span></a>
+    <nav class="topnav"><a href="/sortick-teste/">Início</a></nav>
   </header>
-
-  <main class="draw-layout">
-    <section class="draw-stage">
-      <div class="draw-header">
-        <div>
-          <p id="drawKind" class="eyebrow">Sorteio</p>
-          <h1 id="drawTitle">Carregando...</h1>
-        </div>
-        <span id="drawStatus" class="status-pill">Modo simples</span>
-      </div>
-
-      <div id="animationArea" class="animation-area">
-        <div class="empty-state">
-          <span class="empty-icon">✨</span>
-          <strong>Adicione participantes para começar</strong>
-          <p>Quando estiver pronto, clique em sortear.</p>
-        </div>
-      </div>
-
-      <div id="winnerCard" class="winner-card hidden">
-        <p class="result-kicker">Resultado do sorteio</p>
-        <h2 id="winnerName"></h2>
-        <span id="winnerMeta"></span>
-
-        <div class="proof">
-          <span id="proofText"></span>
-        </div>
-
-        <div class="made-by">Feito no Sortick</div>
-      </div>
-
-      <div class="stage-actions">
-        <button id="drawButton" class="btn btn-primary btn-xl" disabled>Sortear</button>
-        <button id="copyButton" class="btn btn-ghost" disabled>Copiar resumo</button>
-        <button id="shareButton" class="btn btn-ghost" disabled>Compartilhar</button>
-        <button id="downloadButton" class="btn btn-ghost" disabled>Baixar imagem</button>
-        <button id="resetButton" class="btn btn-secondary hidden" type="button">Reiniciar bingo</button>
-      </div>
-      <p id="resetHint" class="stage-action-hint hidden">Reinicia o histórico de números do bingo.</p>
+  <main class="app-shell">
+    <section class="simple-info">
+      <h1>Ferramenta</h1>
+      <p>Este conceito usa a página inicial como área principal. Volte para escolher um modo.</p>
+      <p><a class="primary-action" style="display:inline-flex;align-items:center;text-decoration:none" href="/sortick-teste/">Voltar ao início</a></p>
     </section>
-
-    <aside class="side-panel">
-      <div id="participantPanel" class="panel-card">
-        <h2>Participantes</h2>
-        <p id="participantHelp" class="subtle">Adicione nomes para o sorteio.</p>
-
-        <form id="participantForm" class="participant-form">
-          <input id="participantName" type="text" placeholder="Nome do participante" maxlength="60" autocomplete="off" />
-
-          <input id="participantNumber" class="hidden" type="number" placeholder="Número" min="1" max="999999" />
-
-          <label class="compact-label">
-            Status
-            <select id="participantStatus">
-              <option value="pending">Pendente</option>
-              <option value="confirmed">Confirmado</option>
-            </select>
-          </label>
-
-          <button class="btn btn-secondary" type="submit">Adicionar</button>
-        </form>
-
-        <div id="bulkAddPanel" class="bulk-panel hidden">
-          <label class="compact-label">
-            Adicionar vários
-            <textarea id="bulkText" rows="6" placeholder="Um nome por linha ou separados por vírgula&#10;Ex:&#10;Ana&#10;Bruno, Carla&#10;Diego"></textarea>
-          </label>
-          <p id="bulkHint" class="bulk-hint">Use uma linha para cada nome ou separe nomes por vírgula.</p>
-          <p id="bulkPreview" class="bulk-preview" aria-live="polite">Nenhum nome informado.</p>
-          <div class="bulk-actions">
-            <button id="confirmBulkButton" class="btn btn-secondary" type="button">Adicionar lista</button>
-            <button id="cancelBulkButton" class="btn btn-ghost light" type="button">Cancelar</button>
-          </div>
-        </div>
-
-        <div id="validationMessage" class="validation"></div>
-
-        <div id="statusSummary" class="status-summary">
-          <span>Total: 0</span>
-          <span>Confirmados: 0</span>
-          <span>Pendentes: 0</span>
-        </div>
-
-        <div id="numberLegend" class="number-legend hidden">
-          <span><i class="dot available-dot"></i>Disponível</span>
-          <span><i class="dot taken-dot"></i>Ocupado</span>
-          <span><i class="dot confirmed-dot"></i>Confirmado</span>
-          <span><i class="dot pending-dot"></i>Pendente</span>
-        </div>
-
-        <div class="draw-options">
-          <label class="inline-option">
-            <input id="confirmedOnlyToggle" type="checkbox" />
-            Sortear só confirmados
-          </label>
-
-          <label class="inline-option">
-            <input id="removeWinnerToggle" type="checkbox" />
-            Remover vencedor da lista
-          </label>
-
-
-          <label id="soundOption" class="inline-option">
-            <input id="soundToggle" type="checkbox" />
-            Som ativado
-          </label>
-
-
-          <label id="bingoRepeatOption" class="inline-option hidden">
-            <input id="bingoRepeatToggle" type="checkbox" />
-            Permitir números repetidos
-          </label>
-
-          <section id="selectionOptionsPanel" class="simple-core-panel hidden">
-            <h3>Formato do resultado</h3>
-
-            <label class="compact-label">
-              Resultado
-              <select id="selectionModeControl">
-                <option value="single">Um sorteado</option>
-                <option value="multiple">Vários sorteados</option>
-                <option value="order">Ordem completa</option>
-              </select>
-            </label>
-
-            <label id="selectionCountControlField" class="compact-label hidden">
-              Quantos sorteados
-              <input id="selectionCountControl" type="number" min="2" max="100" value="2" />
-            </label>
-
-            <label class="inline-option">
-              <input id="noRepeatToggle" type="checkbox" />
-              Não repetir sorteados nesta rodada
-            </label>
-
-            <button id="resetRoundButton" class="link-button danger-text hidden" type="button">Reiniciar rodada</button>
-          </section>
-
-          <section id="groupSettingsPanel" class="simple-core-panel hidden">
-            <h3>Grupos</h3>
-            <label class="compact-label">
-              Nomes dos grupos
-              <textarea id="groupNamesControl" rows="3" maxlength="240" placeholder="Um por linha ou separados por vírgula"></textarea>
-            </label>
-            <button id="saveGroupNamesButton" class="btn btn-ghost light" type="button">Salvar nomes dos grupos</button>
-          </section>
-
-          <section id="quickSettingsPanel" class="simple-core-panel hidden">
-            <h3>Decisão rápida</h3>
-            <p id="quickSettingsText" class="subtle">Pronto para decidir.</p>
-            <label id="randomRepeatOption" class="inline-option hidden">
-              <input id="randomRepeatToggle" type="checkbox" checked />
-              Permitir números repetidos
-            </label>
-          </section>
-
-
-          <label class="compact-label">
-            Mostrar
-            <select id="participantFilter">
-              <option value="all">Todos</option>
-              <option value="confirmed">Confirmados</option>
-              <option value="pending">Pendentes</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="participant-tools">
-          <button id="bulkButton" class="link-button" type="button">Adicionar vários</button>
-          <button id="shuffleButton" class="link-button" type="button">Embaralhar lista</button>
-          <button id="sampleButton" class="link-button" type="button">Usar exemplo</button>
-          <button id="clearParticipantsButton" class="link-button danger-text" type="button">Limpar tudo</button>
-        </div>
-
-        <ol id="participantList" class="participant-list"></ol>
-      </div>
-
-      <div id="activityInfoPanel" class="panel-card small-card activity-info-panel"></div>
-
-      <div class="panel-card small-card">
-        <h3>Transparência</h3>
-        <p>
-          O sorteio usa aleatoriedade do navegador com <code>crypto.getRandomValues</code>, quando disponível.
-        </p>
-      </div>
-    </aside>
   </main>
-
-  <script src="/sortick-teste/js/utils.js?v=1250"></script>
-  <script src="/sortick-teste/js/sorteio.js?v=1250"></script>
-  <script src="/sortick-teste/js/dice-direct.js?v=1250"></script>
 </body>
 </html>
